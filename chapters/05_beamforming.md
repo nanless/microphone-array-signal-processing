@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 5 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 5 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[04_doa-estimation.md](04_doa-estimation.md) ｜ 下一篇：[06_aec.md](06_aec.md)
 
@@ -581,7 +581,11 @@ $\vec{w}=\mathbf{C}(\mathbf{C}^H\mathbf{C})^{-1}\vec{f}$ 取逆矩阵第一列�
 
 ### 多通道维纳滤波与秩一目标模型
 
-多通道维纳滤波（Multichannel Wiener Filter，简称 MWF）直接在均方误差准则下权衡目标失真与残余噪声；MVDR 则施加硬的无失真约束，两者不能一般性地视为同一个解。语音失真加权多通道维纳滤波（Speech Distortion Weighted MWF，简称 SDW-MWF）写成下面的目标函数。设 $\vec x=\vec s+\vec n$，两分量不相关；$s_{out}=\vec w^H\vec s$、$n_{out}=\vec w^H\vec n$、$s_{ref}=\vec e_r^H\vec s$，并取 $\mu>0$。记噪声输出功率 $J_n=E|n_{out}|^2$，目标失真功率 $J_s=E|s_{out}-s_{ref}|^2$。普通逆还要求 $\mathbf R_{ss}+\mu\mathbf R_{nn}$ 正定。
+多通道维纳滤波（Multichannel Wiener Filter，简称 MWF）最小化指定参考目标与输出之间的均方误差，允许目标失真与残余噪声共同进入代价。MVDR 则施加硬的无失真约束，两者不能一般性地视为同一个解。语音失真加权多通道维纳滤波（Speech Distortion Weighted MWF，简称 SDW-MWF）进一步改变这两项的相对权重。
+
+固定一个频点，设 $\vec x=\vec s+\vec n$。定义 $s_{out}=\vec w^H\vec s$、$n_{out}=\vec w^H\vec n$、$s_{ref}=\vec e_r^H\vec s$；$\vec e_r$ 是第 $r$ 位为1的参考麦选择列向量。记噪声输出功率 $J_n=E|n_{out}|^2$、目标失真功率 $J_s=E|s_{out}-s_{ref}|^2$，取 $\mu>0$。本节使用未中心化二阶矩 $\mathbf R_{ss}=E[\vec s\vec s^H]$、$\mathbf R_{nn}=E[\vec n\vec n^H]$；总体均值为零时，它们才同时等于总体协方差。
+
+下式求解分量加权代价，普通逆要求 $\mathbf R_{ss}+\mu\mathbf R_{nn}$ 正定：
 
 $$\begin{aligned}
 J(\vec w)&=J_n+J_s/\mu,\\
@@ -589,27 +593,35 @@ J(\vec w)&=J_n+J_s/\mu,\\
 &\qquad\cdot\mathbf{R}_{ss}\vec e_r。
 \end{aligned}\tag{5-12}$$
 
-- $\mathbf{R}_{ss}, \mathbf{R}_{nn}$：目标与噪声协方差矩阵；$\vec{e}_r$：参考麦选择向量（第 $r$ 位为 1 的单位向量，即“以第 $r$ 个麦收到的目标为基准”）；
+$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu<1$ 更重视目标保真。
 
-- $\mu=1$ 是普通 MWF；$\mu>1$ 更重视噪声项，抑制增强而目标失真通常增大；$\mu<1$ 更重视目标保真。若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR；若噪声协方差有零空间，则目标在该零空间中的分量可能保留，不能直接推广这个极限。只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
+把 $\mu=1$ 的分量代价等同于真实混合输出 $\vec w^H\vec x$ 对 $s_{ref}$ 的MSE，还采用 $E[\vec s\vec n^H]=\mathbf0$。目标和噪声零均值且二阶不相关是这一条件的充分前提，不要求统计独立。否则真实MSE一般还含交叉项 $2\operatorname{Re}E[(s_{out}-s_{ref})n_{out}^*]$；式(5-12)仍能优化其定义的分量加权代价，但不能自动称为该混合参考MSE的最优解。目标与干扰相关时的GSC行为另见E05-09。
 
-    $$\begin{aligned}
-    q&=\vec a^H\mathbf R_{nn}^{-1}\vec a,\\
-    G_\mu&=\frac{\phi_s q}{\mu+\phi_s q},\\
-    \vec w_{SDW}&=G_\mu\vec w_{MVDR}。
-    \end{aligned}\tag{5-13}$$
+若 $\mathbf R_{nn}$ 正定且 $\mathbf R_{ss}$ 固定，令 $\mu\to\infty$ 时权重趋近零，并不趋近 MVDR。若噪声二阶矩有零空间，则目标在该零空间中的分量可能保留，不能直接推广这个极限。
 
-    可先验证 $(\mu\mathbf R_{nn}+\phi_s\vec a\vec a^H)\mathbf R_{nn}^{-1}\vec a=(\mu+\phi_s q)\vec a$，因此逆矩阵乘 $\vec a$ 等于 $\mathbf R_{nn}^{-1}\vec a/(\mu+\phi_s q)$。再用 $a_r=1$ 和 $\mathbf R_{ss}\vec e_r=\phi_s\vec a$，就得到式(5-13)。这一步另要求 $\mathbf R_{nn}$ 正定。
+只有秩一目标模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$ 且参考麦归一化 $a_r=1$ 时，才有
 
-    此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标协方差满秩时没有这个简单关系。Doclo 等的 §2.3、式(13)～(15)讨论语音失真与残余噪声的权衡，但其中权重用于噪声抵消支路，不能把其式(14)直接当成本文声像估计权重。式(5-12)采用本章的 $\vec x=\vec s+\vec n$ 模型和参考声像，按上述代价函数求解。[Doclo、Spriet、Wouters 与 Moonen，2007，§2.3](https://hal.science/hal-00499178v1/document "citation")
+$$\begin{aligned}
+q&=\vec a^H\mathbf R_{nn}^{-1}\vec a,\\
+G_\mu&=\frac{\phi_s q}{\mu+\phi_s q},\\
+\vec w_{SDW}&=G_\mu\vec w_{MVDR}。
+\end{aligned}\tag{5-13}$$
 
-    秩一模型中的参考响应因子及 MVDR 与 Wiener 增益的分解见 [Grimm、Lawin-Ore、Doclo 与 Freudenberger，2016，§3.1、式(7)、(9)～(16)](https://doi.org/10.1186/s13634-016-0375-6 "citation")。
+可先验证 $(\mu\mathbf R_{nn}+\phi_s\vec a\vec a^H)\mathbf R_{nn}^{-1}\vec a=(\mu+\phi_s q)\vec a$，因此逆矩阵乘 $\vec a$ 等于 $\mathbf R_{nn}^{-1}\vec a/(\mu+\phi_s q)$。再用 $a_r=1$ 和 $\mathbf R_{ss}\vec e_r=\phi_s\vec a$，就得到式(5-13)。这一步另要求 $\mathbf R_{nn}$ 正定。
+
+此时 SDW-MWF 是 MVDR 输出再乘一个标量 Wiener 增益，并在 $\mu\to0^+$ 时趋近 MVDR。目标二阶矩满秩时没有这个简单关系。Doclo 等的 §2.3、式(13)～(15)讨论语音失真与残余噪声的权衡，但其中权重用于噪声抵消支路，不能把其式(14)直接当成本文声像估计权重。式(5-12)采用本章的 $\vec x=\vec s+\vec n$ 模型和参考声像，按上述分量代价求解。[Doclo、Spriet、Wouters 与 Moonen，2007，§2.3](https://hal.science/hal-00499178v1/document "citation")
+
+秩一模型中的参考响应因子及 MVDR 与 Wiener 增益的分解见 [Grimm、Lawin-Ore、Doclo 与 Freudenberger，2016，§2～3、式(7)、(9)～(16)](https://doi.org/10.1186/s13634-016-0375-6 "citation")。
 
 ### Frost 波束形成器：时域约束更新
 
 回到 §5.5 的 LCMV 频域闭式解：Frost 算法是它的一种经典时域在线实现；下面给出更新式，并与 GSC 的结构对照。
 
-§5.1 末提过它是滤波求和的自适应代表，这里把更新式写出来：每路麦接一段 $J$ 抽头 FIR，第 $m$ 路第 $j$ 抽头权重记 $w_{m,j}$，全权重向量 $\vec{w}$ 共 $MJ$ 个系数。约束是"看目标方向"的线性约束 $\mathbf{C}^H\vec{w}=\vec{f}$（比如每列约束钉住一个抽头时刻的目标响应），将观测按抽头时刻排列：先列当前时刻的 $M$ 路，再列前一时刻的 $M$ 路，直到 $J$ 组；$\vec x(l)\in\mathbb C^{MJ}$，$y(l)=\vec w^H(l)\vec x(l)$。此处 $\mu$ 改指自适应步长，与上一段 SDW 的权衡系数含义不同。更新分两步走：
+§5.1 末提过它是滤波求和的自适应代表。每路麦接一段 $J$ 抽头 FIR，第 $m$ 路第 $j$ 抽头权重记 $w_{m,j}$，全权重向量 $\vec{w}$ 共 $MJ$ 个系数。
+
+线性约束为 $\mathbf{C}^H\vec{w}=\vec{f}$，例如每列约束规定一个抽头时刻的目标响应。将观测按抽头时刻排列：先列当前时刻的 $M$ 路，再列前一时刻的 $M$ 路，直到 $J$ 组；$\vec x(l)\in\mathbb C^{MJ}$，$y(l)=\vec w^H(l)\vec x(l)$。
+
+此处 $\mu$ 改指自适应步长，与上一段 SDW 的权衡系数含义不同。更新分两步走：
 
 $$\begin{aligned}
 \vec v(l)&=\vec w(l)-\mu\vec x(l)y^*(l),\\
@@ -625,7 +637,7 @@ Frost 原文处理宽带实数抽头，并以总输出功率为目标；目标�
 |  | Frost（1972） | GSC |
 |---|---|---|
 | 域 | 时域 FIR 抽头 | 频域逐频点（TF-GSC）或时域皆可 |
-| 约束怎么装 | 投影矩阵 $\mathbf{P}$，每步拽回约束平面 | 结构吸收：固定上支路 + 阻塞矩阵，下支路无约束自适应 |
+| 约束实现方式 | 投影矩阵 $\mathbf{P}$，每步投影到约束可行集合 | 固定上支路 + 阻塞矩阵，下支路在约束零空间内自适应 |
 | 自适应算法 | 原始 Frost 使用带投影的 LMS；也可研究其他受约束更新 | 下支路可使用 LMS、NLMS、RLS 等无约束更新 |
 | 收敛与跟踪 | 由自适应算法、输入协方差特征值分布、步长和约束实现共同决定 | 还受阻塞矩阵、下支路输入统计和所选自适应算法影响；结构本身不保证比 Frost 更快 |
 | 失配症状 | 目标泄漏进 LMS，实际目标不再满足设计约束 | 目标泄漏进阻塞矩阵下支路，被当作干扰对消 |
@@ -636,7 +648,7 @@ Frost 用投影更新实现时域 LCMV；下一节的 GSC 用固定支路和阻�
 
 ### 5.6 广义旁瓣对消器（GSC）：约束下的自适应对消
 
-**广义旁瓣对消器**把 LCMV 约束吸收进结构，分两条支路。[Griffiths & Jim, *IEEE Transactions on Antennas and Propagation*, 1982](https://doi.org/10.1109/TAP.1982.1142739 "citation")
+**广义旁瓣对消器（Generalized Sidelobe Canceller，GSC）**用固定支路和阻塞矩阵实现 LCMV 约束，分两条支路。[Griffiths & Jim, *IEEE Transactions on Antennas and Propagation*, 1982](https://doi.org/10.1109/TAP.1982.1142739 "citation")
 
 ![图17 GSC 结构](../figures/fig17_gsc.png)
 
@@ -691,7 +703,7 @@ g_\ell &= \mathbf{B}^H\vec{a}(60°) = 1 - e^{+\mathrm{j}2.7207}\\
 |g_\ell| &= 2|\sin\tfrac{\psi}{2}| = 1.9559.
 \end{aligned}$$
 
-两路相减反而把干扰放大了近 2 倍（因为 60° 方向上两麦相位差 155.9°，接近反相，相减近乎同相叠加）——没关系，它只是一份“干扰参考样本”。
+两路相减把干扰幅度放大了近 2 倍，因为 60° 方向上两麦相位差 155.9°，接近反相，相减近乎同相叠加。下支路的用途是提供与上支路干扰相关的参考，不要求这个中间信号本身已经降噪。
 
 <p class="keep-next"><strong>第 3 步：拿一个具体快拍走一遍</strong></p>
 
@@ -714,7 +726,7 @@ d &= \vec{w}_u^H\vec{x} = \dfrac{2.0000 + 0.0873+0.4086\mathrm{j}}{2}\\
 
 下支路输出：$u = \mathbf{B}^H\vec{x} = 2.0000 - (0.0873+0.4086\mathrm{j}) = 1.9127-0.4086\mathrm{j}$（$= g_\ell\cdot i$，纯干扰，目标分量为 0）。
 
-**第 4 步：自适应滤波器学出的那个系数**
+**第 4 步：由已知传递关系求解析对消系数**
 
 对消器要减掉泄漏项 $g_ui$，而参考为 $u=g_\ell i$，故已知传递关系时的直接乘子为 $g_u/g_\ell$。若再假定 $E|i|^2>0$、$E[i s^*]=0$ 且无其他噪声，它也等于总体最小均方输出解：
 
@@ -869,7 +881,28 @@ $$\hat G=1-\frac{7/30}{53/15}=\frac{99}{106}\approx0.9340。$$
 
 ### 5.8 球谐域波束形成：以球阵为例
 
-这里以球面阵列为例说明球谐表示；球谐是球面方向上的数学基，使用这种表示并不意味着任意阵列都能稳定采样它。为避免不同软件归一化混用，本节选择复数正交球谐 $Y_n^m$，方位角和余纬角合记为 $\Omega$；余纬角从 $+z$ 轴量起。面积元素为 $d\Omega=\sin\vartheta\,d\vartheta\,d\varphi$。
+这里以球面阵列为例说明球谐表示；球谐是球面方向上的数学基，使用这种表示并不意味着任意阵列都能稳定采样它。本节选择复数正交球谐 $Y_n^m$，用 $\Omega=(\vartheta,\alpha)$ 表示方向：余纬角 $\vartheta$ 从 $+z$ 轴量起，范围为 $[0,\pi]$；方位角 $\alpha$ 从 $+x$ 轴朝 $+y$ 轴量起，取 $[0,2\pi)$。面积元素为 $d\Omega=\sin\vartheta\,d\vartheta\,d\alpha$。
+
+第3章的几何方位角 $\theta$ 从 $+y$ 轴朝 $+x$ 轴量起，俯仰角从水平面量起；为与球谐余纬区分，这里将后者写成 $\phi_{\mathrm{el}}$。两套角度描述同一单位方向，转换为
+
+$$\begin{aligned}
+\alpha&=(\pi/2-\theta)\bmod 2\pi,\\
+\vartheta&=\pi/2-\phi_{\mathrm{el}},\\
+\vec u&=\begin{bmatrix}
+\sin\vartheta\cos\alpha\\
+\sin\vartheta\sin\alpha\\
+\cos\vartheta
+\end{bmatrix}\\
+&=\begin{bmatrix}
+\cos\phi_{\mathrm{el}}\sin\theta\\
+\cos\phi_{\mathrm{el}}\cos\theta\\
+\sin\phi_{\mathrm{el}}
+\end{bmatrix}.
+\end{aligned}$$
+
+轴向复算：指向 $+y$ 时，几何角 $(\theta,\phi_{\mathrm{el}})=(0,0)$ 对应 $(\vartheta,\alpha)=(\pi/2,\pi/2)$，两式均给出 $[0,1,0]^\top$；指向 $+x$ 时，几何方位为 $\pi/2$，球谐方位为0。指向 $+z$ 时 $\phi_{\mathrm{el}}=\pi/2$、$\vartheta=0$，方位角不唯一，但单位方向始终为 $[0,0,1]^\top$。
+
+软件参数名必须按定义映射。例如SciPy的 `sph_harm_y(n, m, theta, phi)` 中，`theta` 是本节的余纬 $\vartheta$，`phi` 是本节的方位 $\alpha$；不能把几何方位 $\theta$ 按同名直接传入。[SciPy官方参数说明](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.sph_harm_y.html "citation")（2026-10-04核实）。
 
 设球半径为 $r$，波数 $\kappa=2\pi f/c$，与 STFT 频点索引 $k$ 区分。对于**开放球、单位入射平面波** $e^{+\mathrm j\kappa r\vec u\cdot\hat{\vec r}}$，定义如下：
 
@@ -958,7 +991,9 @@ Kumatani 等综述的指定房间实验比较了小球阵与大线阵，几何�
 
 #### 5.9.1 可执行基线与上线检查
 
-[`beamforming.py`](../codes/chapters/ch05/core/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定统一为输出 $Y=\vec w^H\vec x$，多通道谱形状统一为 `通道 × 频点 × 帧`；逐频点权重为 `频点 × 通道`。
+[`beamforming.py`](../codes/chapters/ch05/core/beamforming.py) 提供 DSB、弥散场相干矩阵、加载超指向/MVDR、LCMV、GSC 阻塞矩阵和 Wiener 增益的原创 NumPy 基线。权重约定为输出 $Y=\vec w^H\vec x$；该波束基线的 `apply_beamformer()` 接收 `通道 × 频点 × 帧`（CFT）谱，逐频点权重为 `频点 × 通道`（FM），输出为 `频点 × 帧`（FT）。
+
+第8章的掩码接口采用另一种明确轴序：`masked_spatial_covariance()` 和 `mask_mvdr_2x2()` 接收 `频点 × 通道 × 帧`（FMT）复谱与FT掩码。从上述CFT谱接入时，先用 `spectra_cft.swapaxes(0, 1)` 转成FMT；不能只改形状注释。`mask_mvdr_2x2()` 返回FT输出和FM权重，后者可按同一 $\vec w^H\vec x$ 约定用于波束基线。接口及旁路诊断见[第8章教学实现](08_speech-separation.md#sec-8-7)。
 
 函数用线性方程求解代替显式求逆；未加载协方差病态、LCMV 约束不独立或空统计量都会报错。正文算例的 DSB 单位响应、Capon 数值、MVDR 权重、LCMV 双约束、GSC 阻塞和 Wiener 增益由 [`test_codes_doa_beam.py`](../tests/test_codes_doa_beam.py) 独立回归，串联示例见 [`ch02_05_baselines.py`](../codes/chapters/ch00/cross_chapter/ch02_05_baselines.py)。
 
@@ -1008,7 +1043,8 @@ Cohen 的[官方软件页](https://israelcohen.com/software/ "citation")介绍�
 | MVDR | 无失真约束下最小输出噪声 | 噪声 SCM、导向矢量或 RTF | 约束向量等于真实目标传递向量 | SCM 误差、目标泄漏、导向失配 | SCM 估计与矩阵求解 |
 | LCMV | 多个线性约束下最小输出功率 | SCM、全部约束向量与响应 | 约束模型匹配且可行 | 约束占用自由度、约束失配 | MVDR 外加小型约束矩阵求解 |
 | GSC | 在约束零空间内自适应对消 | 固定支路、阻塞矩阵、噪声参考 | 固定支路满足约束且精确阻塞 | 目标泄漏到阻塞支路 | 阻塞变换与自适应滤波 |
-| MWF/SDW-MWF | 最小化目标估计均方误差 | 目标与噪声 SCM、参考麦 | 不保证严格无失真 | 统计失配和目标—噪声权衡设置错误 | SCM 估计与矩阵求解 |
+| MWF | 最小化指定参考目标的MSE | 目标与噪声二阶矩、零交叉二阶矩、参考麦 | 允许参考目标失真 | 统计失配或参考目标选错 | 二阶矩估计与矩阵求解 |
+| SDW-MWF | 最小化分量代价 $J_n+J_s/\mu$ | 两分量二阶矩、参考麦、$\mu>0$ | 不保证严格无失真 | 统计失配和失真—噪声权重不适当 | 二阶矩估计与矩阵求解 |
 | 掩码 + MVDR/GEV | 网络估计 SCM，解析层求权重 | 多通道谱、训练得到的掩码 | MVDR 还需正确 RTF；GEV 需定尺度 | 掩码泄漏、训练分布和阵列变化 | 网络推理、SCM 与矩阵求解 |
 | 端到端滤波 | 按训练损失直接估计权重或输出 | 训练数据与固定输入定义 | 由损失和结构决定，通常无硬保证 | 域外阵列、未知设备、目标失真 | 由模型、上下文和硬件决定 |
 

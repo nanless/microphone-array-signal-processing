@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[07_wpe-dereverberation.md](07_wpe-dereverberation.md) ｜ 下一篇：[09_source-tracking.md](09_source-tracking.md)
 
@@ -53,7 +53,7 @@ X_m(f,k)&\approx\sum_{n=1}^{N}A_{mn}(f)S_n(f,k)\\
 &\quad+V_m(f,k).
 \end{aligned}\tag{8-2}$$
 
-其中 $k$ 是帧号，$A_{mn}(f)$ 是 $h_{mn}$ 在频率 $f$ 处的近似频响。写成向量形式为 $\mathbf X(f,k)=\mathbf A(f)\mathbf S(f,k)+\mathbf V(f,k)$：$\mathbf X\in\mathbb C^{M\times1}$、$\mathbf A\in\mathbb C^{M\times N}$、$\mathbf S\in\mathbb C^{N\times1}$、$\mathbf V\in\mathbb C^{M\times1}$。
+其中 $k$ 是帧号，$A_{mn}(f)$ 是 $h_{mn}$ 在频率 $f$ 处的近似频响。写成向量形式为 ${\vec X}(f,k)=\mathbf A(f){\vec S}(f,k)+{\vec V}(f,k)$：${\vec X}\in\mathbb C^{M\times1}$、$\mathbf A\in\mathbb C^{M\times N}$、${\vec S}\in\mathbb C^{N\times1}$、${\vec V}\in\mathbb C^{M\times1}$。
 
 这个窄带近似要求分析窗相对通道冲激响应的有效长度足够长，并且源与通道在窗内变化不快。$T_{60}$ 不能单独给出一个“超过多少就失效”的通用阈值；窗长、早晚期能量分布、帧移和允许误差都会影响近似质量。
 
@@ -62,7 +62,7 @@ X_m(f,k)&\approx\sum_{n=1}^{N}A_{mn}(f)S_n(f,k)\\
 $$\begin{aligned}
 a_m(f,\theta)&=e^{\mathrm j(m-1)\phi},\\
 \phi&=2\pi f d\sin\theta/c,\\
-\mathbf a&=[a_1,\ldots,a_M]^\top.
+{\vec a}&=[a_1,\ldots,a_M]^\top.
 \end{aligned}\tag{8-3}$$
 
 例如麦间距 $d=4$ cm、声速 $c=343$ m/s、目标方向 $\theta=30°$。按第 5 章约定，麦 1 在左端，正角声源位于 $+x$ 一侧，$\tau_{21}=t_2-t_1=-d\sin\theta/c\approx-58.3\,\mu\mathrm{s}$。在 $f=2$ kHz 时，相位差的绝对值为 $2\pi f|\tau_{21}|\approx0.733$ rad，即约 42°；以麦 1 为参考的 4 麦导向矢量约为 $[1,e^{+\mathrm j42°},e^{+\mathrm j84°},e^{+\mathrm j126°}]^\top$。
@@ -72,22 +72,22 @@ a_m(f,\theta)&=e^{\mathrm j(m-1)\phi},\\
 最小方差无失真响应（Minimum Variance Distortionless Response，MVDR）和广义特征值（Generalized Eigenvalue，GEV）波束形成直接使用空间协方差矩阵（Spatial Covariance Matrix，SCM）；MNMF 也以源相关的 SCM 描述传播。在下述统计条件下，省略频点与帧参数，可写
 
 $$\begin{aligned}
-\mathbf R&=E[\mathbf X\mathbf X^H],\\
+\mathbf R&=E[{\vec X}{\vec X}^H],\\
 \mathbf R&\approx\mathbf A\mathbf R_s\mathbf A^H+\mathbf R_v.
 \end{aligned}\tag{8-4}$$
 
-这个相加式假定当前统计区间内传播矩阵可视为固定，且 $E[\mathbf S\mathbf V^H]=0$；否则展开外积还会出现 $\mathbf A E[\mathbf S\mathbf V^H]$ 及其共轭转置。这里的 $R$ 是未减均值的二阶矩；只有信号已去均值或均值为零时，才与严格定义的协方差相等。源之间是否相关体现在 $R_s$ 的非对角项，不能再无条件把它写成对角矩阵。
+这个相加式假定当前统计区间内传播矩阵可视为固定，且 $E[{\vec S}{\vec V}^H]=0$；否则展开外积还会出现 $\mathbf A E[{\vec S}{\vec V}^H]$ 及其共轭转置。这里的 ${\mathbf R}$ 是未减均值的二阶矩；只有信号已去均值或均值为零时，才与严格定义的协方差相等。源之间是否相关体现在 ${\mathbf R}_s$ 的非对角项，不能再无条件把它写成对角矩阵。
 
 复角中心高斯混合模型（Complex Angular Central Gaussian Mixture Model，cACGMM）先把每个观测归一化到复单位球面，拟合只描述方向分布的形状矩阵。它不把未归一化的观测功率 SCM 直接当作概率密度。
 
-GSS 和部分深度方法先由 cACGMM 或网络估计时频掩码，再用原始 $\mathbf X\mathbf X^H$ 加权计算目标与干扰 SCM；加权统计步骤见第 5 章 §5.9 的式(5-21)。
+GSS 和部分深度方法先由 cACGMM 或网络估计时频掩码，再用原始 ${\vec X}{\vec X}^H$ 加权计算目标与干扰 SCM；加权统计步骤见第 5 章 §5.9 的式(5-21)。
 
 波束形成一次输出通常针对一个目标，但可以用不同导向或掩码构造多组权重，分别输出多个人的信号。因此“波束形成”和“语音分离”不是互斥方法：GSS 正是先估掩码，再为每个目标计算一组波束权重。下面按解混矩阵、空间聚类和监督学习三条路线比较。
 
 | 路线 | 代表 | 思想 | 局限 |
 |---|---|---|---|
 | 经典盲源分离（BSS） | 独立成分分析（Independent Component Analysis，ICA）/独立向量分析（Independent Vector Analysis，IVA） | 假设各说话人统计独立，找一组解混矩阵让输出互相独立；IVA 用“同一声源跨频点相关”解决逐频点排列混乱（置换问题） | 这里的方阵 ICA/IVA 要求确定混合及可辨识条件；不能推广到所有 BSS |
-| 空间混合模型（免训练） | **cACGMM → GSS** | 见下文展开 | 依赖较长的上下文，计算量随通道数、源数、时频点数和迭代次数增加；GPU 并行化的适用边界见本节“GSS 的源数与计算规模” |
+| 空间混合模型（免训练） | **cACGMM → GSS** | 见下文展开 | 依赖较长的上下文，计算量随通道数、源数、时频点数和迭代次数增加；规模与 GPU 并行化边界见[§8.4.4“协方差、波束权重与适用边界”](#sec-8-4-4) |
 | 深度学习分离 | 掩码网络、深度聚类、Conv-TasNet | 用带答案的混合录音训练模型，再估计每个声源的信号 | 依赖训练数据；换房间、设备或说话人后需重测 |
 
 表中的**深度聚类（deep clustering）**先把每个时频点映射成一个数值向量，再把相似的向量分到同一说话人；**Conv-TasNet** 则直接处理波形的学习表示，不先计算传统短时傅里叶变换。它们解决的问题相同，但输入表示和分离步骤不同。模型结构及其适用条件见 §8.6。
@@ -141,7 +141,7 @@ AEC 与降噪的顺序也不是脱离统计假设的固定结论。[Integrated_A
 | 本章模块 | 图 23 中的位置 | 作用 |
 |---|---|---|
 | diarization / GSS | “说话人分割 → GSS/cACGMM 掩码”支路 | diarization 约束活动时间与跨频点置换；它不直接输出 SCM 或音频 |
-| 目标/干扰 SCM 与解析波束 | “GSS 掩码 + 同阶段 WPE 输出未方向归一 STFT → SCM → DSB/MVDR/GEV”支路 | 掩码只给权重，SCM 仍由 $\mathbf Y\mathbf Y^H$ 加权计算；不能改用单位向量 $\mathbf z$ |
+| 目标/干扰 SCM 与解析波束 | “GSS 掩码 + 同阶段 WPE 输出未方向归一 STFT → SCM → DSB/MVDR/GEV”支路 | 掩码只给权重，SCM 仍由 ${\vec Y}{\vec Y}^H$ 加权计算；不能改用单位向量 ${\vec z}$ |
 | 神经分离 / CSS | WPE 后的替代音频路径，可绕过解析波束后接单通道增强 | 是否输出固定多流、使用未来上下文和跨块排列，都要单独说明 |
 | DNN 后滤波 / DNN 后端 | 波束形成或分离后的单通道增强或后端 | 独立改写复谱的网络通常放在多通道 WPE/MVDR 之后，以免破坏空间相位 |
 | 降噪（Noise Suppression，NS）/自动增益控制（Automatic Gain Control，AGC）/语音活动检测（VAD）/关键词检出（Keyword Spotting，KWS） | 单通道增强与可选 KWS 旁路；VAD 属控制面 | 各模块按目标任务启用，不在本章展开 |
@@ -154,11 +154,11 @@ AEC 与降噪的顺序也不是脱离统计假设的固定结论。[Integrated_A
 
 #### ICA 的可辨识条件与解混约定
 
-在无附加噪声、确定混合且 $\mathbf A_f$ 可逆的模型中，令 $\mathbf W_f\in\mathbb C^{M\times M}$ 为解混矩阵。第 $n$ 行存储列向量 $\mathbf w_{nf}$ 的共轭转置：
+在无附加噪声、确定混合且 $\mathbf A_f$ 可逆的模型中，令 $\mathbf W_f\in\mathbb C^{M\times M}$ 为解混矩阵。第 $n$ 行存储列向量 ${\vec w}_{nf}$ 的共轭转置：
 
 $$\begin{aligned}
-\mathbf y_f(k)&=\mathbf W_f\mathbf x_f(k),\\
-y_{nf}(k)&=\mathbf w_{nf}^H\mathbf x_f(k).
+{\vec y}_f(k)&=\mathbf W_f{\vec x}_f(k),\\
+y_{nf}(k)&={\vec w}_{nf}^H{\vec x}_f(k).
 \end{aligned}\tag{8-6}$$
 
 ICA 希望不同输出在统计上独立。零相关只约束二阶矩，通常比独立性弱。即使确实独立，也还要检查模型是否可辨识：取两个独立标准实高斯变量，联合密度仅依赖 $s_1^2+s_2^2$。用 45° 正交矩阵旋转后，平方和、联合密度和单位协方差都不变，两个新分量仍独立。于是仅凭这种静态分布不能找回原来的两个轴。
@@ -175,14 +175,14 @@ ICA 希望不同输出在统计上独立。零相关只约束二阶矩，通常�
 
 标准实现仍是整段迭代，在线版本需要递推改写；强混响可能使短时窄带近似失配；说话人包络高度相关会削弱联合模型区分源的线索；短语音则减少统计支持。不能把这些情况一律解释成原声源不再独立。它常作为免训练分离基线。
 
-一次迭代怎样真正改变解混矩阵，见[练习 E08-08](#e08-08)：先用跨频点输出范数形成权重，再解线性方程，最后按加权二次型归一化。它把下面的排列直觉接到可计算的迭代投影步骤。
+固定本轮加权矩阵之后，怎样更新一个解混行，见[练习 E08-08](#e08-08)：题目直接给定 ${\mathbf V}$，只复算线性方程求解与加权二次型归一化的 IP 子步骤。下面的式(8-8)另说明完整 AuxIVA 怎样由跨频点输出范数构造 ${\mathbf V}$；该练习没有执行这一步，也没有运行完整盲分离。
 
-设统计帧数为 $T$。在每帧把同一个源的所有频点组成向量，取球对称复 Laplace 工作模型 $p(\mathbf y_n)\propto\exp(-2\|\mathbf y_n\|_2)$。复数线性变换的实 Jacobian 为 $|\det W_f|^2$；负对数按帧数 $T$ 归一后为
+设统计帧数为 $T$。在每帧把同一个源的所有频点组成向量，取球对称复 Laplace 工作模型 $p({\vec y}_n)\propto\exp(-2\|{\vec y}_n\|_2)$。复数线性变换的实 Jacobian 为 $|\det {\mathbf W}_f|^2$；负对数按帧数 $T$ 归一后为
 
 $$\begin{aligned}
 r_n(k)&=\sqrt{\sum_f|y_{nf}(k)|^2},\\
 J_{\rm IVA}&=\frac2T\sum_{n,k}r_n(k)\\
-&\quad-2\sum_f\log|\det W_f|.
+&\quad-2\sum_f\log|\det {\mathbf W}_f|.
 \end{aligned}\tag{8-7}$$
 
 第一项偏好符合联合源模型的输出；行列式项阻止把所有输出缩到零来降低代价。辅助函数的关键一步是：对 $u\ge0,u_0>0$，凹函数的切线上界给出 $2\sqrt u\le u/\sqrt{u_0}+\sqrt{u_0}$。把旧输出的平方范数代作 $u_0$，便得到按旧 $r_n$ 加权的二次型。随后逐行求解和归一化，而不是凭经验选梯度步长。
@@ -191,14 +191,14 @@ J_{\rm IVA}&=\frac2T\sum_{n,k}r_n(k)\\
 
 $$\begin{aligned}
 r_n(t)&=\sqrt{\sum_f|y_{nf}(t)|^2},\\
-V_{nf}&=\frac1T\sum_{t=1}^{T}\frac{\vec x_f(t)\vec x_f^H(t)}{r_n(t)},\\
-\vec u&=(W_fV_{nf})^{-1}\vec e_n,\\
-\vec w_{nf}&=\frac{\vec u}{\sqrt{\vec u^H V_{nf}\vec u}}.
+{\mathbf V}_{nf}&=\frac1T\sum_{t=1}^{T}\frac{\vec x_f(t)\vec x_f^H(t)}{r_n(t)},\\
+\vec u&=({\mathbf W}_f{\mathbf V}_{nf})^{-1}\vec e_n,\\
+\vec w_{nf}&=\frac{\vec u}{\sqrt{\vec u^H {\mathbf V}_{nf}\vec u}}.
 \end{aligned}\tag{8-8}$$
 
-这里 $T$ 为统计帧数，$\vec e_n$ 为第 $n$ 项为 1 的 $M$ 维基向量，$V_{nf}$ 为 $M\times M$ Hermitian 矩阵；使用求解器解方程，不显式形成矩阵逆。需有 $r_n(t)>0$、正定的 $V_{nf}$ 和可逆 $W_f$。每更新一行就把 $\vec w_{nf}^H$ 写回 $W_f$，后续行读取已更新的矩阵，而本轮权重保持固定；静音地板、加载和初始化是另外的实现选择。
+这里 $T$ 为统计帧数，$\vec e_n$ 为第 $n$ 项为 1 的 $M$ 维基向量，${\mathbf V}_{nf}$ 为 $M\times M$ Hermitian 矩阵；使用求解器解方程，不显式形成矩阵逆。需有 $r_n(t)>0$、正定的 ${\mathbf V}_{nf}$ 和可逆 ${\mathbf W}_f$。每更新一行就把 $\vec w_{nf}^H$ 写回 ${\mathbf W}_f$，后续行读取已更新的矩阵，而本轮权重保持固定；静音地板、加载和初始化是另外的实现选择。
 
-这一路线来自 [Ono 2011](https://doi.org/10.1109/ASPAA.2011.6082320)，可对读 [pyroomacoustics v0.10.0 的 `auxiva.py`](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/bss/auxiva.py)。该实现的 Laplace 分母使用 $2r_n(t)$，与式(8-8)有整体尺度差异：$V$ 减半时，归一后的解混列放大 $\sqrt2$，方向不变；不能用未回投影的幅度逐项声称两种约定相同。
+这一路线来自 [Ono 2011](https://doi.org/10.1109/ASPAA.2011.6082320)，可对读 [pyroomacoustics v0.10.0 的 `auxiva.py`](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/bss/auxiva.py)。该实现的 Laplace 分母使用 $2r_n(t)$，与式(8-8)有整体尺度差异：${\mathbf V}$ 减半时，归一后的解混列放大 $\sqrt2$，方向不变；不能用未回投影的幅度逐项声称两种约定相同。
 
 数学单调性针对相同模型、合法正定统计和精确更新；加入地板、加载、重置后，要重新说明目标或把目标值仅作诊断。原始算法依据为上述 Ono 论文，本书的尺度与复数代数也可逐项对读 [ssspy 固定实现](https://github.com/tky823/ssspy/blob/38b9389e8b1914422561f1936d9b28d042d62d2c/ssspy/bss/iva.py)。
 
@@ -208,7 +208,7 @@ V_{nf}&=\frac1T\sum_{t=1}^{T}\frac{\vec x_f(t)\vec x_f^H(t)}{r_n(t)},\\
 
 它增加了基数、谱参数及其交替更新；具体成本和初始化敏感性取决于配置，不能仅凭方法名断言总高于 AuxIVA。复杂音乐、重叠笑声和强混响可能不满足低秩或独立性假设，需用目标数据验证。[E08-09](#e08-09)用两频点、两帧的乘法解释“谱基”和“激活”，并说明分解的尺度歧义。
 
-记 $\ell=1,\ldots,K$ 为谱基编号。为避免与前文帧号 $k$ 混淆，这里用 $t$ 表示帧；$B_n\in\mathbb R_+^{F\times K}$、$H_n\in\mathbb R_+^{K\times T}$：
+记 $\ell=1,\ldots,K$ 为谱基编号。为避免与前文帧号 $k$ 混淆，这里用 $t$ 表示帧；${\mathbf B}_n\in\mathbb R_+^{F\times K}$、${\mathbf H}_n\in\mathbb R_+^{K\times T}$：
 
 $$\lambda_{nft}=\sum_{\ell=1}^K B_{nf\ell}H_{n\ell t}.\tag{8-9}$$
 
@@ -217,77 +217,77 @@ $$\lambda_{nft}=\sum_{\ell=1}^K B_{nf\ell}H_{n\ell t}.\tag{8-9}$$
 $$\begin{aligned}
 J_{\rm ILRMA}&=\sum_{n,f,t}\frac{|y_{nft}|^2}{\lambda_{nft}}\\
 &+\sum_{n,f,t}\log\lambda_{nft}\\
-&-2T\sum_f\log|\det W_f|.
+&-2T\sum_f\log|\det {\mathbf W}_f|.
 \end{aligned}\tag{8-10}$$
 
-**复频点与实端点。** 这些proper复密度及平方Jacobian用于内部复频点的工作模型。实波形的DC分量、偶数长度FFT的Nyquist分量为实数；非零方差的实随机变量不能满足同一proper复高斯假设。若端点采用实高斯及实解混，方差项系数为 $1/2$，变换Jacobian为 $|\det W|$；不能把上述复密度直接称为端点的精确密度。
+**复频点与实端点。** 这些proper复密度及平方Jacobian用于内部复频点的工作模型。实波形的DC分量、偶数长度FFT的Nyquist分量为实数；非零方差的实随机变量不能满足同一proper复高斯假设。若端点采用实高斯及实解混，方差项系数为 $1/2$，变换Jacobian为 $|\det {\mathbf W}|$；不能把上述复密度直接称为端点的精确密度。
 
 若软件将所有单边频点统一按复数准则处理，需要说明这是实现的工作准则；改变端点权重或变量约束后，更新与单调性也要针对实际目标核对。MNMF、FastMNMF的复高斯模型有同一边界。实端点密度的最小展开见[第7章概率模型](07_wpe-dereverberation.md#sec-u-0b5dac507c)。
 
-固定谱模型后，空间 IP 更新仍用式(8-8)的求解与归一化，但 $V_{nf}$ 中的权重换成 $1/\lambda_{nft}$。固定 $W$ 后，令 $P_{nft}=|y_{nft}|^2$，以下用逐元素运算紧凑表示 NMF 更新：
+固定谱模型后，空间 IP 更新仍用式(8-8)的求解与归一化，但 ${\mathbf V}_{nf}$ 中的权重换成 $1/\lambda_{nft}$。固定 ${\mathbf W}$ 后，令 $P_{nft}=|y_{nft}|^2$，以下用逐元素运算紧凑表示 NMF 更新：
 
 $$\begin{aligned}
-U_n&=P_n\oslash\lambda_n^2,\\
-D_n&=1\oslash\lambda_n,\\
-B_n&\leftarrow B_n\odot\sqrt{\frac{U_nH_n^\top}{D_nH_n^\top}},\\
-H_n&\leftarrow H_n\odot\sqrt{\frac{B_n^\top U_n}{B_n^\top D_n}}.
+{\mathbf U}_n&={\mathbf P}_n\oslash\lambda_n^2,\\
+{\mathbf D}_n&=1\oslash\lambda_n,\\
+{\mathbf B}_n&\leftarrow {\mathbf B}_n\odot\sqrt{\frac{{\mathbf U}_n{\mathbf H}_n^\top}{{\mathbf D}_n{\mathbf H}_n^\top}},\\
+{\mathbf H}_n&\leftarrow {\mathbf H}_n\odot\sqrt{\frac{{\mathbf B}_n^\top {\mathbf U}_n}{{\mathbf B}_n^\top {\mathbf D}_n}}.
 \end{aligned}\tag{8-11}$$
 
 $\odot,\oslash$ 表示同形数组逐元素运算；式中的分式、平方和根号也逐元素计算，普通并置表示矩阵乘法。
 
-先更新 $B_n$，重算 $\lambda_n=B_nH_n$，据新功率重算 $U_n,D_n$ 后再更新 $H_n$。这里的 $D_n$ 只是该小步的逐元素倒数矩阵，不是回投影中的尺度矩阵。
+先更新 ${\mathbf B}_n$，重算 $\lambda_n={\mathbf B}_n{\mathbf H}_n$，据新功率重算 ${\mathbf U}_n,{\mathbf D}_n$ 后再更新 ${\mathbf H}_n$。这里的 ${\mathbf D}_n$ 只是该小步的逐元素倒数矩阵，不是回投影中的尺度矩阵。
 
-固定 $W$ 的目标是 $\sum(P/\lambda+\log\lambda)$；当 $P>0$ 时，它与 Itakura–Saito 散度仅差常数。零初始化可能因乘法而始终为零，通常使用正初值，再明确功率地板的工程口径。E08-19 展开一次基和激活更新；它不把更低的拟合代价当成更好的真实分离。
+固定 ${\mathbf W}$ 的目标是 $\sum(P/\lambda+\log\lambda)$；当 $P>0$ 时，它与 Itakura–Saito 散度仅差常数。零初始化可能因乘法而始终为零，通常使用正初值，再明确功率地板的工程口径。E08-19 展开一次基和激活更新；它不把更低的拟合代价当成更好的真实分离。
 
 #### MNMF 的满秩模型与维纳重构
 
 **MNMF（多通道 NMF，Multichannel NMF）**。MNMF 同样使用低秩源谱模型，但以满秩空间协方差描述传播，不要求方阵解混矩阵可逆，因此可以表示欠定混合。谱基、激活和空间协方差需要联合估计，参数数量和局部最优使初值十分重要。可利用 AuxIVA 或 ILRMA 结果辅助初始化，但欠定模型中多出的源还需另作设置。本章未在相同硬件和输入下测定这些方法的速度，不按方法名推断固定运行时长。
 
-以 $\mathbf c_{nft}\in\mathbb C^M$ 表示第 $n$ 个源在所有麦克风上的源图像。满秩工作模型取不同源图像统计独立，协方差 $R_{nft}=\lambda_{nft}G_{nf}$；$G_{nf}$ 是空间形状，$\lambda_{nft}$ 可由 NMF 给出。其乘积才是带功率的协方差。总模型和负对数似然为
+以 ${\vec c}_{nft}\in\mathbb C^M$ 表示第 $n$ 个源在所有麦克风上的源图像。满秩工作模型取不同源图像统计独立，协方差 ${\mathbf R}_{nft}=\lambda_{nft}{\mathbf G}_{nf}$；${\mathbf G}_{nf}$ 是空间形状，$\lambda_{nft}$ 可由 NMF 给出。其乘积才是带功率的协方差。总模型和负对数似然为
 
 $$\begin{gathered}
-R_{nft}=\lambda_{nft}G_{nf},\\
-R_{ft}=\sum_nR_{nft},\\
-\mathbf x_{ft}\sim\mathcal{CN}(0,R_{ft}),\\
+{\mathbf R}_{nft}=\lambda_{nft}{\mathbf G}_{nf},\\
+{\mathbf R}_{ft}=\sum_n{\mathbf R}_{nft},\\
+{\vec x}_{ft}\sim\mathcal{CN}(0,{\mathbf R}_{ft}),\\
 \begin{aligned}
-J_{\rm MNMF}&=\sum_{f,t}\log\det R_{ft}\\
-&\quad+\sum_{f,t}\mathbf x_{ft}^H R_{ft}^{-1}\mathbf x_{ft}.
+J_{\rm MNMF}&=\sum_{f,t}\log\det {\mathbf R}_{ft}\\
+&\quad+\sum_{f,t}{\vec x}_{ft}^H {\mathbf R}_{ft}^{-1}{\vec x}_{ft}.
 \end{aligned}
 \end{gathered}\tag{8-12}$$
 
-这里要求总协方差正定；标准满秩模型通常也取 $G_{nf}$ 正定。用 $G$ 的迹归一并反向补偿 $\lambda$ 可消除两者的尺度歧义。即使两种源分解得到完全相同的 $R_{ft}$，它们也可能给出不同的单源结果；E08-20 用三个源、两个麦克风展示这一点。
+这里要求总协方差正定；标准满秩模型通常也取 ${\mathbf G}_{nf}$ 正定。用 ${\mathbf G}$ 的迹归一并反向补偿 $\lambda$ 可消除两者的尺度歧义。即使两种源分解得到完全相同的 ${\mathbf R}_{ft}$，它们也可能给出不同的单源结果；E08-20 用三个源、两个麦克风展示这一点。
 
 模型拟合后，用多通道维纳滤波（Multichannel Wiener Filter，MWF）取条件均值：
 
-$$\widehat{\mathbf c}_{nft}=R_{nft}R_{ft}^{-1}\mathbf x_{ft}.\tag{8-13}$$
+$$\widehat{{\vec c}}_{nft}={\mathbf R}_{nft}{\mathbf R}_{ft}^{-1}{\vec x}_{ft}.\tag{8-13}$$
 
-实际先解 $R_{ft}\mathbf u=\mathbf x_{ft}$，再左乘 $R_{nft}$。两个矩阵一般不交换，不能颠倒次序。选其第 $r$ 个元素才得到参考麦 $r$ 的源图像。若模型已包含所有分量，总和必为输入；这个恒等式不证明每个源都估准，也不保证目标无失真。该模型与重构定义见 [FastMNMF 原论文 §II-A，式(1)～(4)](https://www.eurasip.org/Proceedings/Eusipco/eusipco2019/Proceedings/papers/1570533283.pdf)。
+实际先解 ${\mathbf R}_{ft}{\vec u}={\vec x}_{ft}$，再左乘 ${\mathbf R}_{nft}$。两个矩阵一般不交换，不能颠倒次序。选其第 $r$ 个元素才得到参考麦 $r$ 的源图像。若模型已包含所有分量，总和必为输入；这个恒等式不证明每个源都估准，也不保证目标无失真。该模型与重构定义见 [FastMNMF 原论文 §II-A，式(1)～(4)](https://www.eurasip.org/Proceedings/Eusipco/eusipco2019/Proceedings/papers/1570533283.pdf)。
 
 #### FastMNMF 的共同合同对角化
 
-MNMF 反复处理随时频点变化的满矩阵。FastMNMF 增加结构约束：同一频点的全部源空间矩阵，能用一个可逆的 $Q_f$ 同时作合同对角化：
+MNMF 反复处理随时频点变化的满矩阵。FastMNMF 增加结构约束：同一频点的全部源空间矩阵，能用一个可逆的 ${\mathbf Q}_f$ 同时作合同对角化：
 
 $$\begin{aligned}
-Q_fG_{nf}Q_f^H&=\operatorname{diag}(g_{nf}),\\
-\mathbf z_{ft}&=Q_f\mathbf x_{ft},\\
+{\mathbf Q}_f{\mathbf G}_{nf}{\mathbf Q}_f^H&=\operatorname{diag}({\vec g}_{nf}),\\
+{\vec z}_{ft}&={\mathbf Q}_f{\vec x}_{ft},\\
 d_{ftm}&=\sum_n\lambda_{nft}g_{nfm}.
 \end{aligned}\tag{8-14}$$
 
-$Q_f$ 为 $M\times M$，$g_{nf}$ 为 $M$ 维非负向量，$d_{ftm}$ 是变换后第 $m$ 个通道的总方差。$Q_f$ 不必是酉矩阵，也不是为每个源各找一套特征向量。这个约束使变换域协方差为对角阵，许多矩阵运算变成逐元素运算；$Q_f$ 自身仍需更新。
+${\mathbf Q}_f$ 为 $M\times M$，${\vec g}_{nf}$ 为 $M$ 维非负向量，$d_{ftm}$ 是变换后第 $m$ 个通道的总方差。${\mathbf Q}_f$ 不必是酉矩阵，也不是为每个源各找一套特征向量。这个约束使变换域协方差为对角阵，许多矩阵运算变成逐元素运算；${\mathbf Q}_f$ 自身仍需更新。
 
-**从协方差到完整目标。** 这里采用与MNMF相同的proper复高斯工作模型，并要求 $Q_f$ 可逆、所有 $d_{ftm}>0$。原麦克风坐标中的总协方差是 $R_{ft}=Q_f^{-1}\operatorname{diag}(d_{ft})Q_f^{-H}$。其对数行列式等于 $\sum_m\log d_{ftm}-2\log|\det Q_f|$；二次型等于 $\sum_m|z_{ftm}|^2/d_{ftm}$。代入式(8-12)，忽略与参数无关的常数，得到
+**从协方差到完整目标。** 这里采用与MNMF相同的proper复高斯工作模型，并要求 ${\mathbf Q}_f$ 可逆、所有 $d_{ftm}>0$。原麦克风坐标中的总协方差是 ${\mathbf R}_{ft}={\mathbf Q}_f^{-1}\operatorname{diag}({\vec d}_{ft}){\mathbf Q}_f^{-H}$。其对数行列式等于 $\sum_m\log d_{ftm}-2\log|\det {\mathbf Q}_f|$；二次型等于 $\sum_m|z_{ftm}|^2/d_{ftm}$。代入式(8-12)，忽略与参数无关的常数，得到
 
-$$\begin{aligned}
-J_{\rm FastMNMF}
-&=\sum_{f,t,m}\left(\frac{|z_{ftm}|^2}{d_{ftm}}+\log d_{ftm}\right)\\
-&\quad-2T\sum_f\log|\det Q_f|.
-\end{aligned}\tag{8-15}$$
+$$\begin{gathered}
+J_{\rm FastMNMF}=\sum_{f,t,m}\frac{|z_{ftm}|^2}{d_{ftm}}\\
++\sum_{f,t,m}\log d_{ftm}\\
+-2T\sum_f\log|\det {\mathbf Q}_f|.
+\end{gathered}\tag{8-15}$$
 
 最后一项就是复线性坐标变换的Jacobian项；$T$是同一频点参与拟合的帧数。它不能因变换域通道已经解相关而省略。
 
-E08-26把 $Q_f$ 乘2、空间对角参数乘4：物理协方差和完整目标都不变，省略这一项的目标却会改变。这里是同一模型的坐标尺度检查，不是一次盲估计的质量评分。[2019原文§III-A，式(17)～(20)](https://www.eurasip.org/Proceedings/Eusipco/eusipco2019/Proceedings/papers/1570533283.pdf)。
+E08-26把 ${\mathbf Q}_f$ 乘2、空间对角参数乘4：物理协方差和完整目标都不变，省略这一项的目标却会改变。这里是同一模型的坐标尺度检查，不是一次盲估计的质量评分。[2019原文§III-A，式(17)～(20)](https://www.eurasip.org/Proceedings/Eusipco/eusipco2019/Proceedings/papers/1570533283.pdf)。
 
-变换域的一个通道仍可能含多个源。重构时，第 $n$ 源在通道 $m$ 的系数是 $\lambda_{nft}g_{nfm}/d_{ftm}$，对 $\mathbf z_{ft}$ 逐元素加权后再乘 $Q_f^{-1}$。E08-21 给出不共享酉特征向量、却可共同合同对角化的两张矩阵，并复算此重构。
+变换域的一个通道仍可能含多个源。重构时，第 $n$ 源在通道 $m$ 的系数是 $\lambda_{nft}g_{nfm}/d_{ftm}$，对 ${\vec z}_{ft}$ 逐元素加权后再乘 ${\mathbf Q}_f^{-1}$。E08-21 给出不共享酉特征向量、却可共同合同对角化的两张矩阵，并复算此重构。
 
 **共同结构有边界。** 任意两张厄米正定矩阵都可先白化第一张，再对第二张作酉特征分解，得到共同合同对角化。但三张及更多矩阵不一定存在同一个变换；E08-25给出三张正定矩阵的反例。因此，E08-21说明了重构及非酉变换的意义，不能单凭那两张矩阵判断任意多源空间模型都符合FastMNMF约束。
 
@@ -307,7 +307,7 @@ $$\tilde Y_n(f,k)=\hat A_{rn}(f)Y_n(f,k).\tag{8-16}$$
 
 这一步称为回投影（projection back）：在正确解混条件下，它恢复第 $n$ 个源在参考通道上的幅度和相位尺度。回投影不能修复分离错误，也不能保证不同时间块中的说话人编号一致；连续录音仍要做跨块排列对齐。
 
-若 $W=DP A^{-1}$，其中 $D$ 是可逆对角尺度、$P$ 是排列矩阵，则 $W^{-1}=AP^{-1}D^{-1}$，回投影逐路抵消 $D$，却保留参考通道的传播。即使 $W$ 没有分离任何源，只要可逆，$\sum_n(W^{-1})_{rn}y_n=x_r$ 仍成立，因此“加起来等于混合”不是分离成功的证据。
+若 ${\mathbf W}={\mathbf D}{\mathbf P} {\mathbf A}^{-1}$，其中 ${\mathbf D}$ 是可逆对角尺度、${\mathbf P}$ 是排列矩阵，则 ${\mathbf W}^{-1}={\mathbf A}{\mathbf P}^{-1}{\mathbf D}^{-1}$，回投影逐路抵消 ${\mathbf D}$，却保留参考通道的传播。即使 ${\mathbf W}$ 没有分离任何源，只要可逆，$\sum_n({\mathbf W}^{-1})_{rn}y_n=x_r$ 仍成立，因此“加起来等于混合”不是分离成功的证据。
 
 方阵逆矩阵回投影、对所有输出的联合最小二乘、对每路输出单独拟合一个系数，要按定义区分。输出相关时，逐路单回归会把其他输出的相关部分也吸收进去，E08-13 给出不同结果。参考麦某源的真实系数若为零，其源图像就是零，此时不能对它报告有效 SI-SDR，见 E08-14。
 
@@ -355,15 +355,15 @@ TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 $8000\times0.
 
 **GSS（导引源分离，guided source separation）**在 CHiME-5/6 的真实晚宴多通道任务中得到广泛使用（Boeddeker et al., CHiME-5 2018；CHiME-8 任务设置已经变化，引用时应按当届规则）。先说明原论文的活动标注来源，再写聚类与波束的依赖关系：
 
-1. **cACGMM 空间聚类**：记 WPE 输出、尚未做方向归一化的多通道 STFT 为 $\mathbf Y(f,k)$。先剔除 $\|\mathbf Y(f,k)\|_2\le\varepsilon_E$ 的低能量点，再对保留点严格归一化为 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足
+1. **cACGMM 空间聚类**：记 WPE 输出、尚未做方向归一化的多通道 STFT 为 ${\vec Y}(f,k)$。先剔除 $\|{\vec Y}(f,k)\|_2\le\varepsilon_E$ 的低能量点，再对保留点严格归一化为 ${\vec z}={\vec Y}/\|{\vec Y}\|_2$，主要保留通道间的复数比例。第 $n$ 个分量的密度满足
 
     $$\begin{aligned}
-    q_n&=\mathbf z^H\mathbf B_n^{-1}\mathbf z,\\
-    p(\mathbf z\mid\mathbf B_n)&\propto\frac{q_n^{-M}}{\det\mathbf B_n},\\
-    \|\mathbf z\|_2&=1.
+    q_n&={\vec z}^H\mathbf B_n^{-1}{\vec z},\\
+    p({\vec z}\mid\mathbf B_n)&\propto\frac{q_n^{-M}}{\det\mathbf B_n},\\
+    \|{\vec z}\|_2&=1.
     \end{aligned}\tag{8-17}$$
 
-    其中 $\mathbf B_n$ 是正定的形状矩阵。cACG 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后需要选择固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。这用于消除参数的尺度不唯一性，不是观测声功率的归一化。式(8-17)建模的是归一化方向 $\mathbf z$ 的密度，不是 $\mathbf Y$ 的功率 SCM。
+    其中 $\mathbf B_n$ 是正定的形状矩阵。cACG 密度对 $\mathbf B_n$ 的正比例缩放不变，所以每次更新后需要选择固定尺度，例如令 $\operatorname{tr}(\mathbf B_n)=M$。这用于消除参数的尺度不唯一性，不是观测声功率的归一化。式(8-17)建模的是归一化方向 ${\vec z}$ 的密度，不是 ${\vec Y}$ 的功率 SCM。
 
     混合模型的后验概率 $\gamma_n(f,k)$ 用作软时频掩码。“免训练”只表示聚类参数在当前录音上用期望最大化（Expectation-Maximization，EM）估计，不需要预先训练分离网络；完整系统仍需活动标注。
 
@@ -381,18 +381,18 @@ TRINICON 的长度换算可以这样看：8 kHz 下，0.5 s 对应 $8000\times0.
 
 **紧凑实现顺序**。下面是本书严格门控、带正则化的教学迭代，强调依赖关系，不替代具体实现中的复数矩阵更新式。
 
-1. 从 WPE 输出 $\mathbf Y$ 中剔除 $\|\mathbf Y\|_2\le\varepsilon_E$ 的点；对其余点计算严格单位向量 $\mathbf z=\mathbf Y/\|\mathbf Y\|_2$。给 $J$ 位说话人各设一个分量，并增加背景噪声分量 $j=0$；说话人的活动指示 $a_j(k)$ 由时间标注给出，噪声始终取 $a_0(k)=1$。活动标注约束混合权重，$\mathbf B_j$ 另用单位阵或空间统计量初始化，不能把活动标注当作形状矩阵。
-2. E 步对保留的时频点先计算非负分数 $q_j(f,k)=a_j(k)\pi_j(f)p(\mathbf z(f,k)\mid\mathbf B_j(f))$，再令 $\gamma_j(f,k)=q_j(f,k)/\sum_{\ell=0}^{J}q_\ell(f,k)$。这里 $\pi_j$ 为混合权重；若噪声权重和密度为正，即使所有说话人都静音，分母仍为正，此时频点的噪声后验为 1。实际实现宜在对数域计算，并明确处理非有限值；若去掉噪声分量，全员静音时分母为零，不能强行归一化。
-3. M 步按 cACG 的固定点更新形状矩阵：每个 $\mathbf z\mathbf z^H$ 外积除以当前二次型 $\mathbf z^H\mathbf B_j^{-1}\mathbf z$，再用 $\gamma_j$ 加权求和。对更新矩阵施加保持正定的正则化后，固定尺度，例如令 $\operatorname{tr}(\mathbf B_j)=M$。本书实现中，后验总质量小于通道数时重置为单位阵并计数；其他退化通过迹检查和加载处理。不能把这一具体保护策略泛称为所有 cACGMM 的共同规则。
+1. 从 WPE 输出 ${\vec Y}$ 中剔除 $\|{\vec Y}\|_2\le\varepsilon_E$ 的点；对其余点计算严格单位向量 ${\vec z}={\vec Y}/\|{\vec Y}\|_2$。给 $J$ 位说话人各设一个分量，并增加背景噪声分量 $j=0$；说话人的活动指示 $a_j(k)$ 由时间标注给出，噪声始终取 $a_0(k)=1$。活动标注约束混合权重，$\mathbf B_j$ 另用单位阵或空间统计量初始化，不能把活动标注当作形状矩阵。
+2. E 步对保留的时频点先计算非负分数 $q_j(f,k)=a_j(k)\pi_j(f)p({\vec z}(f,k)\mid\mathbf B_j(f))$，再令 $\gamma_j(f,k)=q_j(f,k)/\sum_{\ell=0}^{J}q_\ell(f,k)$。这里 $\pi_j$ 为混合权重；若噪声权重和密度为正，即使所有说话人都静音，分母仍为正，此时频点的噪声后验为 1。实际实现宜在对数域计算，并明确处理非有限值；若去掉噪声分量，全员静音时分母为零，不能强行归一化。
+3. M 步按 cACG 的固定点更新形状矩阵：每个 ${\vec z}{\vec z}^H$ 外积除以当前二次型 ${\vec z}^H\mathbf B_j^{-1}{\vec z}$，再用 $\gamma_j$ 加权求和。对更新矩阵施加保持正定的正则化后，固定尺度，例如令 $\operatorname{tr}(\mathbf B_j)=M$。本书实现中，后验总质量小于通道数时重置为单位阵并计数；其他退化通过迹检查和加载处理。不能把这一具体保护策略泛称为所有 cACGMM 的共同规则。
 4. 重复活动导引与形状更新，采用明确的最大轮数或变化诊断；报告实际轮数、停止条件和重置次数。收缩、权重地板与重置后的算法不能自动继承无约束 EM 的似然单调性。
-5. 将后验作为掩码，但用同一 WPE 阶段、未做方向归一化的 $\mathbf Y\mathbf Y^H$ 按式(8-22)估计目标/非目标 SCM，再计算每个目标的 MVDR 或 GEV 权重。对于一个目标，非目标掩码包含其余说话人与背景噪声；这里不能把单位向量 $\mathbf z$ 的外积误当成带功率信息的 SCM。
+5. 将后验作为掩码，但用同一 WPE 阶段、未做方向归一化的 ${\vec Y}{\vec Y}^H$ 按式(8-22)估计目标/非目标 SCM，再计算每个目标的 MVDR 或 GEV 权重。对于一个目标，非目标掩码包含其余说话人与背景噪声；这里不能把单位向量 ${\vec z}$ 的外积误当成带功率信息的 SCM。
 
 活动先验需要先在本帧允许的类别中归一。设 $a_{jt}$ 为活动标记，$\pi_j$ 为全局非负权重，背景类权重为正：
 
 $$\begin{aligned}
 \pi_{jt}^{\rm act}&=\frac{a_{jt}\pi_j}{\sum_\ell a_{\ell t}\pi_\ell},\\
-\gamma_{jt}&=\frac{a_{jt}\pi_jp_j(z_t)}
-{\sum_\ell a_{\ell t}\pi_\ell p_\ell(z_t)}.
+\gamma_{jt}&=\frac{a_{jt}\pi_jp_j({\vec z}_t)}
+{\sum_\ell a_{\ell t}\pi_\ell p_\ell({\vec z}_t)}.
 \end{aligned}\tag{8-18}$$
 
 先验归一化的分母在后验中抵消，所以第二行可直接计算。原论文还采用 $\pi_j\leftarrow T^{-1}\sum_t\gamma_{jt}$，本书受控链加上先验地板再归一化；形状另按下一式更新。[GSS 原论文 §3.2，式(5)～(8)](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)明确给出这套算法，但“论文采用的更新”与“某个条件似然的精确最大化”仍须分别核验。
@@ -400,29 +400,29 @@ $$\begin{aligned}
 固定责任权重 $\gamma_t$ 后，省略频点和分量下标，其形状负对数目标为
 
 $$\begin{aligned}
-Q(B)&=\sum_t\gamma_t\bigl[\log\det B\\
-&\qquad+M\log(z_t^HB^{-1}z_t)\bigr].
+Q({\mathbf B})&=\sum_t\gamma_t\bigl[\log\det {\mathbf B}\\
+&\qquad+M\log({\vec z}_t^H{\mathbf B}^{-1}{\vec z}_t)\bigr].
 \end{aligned}\tag{8-19}$$
 
-对 $B$ 求驻点时，右侧仍含有 $B^{-1}$，用旧值代入便得到固定点迭代：
+对 ${\mathbf B}$ 求驻点时，右侧仍含有 ${\mathbf B}^{-1}$，用旧值代入便得到固定点迭代：
 
 $$\begin{aligned}
-q_t^{(r)}&=z_t^H(B^{(r)})^{-1}z_t,\\
-\widetilde B^{(r+1)}
+q_t^{(r)}&={\vec z}_t^H({\mathbf B}^{(r)})^{-1}{\vec z}_t,\\
+\widetilde {\mathbf B}^{(r+1)}
 &=\frac{M}{\sum_t\gamma_t}
-\sum_t\frac{\gamma_t}{q_t^{(r)}}z_tz_t^H,\\
-B^{(r+1)}&=\frac{M\widetilde B^{(r+1)}}{\operatorname{tr}\widetilde B^{(r+1)}}.
+\sum_t\frac{\gamma_t}{q_t^{(r)}}{\vec z}_t{\vec z}_t^H,\\
+{\mathbf B}^{(r+1)}&=\frac{M\widetilde {\mathbf B}^{(r+1)}}{\operatorname{tr}\widetilde {\mathbf B}^{(r+1)}}.
 \end{aligned}\tag{8-20}$$
 
-$B$ 为 $M\times M$ 复厄米正定矩阵，$z_t$ 为 $M$ 维单位列向量，$\gamma_t\ge0$ 且总质量为正。固定 $\gamma$ 是这一形状子步骤的条件；完整 cACGMM 还要更新责任权重与混合权重。该迭代依据见 [Ito 等，EUSIPCO 2016，§III-B、式(14)](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2016/papers/1570256519.pdf)。
+${\mathbf B}$ 为 $M\times M$ 复厄米正定矩阵，${\vec z}_t$ 为 $M$ 维单位列向量，$\gamma_t\ge0$ 且总质量为正。固定 $\gamma$ 是这一形状子步骤的条件；完整 cACGMM 还要更新责任权重与混合权重。该迭代依据见 [Ito 等，EUSIPCO 2016，§III-B、式(14)](https://www.eurasip.org/Proceedings/Eusipco/Eusipco2016/papers/1570256519.pdf)。
 
 第 3 步是带当前形状矩阵的固定点迭代，不是对方向外积做一次普通平均就完成极大似然估计。一次更新与收敛后的估计也要区分。[E08-11](#e08-11)展开其中的二次型、外积和迹归一化，并用所有方向相同的输入展示奇异边界。
 
 对于已知活动的条件密度，省略频点后，对数似然为
 
 $$\begin{gathered}
-\ell(\pi,B)\\
-=\sum_t\log\left(\sum_j a_{jt}\pi_jp_j(z_t)\right)\\
+\ell(\pi,{\mathbf B})\\
+=\sum_t\log\left(\sum_j a_{jt}\pi_jp_j({\vec z}_t)\right)\\
 -\sum_t\log\left(\sum_j a_{jt}\pi_j\right).
 \end{gathered}\tag{8-21}$$
 
@@ -462,9 +462,9 @@ WPE 先减弱晚期混响；cACGMM 在目标段附近的上下文上做 EM 聚�
 
 $$\begin{gathered}
 \gamma_{fk}=\gamma(f,k),\\
-\mathbf Y_{fk}=\mathbf Y(f,k),\\
+{\vec Y}_{fk}={\vec Y}(f,k),\\
 \mathbf R_{\mathrm{tar}}(f)
-=\frac{\sum_k\gamma_{fk}\mathbf Y_{fk}\mathbf Y_{fk}^H}
+=\frac{\sum_k\gamma_{fk}{\vec Y}_{fk}{\vec Y}_{fk}^H}
 {\sum_k\gamma_{fk}+\varepsilon}.
 \end{gathered}\tag{8-22}$$
 
@@ -482,10 +482,10 @@ $$N_{\mathrm{eff}}(f)=\frac{\left(\sum_k\gamma(f,k)\right)^2}{\sum_k\gamma^2(f,k
 
 说话人活动标注用于限制各簇可出现的时间区间，从而减少跨频点置换。见 [cACGMM 原始工作](https://doi.org/10.1109/EUSIPCO.2016.7760429)（Ito et al., EUSIPCO 2016, pp. 1153–1157）与 [GSS 原始论文](https://www.isca-archive.org/chime_2018/boeddecker18_chime.pdf)。
 
-**掩码到波束权重的小例子**。以下实数向量只是 WPE 输出复数 STFT 的简化手算。两个时频快照取 $\mathbf Y_1=[1,1]^\top$、$\mathbf Y_2=[1,-1]^\top$，目标掩码为 $\gamma=[0.9,0.1]$。本题显式取 $\varepsilon=0$，因为权重和为 1，目标协方差为
+**掩码到波束权重的小例子**。以下实数向量只是 WPE 输出复数 STFT 的简化手算。两个时频快照取 ${\vec Y}_1=[1,1]^\top$、${\vec Y}_2=[1,-1]^\top$，目标掩码为 $\gamma=[0.9,0.1]$。本题显式取 $\varepsilon=0$，因为权重和为 1，目标协方差为
 
 $$
-\mathbf R_{\mathrm{tar}}=0.9\mathbf Y_1\mathbf Y_1^H+0.1\mathbf Y_2\mathbf Y_2^H
+\mathbf R_{\mathrm{tar}}=0.9{\vec Y}_1{\vec Y}_1^H+0.1{\vec Y}_2{\vec Y}_2^H
 =\begin{bmatrix}1&0.8\\0.8&1\end{bmatrix}.
 $$
 
@@ -493,11 +493,11 @@ $$
 
 随后可从 $\mathbf R_{\mathrm{tar}}$ 的主方向估计目标相对传递函数，并与 $\mathbf R_{\mathrm{int}}$ 一起计算 MVDR。GEV 则直接求矩阵对 $(\mathbf R_{\mathrm{tar}},\mathbf R_{\mathrm{int}})$ 的主广义特征向量，并需另做尺度归一化。
 
-本例还可以算到输出：目标矩阵的主特征方向为 $[1,1]^\top$，以第一麦归一后取 $\vec v=[1,1]^\top$。干扰矩阵满足 $R_{\mathrm{int}}\vec v=0.2\vec v$，所以 $R_{\mathrm{int}}^{-1}\vec v=5\vec v$，MVDR 分母为 10，权重为 $[0.5,0.5]^\top$；对两个快照的输出分别是 1 和 0。完整特征值、GEV 比值及尺度边界见 [E08-10](#e08-10)。
+本例还可以算到输出：目标矩阵的主特征方向为 $[1,1]^\top$，以第一麦归一后取 $\vec v=[1,1]^\top$。干扰矩阵满足 $\mathbf R_{\mathrm{int}}\vec v=0.2\vec v$，所以 $\mathbf R_{\mathrm{int}}^{-1}\vec v=5\vec v$，MVDR 分母为 10，权重为 $[0.5,0.5]^\top$；对两个快照的输出分别是 1 和 0。完整特征值、GEV 比值及尺度边界见 [E08-10](#e08-10)。
 
-从主特征向量提取 RTF 是模型相关的估计。若目标 SCM 是秩一 $\phi aa^H$，主方向与 $a$ 一致；掩码泄漏、各向异性污染或强晚期混响会破坏这个条件，重合的最大特征值更没有唯一主方向。参考分量还必须非零才能按该麦归一化。
+从主特征向量提取 RTF 是模型相关的估计。若目标 SCM 是秩一 $\phi {\vec a}{\vec a}^H$，主方向与 ${\vec a}$ 一致；掩码泄漏、各向异性污染或强晚期混响会破坏这个条件，重合的最大特征值更没有唯一主方向。参考分量还必须非零才能按该麦归一化。
 
-本书反例取真实 $a=[1,1]^\top$、目标统计 $aa^H+\operatorname{diag}(0,3)$。其主特征向量按第一麦归一后为 $[1,(3+\sqrt{13})/2]^\top$，约为 $[1,3.3028]^\top$。以单位干扰 SCM 求 MVDR，对这一估计方向响应为 1，对真实 $a$ 的响应却仅约 0.3613。相反，若目标统计为单位阵，任意方向都是主方向；求得一个数值特征向量不代表找到了目标。
+本书反例取真实 ${\vec a}=[1,1]^\top$、目标统计 ${\vec a}{\vec a}^H+\operatorname{diag}(0,3)$。其主特征向量按第一麦归一后为 $[1,(3+\sqrt{13})/2]^\top$，约为 $[1,3.3028]^\top$。以单位干扰 SCM 求 MVDR，对这一估计方向响应为 1，对真实 ${\vec a}$ 的响应却仅约 0.3613。相反，若目标统计为单位阵，任意方向都是主方向；求得一个数值特征向量不代表找到了目标。
 
 真实的“目标 + 多个说话人 + 环境噪声”并非二分类，$1-\gamma$ 会把所有非目标成分合在一起，不能解释成纯噪声掩码。实际实现还要检查有效样本数、条件数和对角加载。[掩码波束形成实例](https://doi.org/10.1109/ICASSP.2016.7471664 "citation")。
 
@@ -505,7 +505,7 @@ $$
 
 #### 8.4.5 可运行的 cACGMM—SCM—MVDR 受控链
 
-前面的三帧例子只计算固定密度的 E 步。本书另提供原创 NumPy [教学整链](../codes/chapters/ch08/core/gss_teaching.py)：逐频点把两麦复谱严格归一化为单位向量，使用说话人活动和恒活动背景类对复角中心高斯混合模型（cACGMM）进行 8 轮活动导引与形状迭代；各类形状矩阵采用迹归一化与正定加载，空类显式重置。然后用未做方向归一化的原始复谱和后验掩码计算目标/非目标 SCM，最终使用两麦 MVDR 输出目标复谱。
+[§8.4.3](#sec-8-4-3)的两帧活动门控小例只计算固定密度的 E 步归一化。本书另提供原创 NumPy [教学整链](../codes/chapters/ch08/core/gss_teaching.py)：逐频点把两麦复谱严格归一化为单位向量，使用说话人活动和恒活动背景类对复角中心高斯混合模型（cACGMM）进行 8 轮活动导引与形状迭代；各类形状矩阵采用迹归一化与正定加载，空类显式重置。然后用未做方向归一化的原始复谱和后验掩码计算目标/非目标 SCM，最终使用两麦 MVDR 输出目标复谱。
 
 低能量点归入背景；代码同时返回掩码、SCM、权重、低能量点数、重置次数以及波束求解诊断，便于核查每一步。
 
@@ -545,7 +545,7 @@ $$
 
 ![图42：活动信息约束方向聚类，原复谱与掩码共同形成SCM，波束输出目标音频](../figures/fig42_gss_flow.png)
 
-图42把控制信息与音频统计分开：活动标注进入聚类的允许类别；WPE 后的复谱一支做方向归一并估计掩码，另一支保留幅度供 SCM 计算。形状矩阵 $B$ 与功率 SCM 不是同一个对象。本书受控实验无混响，因此旁路 WPE；真实系统只有满足前置条件时才启用。低能量归背景、空统计回参考麦和失败诊断也应随结果报告。
+图42把控制信息与音频统计分开：活动标注进入聚类的允许类别；WPE 后的复谱一支做方向归一并估计掩码，另一支保留幅度供 SCM 计算。形状矩阵 ${\mathbf B}$ 与功率 SCM 不是同一个对象。本书受控实验无混响，因此旁路 WPE；真实系统只有满足前置条件时才启用。低能量归背景、空统计回参考麦和失败诊断也应随结果报告。
 
 ### 8.5 分离指标与数据集口径
 
@@ -759,6 +759,8 @@ TSE 的身份泄漏、注册信道和声纹保护测试，不能由文本查询�
 - `mask_mvdr_2x2()` 用目标 SCM 的主特征向量估计相对传递函数，再以干扰 SCM 求两麦 MVDR，返回 `(频点, 帧)` 输出和 `(频点, 2)` 权重；启用 `return_diagnostics=True` 时另返回逐频处理路线及目标相对特征值间隙。
 - `guided_activity_posterior()` 对已给定的空间相对密度和混合权重执行说话人活动门控，背景分量恒活动；它不估计 cACG 形状矩阵。
 
+本书 `stft()` 返回 `(通道, 频点, 帧)` 数组；送入上述掩码协方差接口前，须用 `Y_fmt = Y_cft.transpose(1, 0, 2)` 转为 `(频点, 通道, 帧)`。掩码不含通道轴，保持 `(频点, 帧)` 形状。
+
 两麦 MVDR 先按每频点所有通道共同的实部/虚部峰值缩放观测，再计算统计量；两组非空掩码还分别按自身峰值归一化，然后估计 SCM。这样共同正比例缩放掩码不会仅因落到一个绝对分母地板以下而误触发旁路。解方程前再按干扰 SCM 的平均对角元素归一化；共同信号尺度在 MVDR 权重的分子、分母中抵消，输出恢复原尺度。
 
 掩码全空、有效目标或干扰统计为零、参考分量不可用或求解失败时仍退回参考麦；不把这些情形计为成功分离。诊断中的特征值间隙供调用方判断主方向是否明确；当前函数不会仅凭间隙小就自动拒绝。这里的掩码归一化只属于 `mask_mvdr_2x2()`，不能反推上一节直接调用 `masked_spatial_covariance()` 时也具有相同的极小掩码行为。
@@ -869,19 +871,19 @@ PIT 利用真实参考选取评价排列；若相邻块不断交换输出而每�
 
 #### E08-03：已知混合矩阵为何仍可能不稳？
 
-令两源组成 $S$，两麦观测 $X=AS$，其中 $A=\begin{bmatrix}1&0.5\\0.5&1\end{bmatrix}$。用线性方程求解恢复 $S$，再给单个观测列加上 $[0.01,-0.01]^\top$。将两个非对角元素改成 0.99 后重复。
+令两源组成 ${\mathbf S}$，两麦观测 ${\mathbf X}={\mathbf A}{\mathbf S}$，其中 ${\mathbf A}=\begin{bmatrix}1&0.5\\0.5&1\end{bmatrix}$。用线性方程求解恢复 ${\mathbf S}$，再给单个观测列加上 $[0.01,-0.01]^\top$。将两个非对角元素改成 0.99 后重复。
 
 **解答**：第一种矩阵特征值为 1.5、0.5，二范数条件数为 3；观测误差恢复为 $[0.02,-0.02]^\top$。第二种特征值为 1.99、0.01，条件数为 199，同一误差恢复为 $[1,-1]^\top$。无噪声且矩阵准确时，两者都可在浮点误差内恢复源；噪声和矩阵误差会暴露病态风险。
 
-这里直接给定了 $A$，因此只是已知瞬时混合的代数实验，不是 ICA、IVA 或其他盲分离算法，也不代表实际卷积房间中的性能。
+这里直接给定了 ${\mathbf A}$，因此只是已知瞬时混合的代数实验，不是 ICA、IVA 或其他盲分离算法，也不代表实际卷积房间中的性能。
 
 #### E08-04：分开了是否就恢复了参考麦的幅度？
 
-沿用 E08-03 的 $A$ 和 E08-01 的两源 $s,u$。人为指定解混矩阵 $W=\operatorname{diag}(2,-3)A^{-1}$，计算原始输出和以第一支麦克风为参考的回投影。
+沿用 E08-03 的 ${\mathbf A}$ 和 E08-01 的两源 $s,u$。人为指定解混矩阵 ${\mathbf W}=\operatorname{diag}(2,-3){\mathbf A}^{-1}$，计算原始输出和以第一支麦克风为参考的回投影。
 
-**解答**：$WA=\operatorname{diag}(2,-3)$，所以原输出为 $[2s,-3u]^\top$。逆解混矩阵为 $W^{-1}=A\operatorname{diag}(1/2,-1/3)$，第一行为 $[1/2,-1/6]$。逐路相乘后恢复 $[s,0.5u]^\top$，二者之和恰为第一支麦克风的无噪混合 $s+0.5u$。
+**解答**：${\mathbf W}{\mathbf A}=\operatorname{diag}(2,-3)$，所以原输出为 $[2s,-3u]^\top$。逆解混矩阵为 ${\mathbf W}^{-1}={\mathbf A}\operatorname{diag}(1/2,-1/3)$，第一行为 $[1/2,-1/6]$。逐路相乘后恢复 $[s,0.5u]^\top$，二者之和恰为第一支麦克风的无噪混合 $s+0.5u$。
 
-回投影恢复的是参考麦上的各源图像，不是把每个源都归一成干声。原输出虽然增益和极性不同，对各自非零参考的理想 SI-SDR 都可为正无穷；尺度不敏感的评分不能验证绝对增益。该题给定 $W$，只检验回投影代数，不宣称实现了盲分离。
+回投影恢复的是参考麦上的各源图像，不是把每个源都归一成干声。原输出虽然增益和极性不同，对各自非零参考的理想 SI-SDR 都可为正无穷；尺度不敏感的评分不能验证绝对增益。该题给定 ${\mathbf W}$，只检验回投影代数，不宣称实现了盲分离。
 
 #### E08-05：所有掩码乘同一个数，SCM 一定不变吗？
 
@@ -922,28 +924,28 @@ PIT 利用真实参考选取评价排列；若相邻块不断交换输出而每�
 
 使用 §8.3 的式(8-8)，固定本轮加权矩阵，复算一个 IP 子步骤。
 
-**题目与手算。** 只复算 IP 子步骤，给定 $W=I_2$、$V=\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$，更新第一行。消元求 $2u_1+u_2=1$、$u_1+2u_2=0$，得 $u=[2/3,-1/3]^\top$。因为 $Vu=e_1$，二次型 $u^\top Vu=u_1=2/3$，故
+**题目与手算。** 只复算 IP 子步骤，给定 ${\mathbf W}={\mathbf I}_2$、${\mathbf V}=\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$，更新第一行。消元求 $2u_1+u_2=1$、$u_1+2u_2=0$，得 ${\vec u}=[2/3,-1/3]^\top$。因为 ${\mathbf V}{\vec u}={\vec e}_1$，二次型 ${\vec u}^\top {\mathbf V}{\vec u}=u_1=2/3$，故
 
 $$\vec w=[\sqrt{2/3},-1/\sqrt6]^\top\approx[0.81650,-0.40825]^\top.$$
 
-直接代回有 $\vec w^\top V\vec w=1$；$V$ 的特征值为 1、3，满足正定条件。它不是欧氏长度归一，$\vec w^\top\vec w=5/6$。复数情形存入矩阵行时必须共轭，不能把列 $\vec w$ 原样当行。
+直接代回有 $\vec w^\top {\mathbf V}\vec w=1$；${\mathbf V}$ 的特征值为 1、3，满足正定条件。它不是欧氏长度归一，$\vec w^\top\vec w=5/6$。复数情形存入矩阵行时必须共轭，不能把列 $\vec w$ 原样当行。
 
-本题的 $V$ 是已给定的正定输入，未从语音运行范数估计、所有行更新或回投影，因此只验证 IP 子步骤；源码和独立复数检查见 [enhancement_step_exercises.py](../codes/chapters/ch00/cross_chapter/enhancement_step_exercises.py) 的 `E08-08`。秩亏、零范数和源数大于麦数不满足本题前提，不能原样求解。
+本题的 ${\mathbf V}$ 是已给定的正定输入，未从语音运行范数估计、所有行更新或回投影，因此只验证 IP 子步骤；源码和独立复数检查见 [enhancement_step_exercises.py](../codes/chapters/ch00/cross_chapter/enhancement_step_exercises.py) 的 `E08-08`。秩亏、零范数和源数大于麦数不满足本题前提，不能原样求解。
 
 <a id="e08-09"></a>
 
 #### E08-09：ILRMA 的谱基与激活具体相乘得到什么？
 
-对某一个源，以频点为行、时间为列，设非负谱基 $B$ 和激活 $H$ 为
+对某一个源，以频点为行、时间为列，设非负谱基 ${\mathbf B}$ 和激活 ${\mathbf H}$ 为
 
-$$B=\begin{bmatrix}1&0.2\\0.5&1\end{bmatrix},\qquad
-H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
+$${\mathbf B}=\begin{bmatrix}1&0.2\\0.5&1\end{bmatrix},\qquad
+{\mathbf H}=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 
-按式(8-9)计算 $\lambda=BH$。
+按式(8-9)计算 $\lambda={\mathbf B}{\mathbf H}$。
 
-每个 $B$ 列规定一个跨频率的谱形，每个 $H$ 行规定该谱形随时间的强度。四个输出逐项为 $1\times2+0.2\times0.1=2.02$、$1\times0.5+0.2\times3=1.10$、$0.5\times2+1\times0.1=1.10$、$0.5\times0.5+1\times3=3.25$，因此 $\lambda=BH=\left[\begin{smallmatrix}2.02&1.10\\1.10&3.25\end{smallmatrix}\right]$。
+每个 ${\mathbf B}$ 列规定一个跨频率的谱形，每个 ${\mathbf H}$ 行规定该谱形随时间的强度。四个输出逐项为 $1\times2+0.2\times0.1=2.02$、$1\times0.5+0.2\times3=1.10$、$0.5\times2+1\times0.1=1.10$、$0.5\times0.5+1\times3=3.25$，因此 $\lambda={\mathbf B}{\mathbf H}=\left[\begin{smallmatrix}2.02&1.10\\1.10&3.25\end{smallmatrix}\right]$。
 
-这是预测功率，不是带相位的复谱；不能直接对 $BH$ 作逆 STFT 得到声源。把 $B$ 第一列乘以 2、$H$ 第一行除以 2，功率矩阵不变，说明两因子有尺度歧义。若只保留第一项，预测为 $\left[\begin{smallmatrix}2&0.5\\1&0.25\end{smallmatrix}\right]$，其行列式为零、秩为 1；原例使用两个基只是演示乘法，在 $2\times2$ 里并没有强制低于满秩。真实大谱图取较小 $K$ 才形成更强的结构限制。
+这是预测功率，不是带相位的复谱；不能直接对 ${\mathbf B}{\mathbf H}$ 作逆 STFT 得到声源。把 ${\mathbf B}$ 第一列乘以 2、${\mathbf H}$ 第一行除以 2，功率矩阵不变，说明两因子有尺度歧义。若只保留第一项，预测为 $\left[\begin{smallmatrix}2&0.5\\1&0.25\end{smallmatrix}\right]$，其行列式为零、秩为 1；原例使用两个基只是演示乘法，在 $2\times2$ 里并没有强制低于满秩。真实大谱图取较小 $K$ 才形成更强的结构限制。
 
 方法定义见 [Kitamura 等 2016](https://doi.org/10.1109/TASLP.2016.2577880)；本题不执行基、激活与解混矩阵的交替优化，也不证明增加基数总会改善分离。代码标记为 `E08-09`。
 
@@ -951,13 +953,13 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 
 #### E08-10：从两张掩码 SCM 一直算到 MVDR 与 GEV。
 
-沿用 §8.4.4 的两个快照和掩码，取 $R_{\mathrm{tar}}=\left[\begin{smallmatrix}1&0.8\\0.8&1\end{smallmatrix}\right]$、$R_{\mathrm{int}}=\left[\begin{smallmatrix}1&-0.8\\-0.8&1\end{smallmatrix}\right]$。求两矩阵的同相、反相特征值，MVDR 权重与输出，再求主广义特征值。
+沿用 §8.4.4 的两个快照和掩码，取 $\mathbf R_{\mathrm{tar}}=\left[\begin{smallmatrix}1&0.8\\0.8&1\end{smallmatrix}\right]$、$\mathbf R_{\mathrm{int}}=\left[\begin{smallmatrix}1&-0.8\\-0.8&1\end{smallmatrix}\right]$。求两矩阵的同相、反相特征值，MVDR 权重与输出，再求主广义特征值。
 
-**先找空间方向。** 对 $v_+=[1,1]^\top$，目标/干扰的特征值分别为 1.8、0.2；对 $v_-=[1,-1]^\top$，则为 0.2、1.8。两矩阵都正定，且条件数均为 $1.8/0.2=9$。
+**先找空间方向。** 对 ${\vec v}_+=[1,1]^\top$，目标/干扰的特征值分别为 1.8、0.2；对 ${\vec v}_-=[1,-1]^\top$，则为 0.2、1.8。两矩阵都正定，且条件数均为 $1.8/0.2=9$。
 
-**再施加目标约束。** 选 $v=v_+$ 表示以第一麦为参考的目标相对传递函数。由 $R_{\mathrm{int}}u=v$ 得 $u=5v$，分母 $v^Hu=10$，所以 $w=u/10=[0.5,0.5]^\top$。检验 $w^Hv=1$；对快照 $[1,1]^\top$ 输出 1，对 $[1,-1]^\top$ 输出 0。按给定 SCM，目标输出功率 $w^HR_{\mathrm{tar}}w=0.9$，干扰输出功率 $w^HR_{\mathrm{int}}w=0.1$。
+**再施加目标约束。** 选 ${\vec v}={\vec v}_+$ 表示以第一麦为参考的目标相对传递函数。由 $\mathbf R_{\mathrm{int}}{\vec u}={\vec v}$ 得 ${\vec u}=5{\vec v}$，分母 ${\vec v}^H{\vec u}=10$，所以 ${\vec w}={\vec u}/10=[0.5,0.5]^\top$。检验 ${\vec w}^H{\vec v}=1$；对快照 $[1,1]^\top$ 输出 1，对 $[1,-1]^\top$ 输出 0。按给定 SCM，目标输出功率 ${\vec w}^H\mathbf R_{\mathrm{tar}}{\vec w}=0.9$，干扰输出功率 ${\vec w}^H\mathbf R_{\mathrm{int}}{\vec w}=0.1$。
 
-**最后核对 GEV。** 两个方向的广义特征值分别为 $1.8/0.2=9$、$0.2/1.8=1/9$，故主方向也是 $v_+$。GEV 本身只决定方向，直接用 $v_+$ 会把目标输出变成 2；另施加 $w^Hv=1$ 后才与本例 MVDR 的尺度一致。比值 9 不表示已经测到真实录音改善 9 倍；这里只有两个给定快照、软掩码和已选目标方向。一般 SCM 未必共享特征向量，不能外推为 GEV 与 MVDR 总相同。代码对应 `E08-10`。
+**最后核对 GEV。** 两个方向的广义特征值分别为 $1.8/0.2=9$、$0.2/1.8=1/9$，故主方向也是 ${\vec v}_+$。GEV 本身只决定方向，直接用 ${\vec v}_+$ 会把目标输出变成 2；另施加 ${\vec w}^H{\vec v}=1$ 后才与本例 MVDR 的尺度一致。比值 9 不表示已经测到真实录音改善 9 倍；这里只有两个给定快照、软掩码和已选目标方向。一般 SCM 未必共享特征向量，不能外推为 GEV 与 MVDR 总相同。代码对应 `E08-10`。
 
 上述三题与 E06-21、E07-06 共同运行：`.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_step_exercises`。检验见 [test_codes_enhancement_steps.py](../tests/test_codes_enhancement_steps.py)。
 
@@ -965,28 +967,28 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 
 #### E08-11：cACG 的形状更新为什么要除以二次型，又为什么没有声功率尺度？
 
-固定一个频点和一个混合分量，保留两帧单位方向 $z_1=[1,0]^\top,z_2=[0,1]^\top$，该分量在两帧的责任权重为 $\gamma_1=3/4,\gamma_2=1/4$，旧形状矩阵 $B^{(0)}=I_2$。其他分量的参数固定且不参与本题。求一次形状固定点更新，再计算两个方向的相对密度。
+固定一个频点和一个混合分量，保留两帧单位方向 ${\vec z}_1=[1,0]^\top,{\vec z}_2=[0,1]^\top$，该分量在两帧的责任权重为 $\gamma_1=3/4,\gamma_2=1/4$，旧形状矩阵 ${\mathbf B}^{(0)}={\mathbf I}_2$。其他分量的参数固定且不参与本题。求一次形状固定点更新，再计算两个方向的相对密度。
 
-**第 1 步：写出这一小步究竟优化什么。** 固定责任权重后，式(8-17)对应的加权负对数似然，除去常数，是 $\sum_t\gamma_t[\log\det B+M\log(z_t^HB^{-1}z_t)]$。对矩阵求驻点得到的等式仍在右边含 $B^{-1}$，所以用旧矩阵代入右边迭代；它不是一次求逆得到的闭式最优解。
+**第 1 步：写出这一小步究竟优化什么。** 固定责任权重后，式(8-17)对应的加权负对数似然，除去常数，是 $\sum_t\gamma_t[\log\det {\mathbf B}+M\log({\vec z}_t^H{\mathbf B}^{-1}{\vec z}_t)]$。对矩阵求驻点得到的等式仍在右边含 ${\mathbf B}^{-1}$，所以用旧矩阵代入右边迭代；它不是一次求逆得到的闭式最优解。
 
 形状固定点的完整定义与矩阵条件见式(8-20)。本题固定责任权重，只复算其中的小步。
 
 **第 2 步：分别计算每帧贡献。** 旧矩阵为单位阵，所以 $q_1=q_2=1$。两帧责任权重之和为 1，外面的系数为 $M/1=2$。
 
-| 帧 | 单位方向 | 二次型 $q_t$ | 加权外积 $\gamma_tz_tz_t^H/q_t$ |
+| 帧 | 单位方向 | 二次型 $q_t$ | 加权外积 $\gamma_t{\vec z}_t{\vec z}_t^H/q_t$ |
 |---|---|---:|---|
 | 1 | $[1,0]^\top$ | 1 | $\operatorname{diag}(3/4,0)$ |
 | 2 | $[0,1]^\top$ | 1 | $\operatorname{diag}(0,1/4)$ |
 
-因此 $\widetilde B^{(1)}=\operatorname{diag}(3/2,1/2)$。其迹恰为 2，本次迹归一化不改变数值。第一个方向在当前责任权重下被赋予较大的形状轴，这不是它的原始音频能量较高的证据。
+因此 $\widetilde {\mathbf B}^{(1)}=\operatorname{diag}(3/2,1/2)$。其迹恰为 2，本次迹归一化不改变数值。第一个方向在当前责任权重下被赋予较大的形状轴，这不是它的原始音频能量较高的证据。
 
 **第 3 步：用新形状重新读密度。** 新矩阵行列式为 $3/4$，逆矩阵为 $\operatorname{diag}(2/3,2)$。省略对两方向相同的球面归一化常数，密度因子分别为 $(4/3)(2/3)^{-2}=3$ 和 $(4/3)2^{-2}=1/3$。这些是密度的相对因子，不是两个相加为 1 的类别后验；后验还需乘各分量混合权重并跨分量归一。
 
-对任意 $c>0$，$\det(cB)=c^M\det B$，而 $z^H(cB)^{-1}z=q/c$。密度中出现的 $c^{-M}$ 与 $(1/c)^{-M}$ 恰好抵消，所以 $B$ 与 $2B$ 给相同密度。固定迹只是从这些等价矩阵里选一个代表。相反，后级原始复谱 SCM 乘以 2 会改变功率，不能把这两种尺度混为一谈。
+对任意 $c>0$，$\det(c{\mathbf B})=c^M\det {\mathbf B}$，而 ${\vec z}^H(c{\mathbf B})^{-1}{\vec z}=q/c$。密度中出现的 $c^{-M}$ 与 $(1/c)^{-M}$ 恰好抵消，所以 ${\mathbf B}$ 与 $2{\mathbf B}$ 给相同密度。固定迹只是从这些等价矩阵里选一个代表。相反，后级原始复谱 SCM 乘以 2 会改变功率，不能把这两种尺度混为一谈。
 
 **第 4 步：不要把一步迭代误认成稳定估计。** 若继续固定本题的责任权重，下一轮二次型为 $2/3,2$，未归一矩阵为 $\operatorname{diag}(9/4,1/4)$，迹归一后为 $\operatorname{diag}(1.8,0.2)$。这组只有两个正交方向且权重不均衡的数据会把形状推向边界；它不是证明已收敛的训练集。若两帧都改成 $[1,0]^\top$，第一步就得到 $\operatorname{diag}(2,0)$，虽然迹为 2，矩阵却奇异，下一轮密度没有合法逆矩阵。
 
-教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如将奇异矩阵收缩为 $(1-0.02)B+0.02I$，其特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。
+教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如将奇异矩阵收缩为 $(1-0.02){\mathbf B}+0.02{\mathbf I}$，其特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。
 
 运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`；[原创代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。
 
@@ -997,33 +999,33 @@ H=\begin{bmatrix}2&0.5\\0.1&3\end{bmatrix}.$$
 
 #### E08-12：复数 IP 为什么要共轭写回并逐行更新？
 
-**题设。** 取 $W_0=I_2$，两行暂用同一个加权矩阵
+**题设。** 取 ${\mathbf W}_0={\mathbf I}_2$，两行暂用同一个加权矩阵
 
-$$V=\begin{bmatrix}2&\mathrm j\\-\mathrm j&2\end{bmatrix}.$$
+$${\mathbf V}=\begin{bmatrix}2&\mathrm j\\-\mathrm j&2\end{bmatrix}.$$
 
-按式(8-8)先更新第一行，再用新 $W$ 更新第二行；与两行同时读取 $W_0$ 比较。这里只给定一个正定统计矩阵，不计算完整 AuxIVA 的各源权重。
+按式(8-8)先更新第一行，再用新 ${\mathbf W}$ 更新第二行；与两行同时读取 ${\mathbf W}_0$ 比较。这里只给定一个正定统计矩阵，不计算完整 AuxIVA 的各源权重。
 
-**第一步：更新第一列向量。** $V^{-1}=\tfrac13\left[\begin{smallmatrix}2&-\mathrm j\\\mathrm j&2\end{smallmatrix}\right]$，所以 $u_1=[2/3,\mathrm j/3]^\top$。其二次型为 $2/3$，归一后
+**第一步：更新第一列向量。** ${\mathbf V}^{-1}=\tfrac13\left[\begin{smallmatrix}2&-\mathrm j\\\mathrm j&2\end{smallmatrix}\right]$，所以 ${\vec u}_1=[2/3,\mathrm j/3]^\top$。其二次型为 $2/3$，归一后
 
-$$w_1=\begin{bmatrix}\sqrt{2/3}\\\mathrm j/\sqrt6\end{bmatrix}.$$
+$${\vec w}_1=\begin{bmatrix}\sqrt{2/3}\\\mathrm j/\sqrt6\end{bmatrix}.$$
 
-写回的是 $w_1^H$，第一行第二项应为 $-\mathrm j/\sqrt6$。漏掉共轭会改变变换。
+写回的是 ${\vec w}_1^H$，第一行第二项应为 $-\mathrm j/\sqrt6$。漏掉共轭会改变变换。
 
-**第二步：使用已经改变的矩阵。** 此时 $W$ 第一行与 $V$ 相乘为 $[\sqrt{3/2},0]$，第二行与 $V$ 相乘为 $[-\mathrm j,2]$。解 $WV u_2=e_2$ 得 $u_2=[0,1/2]^\top$，二次型为 $1/2$，故第二行是 $[0,1/\sqrt2]$。最后
+**第二步：使用已经改变的矩阵。** 此时 ${\mathbf W}$ 第一行与 ${\mathbf V}$ 相乘为 $[\sqrt{3/2},0]$，第二行与 ${\mathbf V}$ 相乘为 $[-\mathrm j,2]$。解 ${\mathbf W}{\mathbf V} {\vec u}_2={\vec e}_2$ 得 ${\vec u}_2=[0,1/2]^\top$，二次型为 $1/2$，故第二行是 $[0,1/\sqrt2]$。最后
 
-$$W_{\rm seq}=\begin{bmatrix}
+$${\mathbf W}_{\rm seq}=\begin{bmatrix}
 \sqrt{2/3}&-\mathrm j/\sqrt6\\0&1/\sqrt2
 \end{bmatrix}.$$
 
-**第三步：比较同时更新。** 若第二行仍读取单位阵，得到 $w_2=[-\mathrm j/\sqrt6,\sqrt{2/3}]^\top$。两个结果满足
+**第三步：比较同时更新。** 若第二行仍读取单位阵，得到 ${\vec w}_2=[-\mathrm j/\sqrt6,\sqrt{2/3}]^\top$。两个结果满足
 
 $$\begin{aligned}
-W_{\rm seq}VW_{\rm seq}^H&=I_2,\\
-W_{\rm parallel}VW_{\rm parallel}^H
+{\mathbf W}_{\rm seq}{\mathbf V}{\mathbf W}_{\rm seq}^H&={\mathbf I}_2,\\
+{\mathbf W}_{\rm parallel}{\mathbf V}{\mathbf W}_{\rm parallel}^H
 &=\begin{bmatrix}1&-\mathrm j/2\\\mathrm j/2&1\end{bmatrix}.
 \end{aligned}$$
 
-各行自己的二次型都为 1，却不能据此断定交叉项为零。一般 AuxIVA 为不同源使用不同 $V_n$，本题整体白化恒等式只属于“各行共用 $V$”的指定子例；它不要求所有正常 AuxIVA 迭代都白化同一张矩阵。
+各行自己的二次型都为 1，却不能据此断定交叉项为零。一般 AuxIVA 为不同源使用不同 ${\mathbf V}_n$，本题整体白化恒等式只属于“各行共用 ${\mathbf V}$”的指定子例；它不要求所有正常 AuxIVA 迭代都白化同一张矩阵。
 
 <a id="e08-13"></a>
 
@@ -1031,23 +1033,23 @@ W_{\rm parallel}VW_{\rm parallel}^H
 
 **题设。** 三帧的两路实输出组成矩阵，给定一个参考通道：
 
-$$Y=\begin{bmatrix}1&0&1\\0&1&1\end{bmatrix},\qquad
-x_r=\begin{bmatrix}1&2&3\end{bmatrix}.$$
+$${\mathbf Y}=\begin{bmatrix}1&0&1\\0&1&1\end{bmatrix},\qquad
+{\vec x}_r=\begin{bmatrix}1&2&3\end{bmatrix}.$$
 
-固定这些输出，不重新估计分离器。求联合最小二乘系数 $a$，使 $aY$ 拟合 $x_r$；再分别求每路单独拟合参考的系数。
+固定这些输出，不重新估计分离器。求联合最小二乘系数 ${\vec a}$，使 ${\vec a}{\mathbf Y}$ 拟合 ${\vec x}_r$；再分别求每路单独拟合参考的系数。
 
-**联合计算。** 正规方程为 $a(YY^H)=x_rY^H$，两个统计量是
+**联合计算。** 正规方程为 ${\vec a}({\mathbf Y}{\mathbf Y}^H)={\vec x}_r{\mathbf Y}^H$，两个统计量是
 
-$$YY^H=\begin{bmatrix}2&1\\1&2\end{bmatrix},\qquad
-x_rY^H=\begin{bmatrix}4&5\end{bmatrix}.$$
+$${\mathbf Y}{\mathbf Y}^H=\begin{bmatrix}2&1\\1&2\end{bmatrix},\qquad
+{\vec x}_r{\mathbf Y}^H=\begin{bmatrix}4&5\end{bmatrix}.$$
 
-解 $2a_1+a_2=4$、$a_1+2a_2=5$，得到 $a=[1,2]$，所以 $aY=[1,2,3]=x_r$。
+解 $2a_1+a_2=4$、$a_1+2a_2=5$，得到 ${\vec a}=[1,2]$，所以 ${\vec a}{\mathbf Y}=[1,2,3]={\vec x}_r$。
 
 **逐路计算。** 第一行能量为 2，与参考内积为 4，系数为 2；第二行能量为 2，内积为 5，系数为 $5/2$。两路分别回投影再求和得到 $[2,5/2,9/2]$，与参考不同。原因是两路内积为 1，并非正交；单回归将另一输出的相关部分也归到本路。
 
-**复数接口。** 若 $Y=[1,\mathrm j]$，$x_r=(2+\mathrm j)Y$，直接乘输出的系数是 $2+\mathrm j$。某接口返回其共轭 $2-\mathrm j$，并要求调用者再共轭后相乘，这可以是合法约定。固定 pyroomacoustics 回投影接口采用后一种方式；要一起核对返回量与实际应用，不能只比较返回数组。
+**复数接口。** 若 ${\mathbf Y}=[1,\mathrm j]$，${\vec x}_r=(2+\mathrm j){\mathbf Y}$，直接乘输出的系数是 $2+\mathrm j$。某接口返回其共轭 $2-\mathrm j$，并要求调用者再共轭后相乘，这可以是合法约定。固定 pyroomacoustics 回投影接口采用后一种方式；要一起核对返回量与实际应用，不能只比较返回数组。
 
-方阵可逆且 $Y=WX$ 时，联合拟合可与 $W^{-1}$ 对应；秩亏、统计窗口不同或单路回归不满足这个等价条件。本题没有用参考计算新的盲解混矩阵。
+方阵可逆且 ${\mathbf Y}={\mathbf W}{\mathbf X}$ 时，联合拟合可与 ${\mathbf W}^{-1}$ 对应；秩亏、统计窗口不同或单路回归不满足这个等价条件。本题没有用参考计算新的盲解混矩阵。
 
 <a id="e08-14"></a>
 
@@ -1055,14 +1057,14 @@ x_rY^H=\begin{bmatrix}4&5\end{bmatrix}.$$
 
 **题设。** 取两条零均值序列 $s=[1,-1,0,0]$、$u=[0,0,1,-1]$，已知
 
-$$A=\begin{bmatrix}1&0\\1&1\end{bmatrix},\qquad
-W=A^{-1}=\begin{bmatrix}1&0\\-1&1\end{bmatrix}.$$
+$${\mathbf A}=\begin{bmatrix}1&0\\1&1\end{bmatrix},\qquad
+{\mathbf W}={\mathbf A}^{-1}=\begin{bmatrix}1&0\\-1&1\end{bmatrix}.$$
 
-先用 $W$ 解混，再选麦 0 回投影，最后改选麦 1。
+先用 ${\mathbf W}$ 解混，再选麦 0 回投影，最后改选麦 1。
 
 **计算。** 观测为 $[s,s+u]^\top$，解混得到 $[s,u]^\top$。麦 0 的混合系数为 $[1,0]$，回投影输出自然是 $[s,0]^\top$；麦 1 的系数为 $[1,1]$，则得到 $[s,u]^\top$。
 
-**解释。** 第二源能从两路观测中恢复，但它在麦 0 的真实源图像确实为零。这个零不构成分离错误，也不能给它计算有效 SI-SDR；教学评分器应拒绝零参考。应按任务选择有目标能量的参考，或将这类片段排除并报告，而不是把零分数或有限上限当成绩。本题的 $A$ 已知，是代数边界，不是盲估计实验。
+**解释。** 第二源能从两路观测中恢复，但它在麦 0 的真实源图像确实为零。这个零不构成分离错误，也不能给它计算有效 SI-SDR；教学评分器应拒绝零参考。应按任务选择有目标能量的参考，或将这类片段排除并报告，而不是把零分数或有限上限当成绩。本题的 ${\mathbf A}$ 已知，是代数边界，不是盲估计实验。
 
 <a id="e08-15"></a>
 
@@ -1078,16 +1080,16 @@ W=A^{-1}=\begin{bmatrix}1&0\\-1&1\end{bmatrix}.$$
 
 #### E08-16：相同方向数据为什么能有不同功率 SCM？
 
-**题设。** 单频点两帧，先取 $X=[e_1,e_2]$，再改为 $X'=[e_1,3e_2]$，其中 $e_1=[1,0]^\top$、$e_2=[0,1]^\top$。两帧等权，分别计算单位方向、$B=I$ 的相对 cACG 密度以及原始功率 SCM。
+**题设。** 单频点两帧，先取 ${\mathbf X}=[{\vec e}_1,{\vec e}_2]$，再改为 ${\mathbf X}'=[{\vec e}_1,3{\vec e}_2]$，其中 ${\vec e}_1=[1,0]^\top$、${\vec e}_2=[0,1]^\top$。两帧等权，分别计算单位方向、${\mathbf B}={\mathbf I}$ 的相对 cACG 密度以及原始功率 SCM。
 
-**方向计算。** 正的径向放大在除以范数时抵消，所以两组方向都为 $[e_1,e_2]$。$\det I=1$，每个单位方向的二次型为 1，因此四个相对密度因子都为 1。
+**方向计算。** 正的径向放大在除以范数时抵消，所以两组方向都为 $[{\vec e}_1,{\vec e}_2]$。$\det {\mathbf I}=1$，每个单位方向的二次型为 1，因此四个相对密度因子都为 1。
 
 **功率计算。** 原始外积仍保留幅度平方：
 
 $$\begin{aligned}
-R&=\tfrac12(e_1e_1^H+e_2e_2^H)
+{\mathbf R}&=\tfrac12({\vec e}_1{\vec e}_1^H+{\vec e}_2{\vec e}_2^H)
 =\operatorname{diag}(1/2,1/2),\\
-R'&=\tfrac12(e_1e_1^H+9e_2e_2^H)
+{\mathbf R}'&=\tfrac12({\vec e}_1{\vec e}_1^H+9{\vec e}_2{\vec e}_2^H)
 =\operatorname{diag}(1/2,9/2).
 \end{aligned}$$
 
@@ -1097,11 +1099,11 @@ R'&=\tfrac12(e_1e_1^H+9e_2e_2^H)
 
 #### E08-17：相同活动与初值能自动分成两个人吗？
 
-**题设。** 12 帧方向按 $e_1,e_2$ 交替，两名说话人与背景类全程允许活动。三类初始形状都为 $I_2$，先验都为 $1/3$。执行三轮本书受控更新。
+**题设。** 12 帧方向按 ${\vec e}_1,{\vec e}_2$ 交替，两名说话人与背景类全程允许活动。三类初始形状都为 ${\mathbf I}_2$，先验都为 $1/3$。执行三轮本书受控更新。
 
 **E 步。** 三类对每个方向给相同密度，活动也一样，故三类后验都为 $1/3$。每类总责任质量为 $12/3=4$。
 
-**形状步。** 旧二次型为 1，每个方向有六帧。对任一类，带权外积和为 $2I$，式(8-20)的外系数是 $2/4=1/2$，更新后仍为 $I$。迹归一化及向 $I$ 收缩都不改变它，质量 4 又不触发本例阈值为 2 的重置。先验均值继续是 $1/3$。
+**形状步。** 旧二次型为 1，每个方向有六帧。对任一类，带权外积和为 $2{\mathbf I}$，式(8-20)的外系数是 $2/4=1/2$，更新后仍为 ${\mathbf I}$。迹归一化及向 ${\mathbf I}$ 收缩都不改变它，质量 4 又不触发本例阈值为 2 的重置。先验均值继续是 $1/3$。
 
 **结果与边界。** 以上是一个对称固定点，三轮后仍各为 $1/3$。增加迭代次数不会凭空打破精确对称性。不同初值、独占活动帧或额外空间先验可以打破对称，但不保证一定找到正确说话人。后验归一化和矩阵正定均通过，也不能据此断言已经分离。
 
@@ -1109,7 +1111,7 @@ R'&=\tfrac12(e_1e_1^H+9e_2e_2^H)
 
 #### E08-18：活动门控后的先验均值更新一定提高似然吗？
 
-**题设。** 只取目标和恒活动背景两类，三帧活动为 $[1,1]$、$[0,1]$、$[0,1]$，初始全局权重为 $[1/2,1/2]$。固定形状不更新：首帧两类相对密度为 $[9,1]$，后两帧背景密度为 1。首帧可取 $z=e_1$、目标形状与 $\operatorname{diag}(9,1)$ 成比例、背景形状为 $I$，因此这个密度比可由合法模型产生。
+**题设。** 只取目标和恒活动背景两类，三帧活动为 $[1,1]$、$[0,1]$、$[0,1]$，初始全局权重为 $[1/2,1/2]$。固定形状不更新：首帧两类相对密度为 $[9,1]$，后两帧背景密度为 1。首帧可取 ${\vec z}={\vec e}_1$、目标形状与 $\operatorname{diag}(9,1)$ 成比例、背景形状为 ${\mathbf I}$，因此这个密度比可由合法模型产生。
 
 **后验。** 首帧归一后为 $[9/10,1/10]$，后两帧都是 $[0,1]$。对三帧取均值得到新全局权重 $[3/10,7/10]$。
 
@@ -1129,21 +1131,21 @@ $$\begin{aligned}
 
 **题设。** 对一个源固定解混输出功率，取两个频点、两帧、一个谱基：
 
-$$P=\begin{bmatrix}1&1\\9&9\end{bmatrix},\quad
-B_0=\begin{bmatrix}1\\1\end{bmatrix},\quad H_0=\begin{bmatrix}1&1\end{bmatrix}.$$
+$${\mathbf P}=\begin{bmatrix}1&1\\9&9\end{bmatrix},\quad
+{\mathbf B}_0=\begin{bmatrix}1\\1\end{bmatrix},\quad {\mathbf H}_0=\begin{bmatrix}1&1\end{bmatrix}.$$
 
-求式(8-11)的一次先基后激活更新，比较固定 $W$ 的子目标 $J=\sum_{f,t}(P_{ft}/\lambda_{ft}+\log\lambda_{ft})$。
+求式(8-11)的一次先基后激活更新，比较固定 ${\mathbf W}$ 的子目标 $J=\sum_{f,t}(P_{ft}/\lambda_{ft}+\log\lambda_{ft})$。
 
-**初值。** $\lambda_0=B_0H_0$ 全为 1，故 $J_0=1+1+9+9=20$。
+**初值。** $\lambda_0={\mathbf B}_0{\mathbf H}_0$ 全为 1，故 $J_0=1+1+9+9=20$。
 
-**更新谱基。** 对频点 1，乘法系数为 $\sqrt{(1+1)/(1+1)}=1$；频点 2 为 $\sqrt{(9+9)/(1+1)}=3$。因此 $B_1=[1,3]^\top$，重算 $\lambda_1$ 的两行为 $[1,1]$、$[3,3]$。每列目标为 $1+3+\log3$，两列总计
+**更新谱基。** 对频点 1，乘法系数为 $\sqrt{(1+1)/(1+1)}=1$；频点 2 为 $\sqrt{(9+9)/(1+1)}=3$。因此 ${\mathbf B}_1=[1,3]^\top$，重算 $\lambda_1$ 的两行为 $[1,1]$、$[3,3]$。每列目标为 $1+3+\log3$，两列总计
 
 $$J_1=8+2\log3\approx10.197225.$$
 
-**更新激活。** 使用新 $B_1,\lambda_1$：对每列，分子为 $1\times1+3\times(9/9)=4$，分母为 $1\times1+3\times(1/3)=2$。因此两个激活均乘 $\sqrt2$，
+**更新激活。** 使用新 ${\mathbf B}_1,\lambda_1$：对每列，分子为 $1\times1+3\times(9/9)=4$，分母为 $1\times1+3\times(1/3)=2$。因此两个激活均乘 $\sqrt2$，
 
 $$\begin{aligned}
-H_1&=[\sqrt2,\sqrt2],\\
+{\mathbf H}_1&=[\sqrt2,\sqrt2],\\
 \lambda_2&=\begin{bmatrix}\sqrt2&\sqrt2\\3\sqrt2&3\sqrt2\end{bmatrix},\\
 J_2&=4\sqrt2+2\log2+2\log3\\
 &\approx9.240373.
@@ -1158,14 +1160,14 @@ J_2&=4\sqrt2+2\log2+2\log3\\
 **题设。** 两个麦克风、三个源，单时频点，各源功率系数都取 1。比较两组合法的正定源协方差：
 
 $$\begin{aligned}
-\text{甲： }R_1&=\tfrac12I,\quad R_2=R_3=\tfrac14I,\\
-\text{乙： }R_1&=\operatorname{diag}(0.6,0.2),\\
-R_2=R_3&=\operatorname{diag}(0.2,0.4).
+\text{甲： }{\mathbf R}_1&=\tfrac12{\mathbf I},\quad {\mathbf R}_2={\mathbf R}_3=\tfrac14{\mathbf I},\\
+\text{乙： }{\mathbf R}_1&=\operatorname{diag}(0.6,0.2),\\
+{\mathbf R}_2={\mathbf R}_3&=\operatorname{diag}(0.2,0.4).
 \end{aligned}$$
 
-**观测模型。** 两组的总和都为 $I_2$，所以零均值复高斯观测模型完全相同，对任意观测给相同似然。本题只有一个时频点，不存在额外的谱形或时间变化可区分两组。
+**观测模型。** 两组的总和都为 ${\mathbf I}_2$，所以零均值复高斯观测模型完全相同，对任意观测给相同似然。本题只有一个时频点，不存在额外的谱形或时间变化可区分两组。
 
-**重构。** 对 $x=[1,2]^\top$，总协方差的逆仍为 $I$。甲的第一源维纳均值是 $[1/2,1]^\top$，乙则为 $[0.6,0.4]^\top$，两者不同。两组各自所有源的重构和仍都等于 $x$。
+**重构。** 对 ${\vec x}=[1,2]^\top$，总协方差的逆仍为 ${\mathbf I}$。甲的第一源维纳均值是 $[1/2,1]^\top$，乙则为 $[0.6,0.4]^\top$，两者不同。两组各自所有源的重构和仍都等于 ${\vec x}$。
 
 能容纳三个分量只是模型表示能力；要辨识它们还依赖跨频、跨时间、空间差异或其他先验。不能由本单点反例断言所有欠定分离均不可能，也不能把相同总模型的任意分解当作已经找回三个真实波形。
 
@@ -1176,30 +1178,30 @@ R_2=R_3&=\operatorname{diag}(0.2,0.4).
 **题设。** 给定两张正定空间矩阵、一个可逆变换，两源功率均为 1：
 
 $$\begin{aligned}
-G_1&=\begin{bmatrix}3&2\\2&2\end{bmatrix},\\
-G_2&=\begin{bmatrix}4&1\\1&1\end{bmatrix},\\
-Q&=\begin{bmatrix}1&-1\\0&1\end{bmatrix}.
+{\mathbf G}_1&=\begin{bmatrix}3&2\\2&2\end{bmatrix},\\
+{\mathbf G}_2&=\begin{bmatrix}4&1\\1&1\end{bmatrix},\\
+{\mathbf Q}&=\begin{bmatrix}1&-1\\0&1\end{bmatrix}.
 \end{aligned}$$
 
-对观测 $x=[2,1]^\top$，先验证合同对角化，再按对角域 Wiener 系数重构。
+对观测 ${\vec x}=[2,1]^\top$，先验证合同对角化，再按对角域 Wiener 系数重构。
 
-**第一步：验证模型。** 直接相乘得 $QG_1Q^H=\operatorname{diag}(1,2)$、$QG_2Q^H=\operatorname{diag}(3,1)$。但
+**第一步：验证模型。** 直接相乘得 ${\mathbf Q}{\mathbf G}_1{\mathbf Q}^H=\operatorname{diag}(1,2)$、${\mathbf Q}{\mathbf G}_2{\mathbf Q}^H=\operatorname{diag}(3,1)$。但
 
 $$\begin{aligned}
-QQ^H&=\begin{bmatrix}2&-1\\-1&1\end{bmatrix}\ne I,\\
-G_1G_2-G_2G_1&=\begin{bmatrix}0&-5\\5&0\end{bmatrix}\ne0.
+{\mathbf Q}{\mathbf Q}^H&=\begin{bmatrix}2&-1\\-1&1\end{bmatrix}\ne {\mathbf I},\\
+{\mathbf G}_1{\mathbf G}_2-{\mathbf G}_2{\mathbf G}_1&=\begin{bmatrix}0&-5\\5&0\end{bmatrix}\ne0.
 \end{aligned}$$
 
 因此这里不是用一组共同酉特征向量对角化两矩阵。
 
-**第二步：分配变换域功率。** $z=Qx=[1,1]^\top$，总方差为 $[4,3]^\top$。第一源的逐通道比例为 $[1/4,2/3]^\top$，第二源为 $[3/4,1/3]^\top$。$z$ 的两个通道并不是已经分开的两个源。
+**第二步：分配变换域功率。** ${\vec z}={\mathbf Q}{\vec x}=[1,1]^\top$，总方差为 $[4,3]^\top$。第一源的逐通道比例为 $[1/4,2/3]^\top$，第二源为 $[3/4,1/3]^\top$。${\vec z}$ 的两个通道并不是已经分开的两个源。
 
-**第三步：返回原麦克风域。** $Q^{-1}=\left[\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right]$，故
+**第三步：返回原麦克风域。** ${\mathbf Q}^{-1}=\left[\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right]$，故
 
-$$\widehat c_1=\begin{bmatrix}11/12\\2/3\end{bmatrix},\qquad
-\widehat c_2=\begin{bmatrix}13/12\\1/3\end{bmatrix}.$$
+$$\widehat {\vec c}_1=\begin{bmatrix}11/12\\2/3\end{bmatrix},\qquad
+\widehat {\vec c}_2=\begin{bmatrix}13/12\\1/3\end{bmatrix}.$$
 
-两者相加等于 $[2,1]^\top$，与直接计算 $G_n(G_1+G_2)^{-1}x$ 一致。这验证指定模型下两条重构路径等价，不证明模型参数来自正确盲估计，也不把条件均值称为样本级真实源。空间矩阵此处未作迹归一；若归一，应相应补偿源功率才能保持相同模型。
+两者相加等于 $[2,1]^\top$，与直接计算 ${\mathbf G}_n({\mathbf G}_1+{\mathbf G}_2)^{-1}{\vec x}$ 一致。这验证指定模型下两条重构路径等价，不证明模型参数来自正确盲估计，也不把条件均值称为样本级真实源。空间矩阵此处未作迹归一；若归一，应相应补偿源功率才能保持相同模型。
 
 <a id="e08-22"></a>
 
@@ -1228,7 +1230,7 @@ $$\begin{aligned}
 
 以矩阵行表示前块槽位，列表示后块槽位，有
 
-$$C=\begin{bmatrix}20/101&1\\1&20/101\end{bmatrix}.$$
+$${\mathbf C}=\begin{bmatrix}20/101&1\\1&20/101\end{bmatrix}.$$
 
 保持顺序的平均得分为 $20/101$，交换为 1，优势为 $81/101$。算法根据观测重叠选择 `[1,0]`，即前块第 0 路接后块第 1 路，前块第 1 路接后块第 0 路。两路干净参考没有进入这一步。
 
@@ -1264,19 +1266,19 @@ $$C=\begin{bmatrix}20/101&1\\1&20/101\end{bmatrix}.$$
 
 #### E08-24：白化后零相关，为什么仍可能不独立？
 
-**题设。** 两个独立源各以相同概率取 $-1,+1$。四种组合各占 $1/4$，源均值为0、协方差为 $I_2$。指定瞬时混合 $x=As$，其中
+**题设。** 两个独立源各以相同概率取 $-1,+1$。四种组合各占 $1/4$，源均值为0、协方差为 ${\mathbf I}_2$。指定瞬时混合 ${\vec x}={\mathbf A}{\vec s}$，其中
 
-$$A=\begin{bmatrix}1&1/2\\1/2&1\end{bmatrix}.$$
+$${\mathbf A}=\begin{bmatrix}1&1/2\\1/2&1\end{bmatrix}.$$
 
 本题知道混合矩阵，只比较指定变换的统计结果，不把它当作ICA估计器。先白化，再作45°旋转，检查旋转后两个分量是否独立。
 
 **第一步：检查观测统计。** 两个源方差各为1，互协方差为0，所以
 
-$$R_x=AA^\top=\begin{bmatrix}5/4&1\\1&5/4\end{bmatrix}.$$
+$${\mathbf R}_x={\mathbf A}{\mathbf A}^\top=\begin{bmatrix}5/4&1\\1&5/4\end{bmatrix}.$$
 
-其两个特征值为 $5/4+1=9/4$、$5/4-1=1/4$，均为正。由于本例 $A$ 对称正定，取 $V=A^{-1}=\left[\begin{smallmatrix}4/3&-2/3\\-2/3&4/3\end{smallmatrix}\right]$，有 $VR_xV^\top=I$，且 $Vx=s$。这是这一组指定输入的合法白化；一般盲问题并不知道 $A$，不能用这一步假装已经求出了源。
+其两个特征值为 $5/4+1=9/4$、$5/4-1=1/4$，均为正。由于本例 ${\mathbf A}$ 对称正定，取 ${\mathbf V}={\mathbf A}^{-1}=\left[\begin{smallmatrix}4/3&-2/3\\-2/3&4/3\end{smallmatrix}\right]$，有 ${\mathbf V}{\mathbf R}_x{\mathbf V}^\top={\mathbf I}$，且 ${\mathbf V}{\vec x}={\vec s}$。这是这一组指定输入的合法白化；一般盲问题并不知道 ${\mathbf A}$，不能用这一步假装已经求出了源。
 
-**第二步：白化不确定剩余旋转。** 再取正交矩阵 $H=\tfrac1{\sqrt2}\left[\begin{smallmatrix}1&1\\-1&1\end{smallmatrix}\right]$，令 $z=HVx=Hs$，逐点结果为
+**第二步：白化不确定剩余旋转。** 再取正交矩阵 ${\mathbf H}=\tfrac1{\sqrt2}\left[\begin{smallmatrix}1&1\\-1&1\end{smallmatrix}\right]$，令 ${\vec z}={\mathbf H}{\mathbf V}{\vec x}={\mathbf H}{\vec s}$，逐点结果为
 
 | $s_1$ | $s_2$ | $z_1$ | $z_2$ |
 |---:|---:|---:|---:|
@@ -1285,7 +1287,7 @@ $$R_x=AA^\top=\begin{bmatrix}5/4&1\\1&5/4\end{bmatrix}.$$
 | +1 | −1 | 0 | $-\sqrt2$ |
 | +1 | +1 | $+\sqrt2$ | 0 |
 
-每个点仍占 $1/4$。各坐标均值为0，平均平方为 $(2+2)/4=1$；每个点的坐标乘积都是0。因此 $R_z=I$，白化条件仍满足。
+每个点仍占 $1/4$。各坐标均值为0，平均平方为 $(2+2)/4=1$；每个点的坐标乘积都是0。因此 ${\mathbf R}_z={\mathbf I}$，白化条件仍满足。
 
 **第三步：直接检验独立性。** $P(z_1=0)=P(z_2=0)=1/2$。若两者独立，就应有 $P(z_1=0,z_2=0)=1/4$，但表中没有原点，这个联合概率是0。知道一个分量为零，就能知道另一个分量不为零，两个分量并不独立。
 
@@ -1297,27 +1299,29 @@ $$R_x=AA^\top=\begin{bmatrix}5/4&1\\1&5/4\end{bmatrix}.$$
 
 **题设。** 固定同一频点、两个麦克风，给出三张厄米正定空间矩阵：
 
-$$G_1=I_2,\qquad G_2=\operatorname{diag}(1,2),\qquad
-G_3=\begin{bmatrix}2&1\\1&2\end{bmatrix}.$$
+$$\begin{gathered}
+{\mathbf G}_1={\mathbf I}_2,\qquad {\mathbf G}_2=\operatorname{diag}(1,2),\\
+{\mathbf G}_3=\begin{bmatrix}2&1\\1&2\end{bmatrix}.
+\end{gathered}$$
 
-它们的特征值分别为 $(1,1)$、$(1,2)$、$(1,3)$，不存在奇异或负功率问题。问是否有可逆 $Q$，使三张 $QG_nQ^H$ 同时为对角阵。
+它们的特征值分别为 $(1,1)$、$(1,2)$、$(1,3)$，不存在奇异或负功率问题。问是否有可逆 ${\mathbf Q}$，使三张 ${\mathbf Q}{\mathbf G}_n{\mathbf Q}^H$ 同时为对角阵。
 
-**第一步：把合同问题放到同一白化坐标系。** 假设这种 $Q$ 存在。由于 $G_1=I$，$QQ^H=D$应为正对角阵。按每行乘 $D^{-1/2}$，得到 $U=D^{-1/2}Q$，满足 $UU^H=I$；方阵 $U$是酉矩阵。行的非零缩放不会把非零非对角项消掉，所以 $UG_2U^H$和 $UG_3U^H$也必须同时对角。
+**第一步：把合同问题放到同一白化坐标系。** 假设这种 ${\mathbf Q}$ 存在。由于 ${\mathbf G}_1={\mathbf I}$，${\mathbf Q}{\mathbf Q}^H={\mathbf D}$应为正对角阵。按每行乘 ${\mathbf D}^{-1/2}$，得到 ${\mathbf U}={\mathbf D}^{-1/2}{\mathbf Q}$，满足 ${\mathbf U}{\mathbf U}^H={\mathbf I}$；方阵 ${\mathbf U}$是酉矩阵。行的非零缩放不会把非零非对角项消掉，所以 ${\mathbf U}{\mathbf G}_2{\mathbf U}^H$和 ${\mathbf U}{\mathbf G}_3{\mathbf U}^H$也必须同时对角。
 
 **第二步：用必要条件反证。** 同一坐标系中的两张对角矩阵相乘可交换。若上述酉对角化成立，应有
 
-$$U(G_2G_3-G_3G_2)U^H=0.$$
+$${\mathbf U}({\mathbf G}_2{\mathbf G}_3-{\mathbf G}_3{\mathbf G}_2){\mathbf U}^H=0.$$
 
 但直接计算
 
-$$G_2G_3=\begin{bmatrix}2&1\\2&4\end{bmatrix},\quad
-G_3G_2=\begin{bmatrix}2&2\\1&4\end{bmatrix},$$
+$${\mathbf G}_2{\mathbf G}_3=\begin{bmatrix}2&1\\2&4\end{bmatrix},\quad
+{\mathbf G}_3{\mathbf G}_2=\begin{bmatrix}2&2\\1&4\end{bmatrix},$$
 
-所以交换子为 $\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]\ne0$；可逆变换不能把它变为零。不存在所要求的共同 $Q$。
+所以交换子为 $\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]\ne0$；可逆变换不能把它变为零。不存在所要求的共同 ${\mathbf Q}$。
 
 **这个反例限制什么？** 任意两张正定矩阵可以先白化第一张，再对第二张作酉分解。本题多出的第三张给出额外约束，不能把每一对各自存在变换理解为全部共用同一变换。
 
-这里因第一张就是 $I$，才能直接对剩余原矩阵用交换子检验；第一张不是 $I$时，要先进入同一白化坐标系，不能拿原矩阵“不交换”就否定合同对角化。旧E08-21正是原矩阵不交换但合同对角化成立的例子。
+这里因第一张就是 ${\mathbf I}$，才能直接对剩余原矩阵用交换子检验；第一张不是 ${\mathbf I}$时，要先进入同一白化坐标系，不能拿原矩阵“不交换”就否定合同对角化。旧E08-21正是原矩阵不交换但合同对角化成立的例子。
 
 本题说明FastMNMF的共同空间结构有实际限制，并不证明它在全部真实录音上失效，也没有拟合或比较任何分离器。
 
@@ -1325,19 +1329,21 @@ G_3G_2=\begin{bmatrix}2&2\\1&4\end{bmatrix},$$
 
 #### E08-26：FastMNMF为什么不能省掉Jacobian项？
 
-**题设。** 沿用E08-21的 $Q,G_1,G_2,x$，两个源功率都为1。只取一个内部复频点、一帧，变换后观测为 $z=[1,1]^\top$，总方差 $d=[4,3]^\top$，$\det Q=1$。计算完整proper复高斯目标，再把 $Q$乘2、两源的空间对角参数都乘4。
+**题设。** 沿用E08-21的 ${\mathbf Q},{\mathbf G}_1,{\mathbf G}_2,{\vec x}$，两个源功率都为1。只取一个内部复频点、一帧，变换后观测为 ${\vec z}=[1,1]^\top$，总方差 ${\vec d}=[4,3]^\top$，$\det {\mathbf Q}=1$。计算完整proper复高斯目标，再把 ${\mathbf Q}$乘2、两源的空间对角参数都乘4。
 
 **第一步：原参数。** 二次型为 $1/4+1/3=7/12$，对数方差为 $\log4+\log3=\log12$，Jacobian项为 $-2\log1=0$。因此
 
 $$J=\frac7{12}+\log12\approx3.068240.$$
 
-**第二步：同一个物理模型换尺度。** 新 $Q'=2Q$，则 $z'=2z$、$d'=4d=[16,12]^\top$。物理总协方差仍为
+**第二步：同一个物理模型换尺度。** 新 ${\mathbf Q}'=2{\mathbf Q}$，则 ${\vec z}'=2{\vec z}$、${\vec d}'=4{\vec d}=[16,12]^\top$。物理总协方差仍为
 
-$$Q'^{-1}\operatorname{diag}(d')Q'^{-H}
-=Q^{-1}\operatorname{diag}(d)Q^{-H}
-=\begin{bmatrix}7&3\\3&3\end{bmatrix}.$$
+$$\begin{aligned}
+&{\mathbf Q}'^{-1}\operatorname{diag}({\vec d}'){\mathbf Q}'^{-H}\\
+&\quad={\mathbf Q}^{-1}\operatorname{diag}({\vec d}){\mathbf Q}^{-H}\\
+&\quad=\begin{bmatrix}7&3\\3&3\end{bmatrix}.
+\end{aligned}$$
 
-二次型变为 $4/16+4/12=7/12$，没有改变。两项对数方差增加 $2\log4$；二阶方阵的行列式变为 $\det Q'=4\det Q=4$，Jacobian项恰好减少 $2\log4$。完整目标仍为3.068240。
+二次型变为 $4/16+4/12=7/12$，没有改变。两项对数方差增加 $2\log4$；二阶方阵的行列式变为 $\det {\mathbf Q}'=4\det {\mathbf Q}=4$，Jacobian项恰好减少 $2\log4$。完整目标仍为3.068240。
 
 **第三步：删项造成假变化。** 若错误省略Jacobian，新目标会高出 $2\log4\approx2.772589$；反向缩小坐标又会让这一错误目标下降，尽管物理协方差根本没变。这不能解释为“空间模型拟合得更好”。代码分别保存二次型、对数方差、Jacobian及还原后的协方差，避免只比较两个总数。
 
@@ -1417,25 +1423,25 @@ $$\frac12\left[(1/2)^2+\frac{(3/2)^2}{3}\right]=\frac12.$$
 
 **题设。** 两个相邻块的共同重叠只有四点，前块两路为
 
-$$P=\begin{bmatrix}1&-1&0&0\\0&0&1&-1\end{bmatrix}.$$
+$${\mathbf P}=\begin{bmatrix}1&-1&0&0\\0&0&1&-1\end{bmatrix}.$$
 
-先令当前块 $C=-P$，再改为 $C=-2P$。两个块都对应同一采样时刻，不含时延或额外噪声。用绝对相关匹配排列，再对重叠作等权平均。
+先令当前块 ${\mathbf C}=-{\mathbf P}$，再改为 ${\mathbf C}=-2{\mathbf P}$。两个块都对应同一采样时刻，不含时延或额外噪声。用绝对相关匹配排列，再对重叠作等权平均。
 
-**第一步：排列判断完全正确。** 两路均值为0、能量为2、RMS为 $1/\sqrt2$，彼此内积为0。$C=-P$时，有符号相关为 $-I_2$，绝对相关为 $I_2$；保持顺序的平均分为1，交换为0。匹配器返回 `matched`和 `[0,1]`，并没有把两个人配错。
+**第一步：排列判断完全正确。** 两路均值为0、能量为2、RMS为 $1/\sqrt2$，彼此内积为0。${\mathbf C}=-{\mathbf P}$时，有符号相关为 $-{\mathbf I}_2$，绝对相关为 ${\mathbf I}_2$；保持顺序的平均分为1，交换为0。匹配器返回 `matched`和 `[0,1]`，并没有把两个人配错。
 
-**第二步：检查波形，而不只看匹配状态。** 保持这个正确排列直接平均，$\tfrac12(P+C)=0$，两路全部相消。若当前块为 $-2P$，绝对相关仍为 $I_2$，但平均结果是 $-P/2$。只把当前块翻转极性，会把它变成 $2P$，平均结果为 $3P/2$；极性正确仍不等于增益一致。
+**第二步：检查波形，而不只看匹配状态。** 保持这个正确排列直接平均，$\tfrac12({\mathbf P}+{\mathbf C})=0$，两路全部相消。若当前块为 $-2{\mathbf P}$，绝对相关仍为 ${\mathbf I}_2$，但平均结果是 $-{\mathbf P}/2$。只把当前块翻转极性，会把它变成 $2{\mathbf P}$，平均结果为 $3{\mathbf P}/2$；极性正确仍不等于增益一致。
 
-**第三步：在明确的标量模型下估计直接乘数。** 对已匹配的两路，令 $p_i,c_i$为同一重叠区的向量。若当前块到前块仅差一个实标量，且 $c_i$能量非零，则最小化 $\|p_i-g_ic_i\|_2^2$：
+**第三步：在明确的标量模型下估计直接乘数。** 对已匹配的两路，令 ${\vec p}_i,{\vec c}_i$为同一重叠区的向量。若当前块到前块仅差一个实标量，且 ${\vec c}_i$能量非零，则最小化 $\|{\vec p}_i-g_i{\vec c}_i\|_2^2$：
 
-$$g_i=\frac{c_i^\top p_i}{c_i^\top c_i},\qquad
-\text{校正后重叠}=\frac12(p_i+g_ic_i).
+$$\begin{aligned}
+g_i&=\frac{{\vec c}_i^\top {\vec p}_i}{{\vec c}_i^\top {\vec c}_i},\\
+\text{校正后重叠}&=\frac12({\vec p}_i+g_i{\vec c}_i).
+\end{aligned}
 \tag{8-32}$$
 
-这里返回的是直接乘当前块的 $g_i$，不是其倒数。$C=-P$时，分子−2、分母2，得到−1；$C=-2P$时，分子−4、分母8，得到−1/2。校正后两种情况都恢复 $P$。这些系数只用前后块重叠样本，没有使用干净源、注册声纹或人工身份标签。
+这里返回的是直接乘当前块的 $g_i$，不是其倒数。${\mathbf C}=-{\mathbf P}$时，分子−2、分母2，得到−1；${\mathbf C}=-2{\mathbf P}$时，分子−4、分母8，得到−1/2。校正后两种情况都恢复 ${\mathbf P}$。这些系数只用前后块重叠样本，没有使用干净源、注册声纹或人工身份标签。
 
-**边界。** 这个子例不把增益回归加入匹配器本身；排列、极性及增益是三个独立检查。低能量或被串音污染的重叠应拒绝或回退，系数限幅与跨块延续还需另定策略。
-
-若两块存在时延、频率相关滤波或非线性失真，一个实数乘数不能普遍修复。绝对相关和回归系数都不证明永久说话人身份。
+**边界。** 这个子例不把增益回归加入匹配器本身；排列、极性及增益是三个独立检查。低能量或被串音污染的重叠应拒绝或回退，系数限幅与跨块延续还需另定策略。若两块存在时延、频率相关滤波或非线性失真，一个实数乘数不能普遍修复。绝对相关和回归系数都不证明永久说话人身份。
 
 ---
 

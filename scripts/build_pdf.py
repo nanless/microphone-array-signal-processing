@@ -512,7 +512,7 @@ def build_html(build_date=None):
     cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
              f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
-             f'共 {len(CHAPTERS)} 篇：导读、11 章正文、1 篇扩展专题、2 篇附录</div></div>')
+             f'共 {len(CHAPTERS)} 篇：导读、11 章正文、2 篇扩展专题、2 篇附录</div></div>')
     page = ("<!DOCTYPE html><html lang=\"zh-CN\" data-tutorial-print-layout=\"a4\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
             "<script>\n" + build_site.INLINE_LAYOUT_PATH.read_text(encoding="utf-8") +

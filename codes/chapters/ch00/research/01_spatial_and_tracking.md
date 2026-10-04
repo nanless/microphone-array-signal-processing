@@ -1106,7 +1106,7 @@ ESPnet `get_rtf` 明确说明函数自身没有执行参考通道归一化。若
 
 ### 49. MWF、SDW-MWF 与秩一化简
 
-对应 §5.7、§5.9。以参考通道目标声像为估计对象，一般 SDW-MWF 解由 `(Rs+mu Rn)w=Rs e_ref` 得到。ESPnet `get_sdw_mwf_vector` 明确提供该解，并有 `approx_low_rank_psd_speech` 选项；`mu=1` 对应普通 MWF。其 `get_mwf_vector` 的参数虽名为 `psd_n`，docstring 指的是观测协方差，不能因为变量名含 n 就传入纯噪声 SCM。
+对应 §5.7、§5.9。以参考通道目标声像为估计对象，一般 SDW-MWF 解由 `(Rs+mu Rn)w=Rs e_ref` 得到，其中 `mu>0`，矩阵为目标与噪声的未中心化二阶矩；零均值时也等于协方差。ESPnet `get_sdw_mwf_vector` 明确提供该解，并有 `approx_low_rank_psd_speech` 选项；当目标与噪声的互二阶矩为零时，`mu=1` 对应混合观测的普通MWF，见[正文的代价与条件](../../../../chapters/05_beamforming.md#sec-u-fb93744989)。其 `get_mwf_vector` 的参数虽名为 `psd_n`，docstring 指的是观测协方差，不能因为变量名含 n 就传入纯噪声 SCM。
 
 pb_bss `get_wmwf_vector` 实际计算 `Phi/(mu+trace(Phi))` 的参考列，其中 `Phi=Rn^-1 Rs`，这是秩一目标条件下的化简。独立手算反例取 `Rn=I`、`Rs=diag(2,1)`、`mu=1`、参考 0：一般解第一项为 `2/3`，该迹化简第一项为 `2/(1+3)=1/2`。改成 `Rs=diag(2,0)` 后两者均为 `2/3`。本次[原函数提取调用](#beamformer-upstream-audit)得到的两个结果分别为 `[.5,0]` 和 `[2/3,0]`，与上述手算相符。一般 MWF 的期望由标量 `2/(2+1)` 独立计算，不从上游输出反造答案。这定位了模型边界，不说明秩一方法本身错误；没有运行完整外部包或增强音频链。
 

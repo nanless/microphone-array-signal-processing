@@ -1,4 +1,4 @@
-> ⚠️ 本篇是附录 B（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。
+> ⚠️ 本篇是附录 B（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立查阅，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[12_appendix-symbols-math.md](12_appendix-symbols-math.md) ｜ 下一篇：（无）
 
@@ -19,9 +19,11 @@
 
     1. 运行 `codes/` 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。
     2. 在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。
-    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 66 张编号图，并逐图核对正文条件。
+    3. 先按 §13.7 生成图所依赖的音频和追踪清单，再运行 `scripts/` 中的两个绘图脚本，按当前参数复现 72 张编号图，并逐图核对正文条件。
     4. 按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。
     5. 在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。
+
+完成第2、3、5章后，源强与区域诊断可选读[专题Ⅰ](14_acoustic-imaging.md)。完成第2、5、10章后，受限通信下的多设备联合增强可选读[专题Ⅱ](15_distributed-enhancement.md)。两条专题按输出任务选择，不是所有入门演示的必经步骤。
 
 ### 13.2 领域地图：教材、会议、期刊与挑战赛
 
@@ -60,7 +62,7 @@ DCASE 2026 的挑战期及系统提交于 2026 年 6 月 15 日截止，并在 7
 | 1972 | Frost 时域约束自适应波束形成 |
 | 1979–82 | Allen & Berkley 镜像法房间仿真；Griffiths & Jim 提出 GSC |
 | 1985 | Flanagan 等报告了可计算转向的大孔径会议室麦克风阵列 |
-| 1986–89 | MUSIC（1986）与 ESPRIT（1989）用子空间结构估计到达方向；分辨能力仍受孔径、信噪比、快拍数和模型失配限制 |
+| 1986–89 | MUSIC（1986）与 ESPRIT（1989）用子空间结构估计波达方向；分辨能力仍受孔径、信噪比、快拍数和模型失配限制 |
 | 1990s | Elko 差分麦克风阵列进入助听器与桌面会议设备 |
 | 2001–08 | Brandstein & Ward、Benesty 等教材出版，语音阵列知识体系化 |
 | 2010 | Nakatani 提出 WPE 去混响；Pal & Vaidyanathan 提出嵌套阵 |
@@ -163,7 +165,7 @@ ArrayDPS（Xu et al., ICML 2025）处理“没有阵列几何、房间冲激响�
 **四类对策**：
 
 1. **数据**：混合多种阵列几何、房间、采样率和噪声进行训练，并用少量目标设备录音适配。目标是覆盖可能变化的相位和幅度关系，而不是穷举设备。
-2. **表示**：让网络输出掩码、协方差或说话人活动等中间量，再由 MVDR 或 GSS 等解析方法施加无失真约束（§5.9 第 1 条）。这种分工仍需验证中间量是否真正跨几何泛化。
+2. **表示**：让网络输出掩码、协方差或说话人活动等中间量，再交给明确输出目标的解析处理链。例如MVDR按指定导向或RTF施加单位响应约束；GSS先利用活动信息约束空间聚类，再按所选波束的目标计算输出，整个GSS流程本身不统一等于无失真约束（§5.9 第 1 条、§8.4）。这种分工仍需验证中间量是否真正跨几何泛化。
 3. **训练**：随机丢弃通道、置换通道顺序并扰动麦克风坐标，分别模拟通道失效、可变麦数和标定误差；网络结构还要满足相应的置换不变或等变性质。
 4. **部署**：先做通道一致性和几何标定，再根据置信度、资源和失败模式选择模型或解析基线。模型分级只是候选架构，是否有净收益要在目标硬件上测量。
 
@@ -249,7 +251,7 @@ $$
 \left(\mathbf C^H\mathbf R^{-1}\mathbf C\right)^{-1}\vec f .
 $$
 
-**SDW-MWF 权重，见式(5-12)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)。
+**SDW-MWF 权重，见式(5-12)**：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声的未中心化二阶矩，零均值时等于协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见[第 5 章 MWF 专题](05_beamforming.md#sec-u-fb93744989)。
 
 $$
 \vec w_{SDW}
@@ -494,7 +496,7 @@ $$
 
 **第 16 题：镜像阶数检查**
 
-默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.54\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。这只能说明**固定近左、这两个标量指标**在 32 与 40 阶间变化很小，不能推广到六个位置，也不能证明频谱或方位估计已收敛。
+默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。这只能说明**固定近左、这两个标量指标**在 32 与 40 阶间变化很小，不能推广到六个位置，也不能证明频谱或方位估计已收敛。
 
 若要检查更高阶，可另用隔离环境运行 `python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --max-order 48`，将新报告的六个位置逐项与固定的 40 阶[结果报告](../codes/chapters/appendix_b/room_audio/RESULTS.json)比较，记录 $T_{20}$ 外推值、DRR、方位网格输出、时长及失败项。此处给出实验步骤，不把未保存的 48 阶结果写成已验证数值；改变房间、源位或指标后也须重新检查。
 
@@ -893,6 +895,8 @@ $X$ 是有限源序列的离散时间傅里叶变换，$H_{\mathrm r}$ 是反射
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
+.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio  # 配套成像音频；图67～69由解析控制生成
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 ```

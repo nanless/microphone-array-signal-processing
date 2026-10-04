@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -327,7 +327,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是附录 B（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。</p>
+<p>⚠️ 本篇是附录 B（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立查阅，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a> ｜ 下一篇：（无）</p>
 </blockquote>
 <hr />
@@ -345,12 +345,13 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <ol>
 <li>运行 <code>codes/</code> 中只依赖 NumPy 的教学实现，核对手算结果、数组维度和退化边界。</li>
 <li>在隔离环境中用 pyroomacoustics 验证 DSB、MVDR、MUSIC 和 SRP-PHAT 基线，记录房间、阵列和随机种子。</li>
-<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 66 张编号图，并逐图核对正文条件。</li>
+<li>先按 §13.7 生成图所依赖的音频和追踪清单，再运行 <code>scripts/</code> 中的两个绘图脚本，按当前参数复现 72 张编号图，并逐图核对正文条件。</li>
 <li>按研究任务选择公开数据和固定版本参考系统，分别核对代码、模型与数据的许可和评测口径。</li>
 <li>在可用的多通道硬件上测实时性、同步和标定；仿真结果不能代替设备测量。</li>
 </ol>
 </li>
 </ol>
+<p>完成第2、3、5章后，源强与区域诊断可选读<a href="14_acoustic-imaging.html">专题Ⅰ</a>。完成第2、5、10章后，受限通信下的多设备联合增强可选读<a href="15_distributed-enhancement.html">专题Ⅱ</a>。两条专题按输出任务选择，不是所有入门演示的必经步骤。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-2">13.2 领域地图：教材、会议、期刊与挑战赛</h2>
 <p>本节按教材、会议、期刊、挑战赛和历史脉络组织，可按需要查阅。</p>
 <p><strong>教材与专著</strong>（由浅到深）：</p>
@@ -429,7 +430,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td>1986–89</td>
-<td>MUSIC（1986）与 ESPRIT（1989）用子空间结构估计到达方向；分辨能力仍受孔径、信噪比、快拍数和模型失配限制</td>
+<td>MUSIC（1986）与 ESPRIT（1989）用子空间结构估计波达方向；分辨能力仍受孔径、信噪比、快拍数和模型失配限制</td>
 </tr>
 <tr>
 <td>1990s</td>
@@ -516,7 +517,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>四类对策</strong>：</p>
 <ol>
 <li><strong>数据</strong>：混合多种阵列几何、房间、采样率和噪声进行训练，并用少量目标设备录音适配。目标是覆盖可能变化的相位和幅度关系，而不是穷举设备。</li>
-<li><strong>表示</strong>：让网络输出掩码、协方差或说话人活动等中间量，再由 MVDR 或 GSS 等解析方法施加无失真约束（§5.9 第 1 条）。这种分工仍需验证中间量是否真正跨几何泛化。</li>
+<li><strong>表示</strong>：让网络输出掩码、协方差或说话人活动等中间量，再交给明确输出目标的解析处理链。例如MVDR按指定导向或RTF施加单位响应约束；GSS先利用活动信息约束空间聚类，再按所选波束的目标计算输出，整个GSS流程本身不统一等于无失真约束（§5.9 第 1 条、§8.4）。这种分工仍需验证中间量是否真正跨几何泛化。</li>
 <li><strong>训练</strong>：随机丢弃通道、置换通道顺序并扰动麦克风坐标，分别模拟通道失效、可变麦数和标定误差；网络结构还要满足相应的置换不变或等变性质。</li>
 <li><strong>部署</strong>：先做通道一致性和几何标定，再根据置信度、资源和失败模式选择模型或解析基线。模型分级只是候选架构，是否有净收益要在目标硬件上测量。</li>
 </ol>
@@ -706,7 +707,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 =\mathbf R^{-1}\mathbf C
 \left(\mathbf C^H\mathbf R^{-1}\mathbf C\right)^{-1}\vec f .
 $$</p>
-<p><strong>SDW-MWF 权重，见式(5-12)</strong>：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>。</p>
+<p><strong>SDW-MWF 权重，见式(5-12)</strong>：$\mathbf R_{ss}$、$\mathbf R_{nn}$ 分别是目标与噪声的未中心化二阶矩，零均值时等于协方差矩阵，$\vec e_r$ 选出参考麦；$\mu>0$ 调节噪声惩罚与目标失真。它不是一般条件下的 MVDR 解，具体目标函数和秩一特例见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章 MWF 专题</a>。</p>
 <p>$$
 \vec w_{SDW}
 =\left(\mathbf R_{ss}+\mu\mathbf R_{nn}\right)^{-1}\mathbf R_{ss}\vec e_r .
@@ -1005,7 +1006,7 @@ $$</p>
 <p>这张本题补充图的上、中、下栏分别用 dB、s、角度表示四麦 DRR 中位数、$T_{20}$ 外推的 $T_{60}$ 中位数和 SRP-PHAT 方位绝对误差。横轴标明六个已经固定的声源位置、距离与真方位；中栏虚线是 0.6 s 建模目标。图仅表示这一间合成房间的六个源位，不代表跨房间的统计分布。</p>
 <p>最后一行 DRR 的未舍入值为 −0.00304 dB，接近零。六个由仿真 RIR 估得的 $T_{60}$ 在约 0.546～0.563 s，低于 Sabine 反推时设定的 0.6 s；目标参数不能替代实际 RIR 的衰减估计。</p>
 <p><strong>第 16 题：镜像阶数检查</strong></p>
-<p>默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.54\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。这只能说明<strong>固定近左、这两个标量指标</strong>在 32 与 40 阶间变化很小，不能推广到六个位置，也不能证明频谱或方位估计已收敛。</p>
+<p>默认脚本对固定近左位置另算 32 阶结果，并与 40 阶比较：四麦 $T_{60}$ 中位数相差约 $2.08\times10^{-6}$ s，DRR 中位数相差约 $7.55\times10^{-7}$ dB，低于本题自定的 0.02 s 与 0.5 dB 判据。这只能说明<strong>固定近左、这两个标量指标</strong>在 32 与 40 阶间变化很小，不能推广到六个位置，也不能证明频谱或方位估计已收敛。</p>
 <p>若要检查更高阶，可另用隔离环境运行 <code>python -m codes.chapters.appendix_b.examples.room_srp_exercise --run --max-order 48</code>，将新报告的六个位置逐项与固定的 40 阶<a href="room_audio/RESULTS.json">结果报告</a>比较，记录 $T_{20}$ 外推值、DRR、方位网格输出、时长及失败项。此处给出实验步骤，不把未保存的 48 阶结果写成已验证数值；改变房间、源位或指标后也须重新检查。</p>
 <p><strong>第 16 题：试听文件与复现</strong></p>
 <p>仓库已将六组源信号、四麦完整房间输出和四麦仅直达输出，共 18 个 PCM WAV 单独保存在 <code>codes/chapters/appendix_b/room_audio/</code>，参数、共同增益、种子和逐文件摘要见<a href="room_audio/MANIFEST.json">房间音频清单</a>；<a href="research/05_exercises_and_audio.html#17-六位置房间响应与定位">逐组试听入口</a>列出全部文件。</p>
@@ -1502,6 +1503,8 @@ $$</p>
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio
+.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio  # 配套成像音频；图67～69由解析控制生成
+.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio
 .venv/bin/python scripts/make_figures.py      # 图 1～25、图 33～36、40～72
 .venv/bin/python scripts/make_aec_figures.py  # 图 26～32、37～39（回声消除专题）
 </code></pre>

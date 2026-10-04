@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -335,7 +335,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-333ee075d5">E12-19：已知噪声权重如何进入实际双通道输出？</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是附录 A（正文共 11 章，另有附录 A/B），可独立查阅，前后篇见下方导航。</p>
+<p>⚠️ 本篇是附录 A（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立查阅，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a> ｜ 下一篇：<a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></p>
 </blockquote>
 <hr />
@@ -345,6 +345,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>约定同 §2.3：<strong>斜体 = 标量，头顶箭头 = 向量，加粗大写 = 矩阵</strong>；$^H$ 表示共轭转置，$^\top$ 表示转置，$\hat{\ }$ 表示估计值。$X(f)$、$X(f_k,\ell)$ 这类大写字母按语音文献惯例表示逐频点复数<strong>标量</strong>。</p>
 <p>本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。</p>
 <p>阵列坐标约定为：麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。</p>
+<p>球谐公式常改用从 $+x$ 轴起算的方位角 $\alpha$ 和从 $+z$ 轴起算的极角 $\vartheta$。与本书从 $+y$ 朝 $+x$ 起算的声源方位角 $\theta$、从水平面起算的俯仰角 $\phi_{\mathrm{el}}$ 对接时，应先换算 $\alpha=\pi/2-\theta$（按 $2\pi$ 周期取值）、$\vartheta=\pi/2-\phi_{\mathrm{el}}$，再调用相应公式或接口，见<a href="05_beamforming.html#sec-5-8">§5.8</a>。</p>
 <p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。</p>
 <p>需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。实信号的<strong>单边谱</strong>取 $0\leq k\leq\lfloor N/2\rfloor$，对应非负频率 $f_k=kf_s/N$（Hz）。若存储完整 $N$ 点 DFT，后半段索引表示负频率：偶数 $N$ 的 $k>N/2$ 或奇数 $N$ 的 $k>(N-1)/2$ 应解释为 $(k-N)f_s/N$。偶数 $N$ 的 Nyquist 格点 $k=N/2$ 对实信号自共轭，可按单边谱约定记作 $+f_s/2$；不能把完整 DFT 的末格直接解释成接近 $+f_s$ 的新物理频率。E12-06 给出八点算例。</p>
 <p>若必须给<strong>完整双边频谱</strong>的每个格点指定有符号代表频率，本书采用与 NumPy 的 fftfreq 接口一致的排列：</p>
@@ -658,6 +659,38 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <td>ICA 利用源间统计独立性估计解混矩阵；IVA 把同一输出在各频点的分量组成向量联合估计，以降低频点间排列不一致（§8.3）</td>
 </tr>
 <tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">NMF（非负矩阵分解）</td>
+<td>把非负谱量近似表示为谱基与激活的乘积；它本身不直接给出多通道解混矩阵，见<a href="08_speech-separation.html#sec-8-3">§8.3</a></td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">AuxIVA</td>
+<td>辅助函数型独立向量分析；联合频点估计解混矩阵，输出各源的复数谱，仍需处理尺度和跨录音身份，见<a href="08_speech-separation.html#sec-8-3">§8.3</a></td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">ILRMA</td>
+<td>独立低秩矩阵分析；结合确定型解混与NMF源功率模型，交替更新解混、谱基与激活，见<a href="08_speech-separation.html#sec-8-3">§8.3</a></td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">MNMF</td>
+<td>多通道NMF；联合拟合源功率谱与空间协方差，常用多通道维纳滤波重构源图像。能表示欠定模型不等于这些源必然可辨认，见<a href="08_speech-separation.html#sec-8-3">§8.3</a></td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">FastMNMF</td>
+<td>利用空间矩阵共同合同对角化加速MNMF；该共享表示有模型条件，不能省略对角化变换的Jacobian项，见<a href="08_speech-separation.html#sec-8-3">§8.3</a>及E08-25～26</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">cACGMM</td>
+<td>复角中心高斯混合模型；拟合归一化复观测的方向分布并输出责任度或掩码，方向归一化后不直接保留声功率尺度，见<a href="08_speech-separation.html#sec-8-4-2">§8.4.2</a></td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">CSS（连续语音分离）</td>
+<td>在长录音上分窗分离、匹配输出排列并拼接；需要同时解决重叠区身份、尺度与相位问题，见<a href="08_speech-separation.html#sec-8-6">§8.6</a></td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">TSE（目标说话人提取）</td>
+<td>按说话人嵌入等目标条件输出指定说话人的语音；条件可靠性与未见说话人的泛化需单独验证，见<a href="08_speech-separation.html#sec-8-6">§8.6</a></td>
+</tr>
+<tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">PIT</td>
 <td>排列不变训练在训练时选择与参考源匹配代价最小的输出排列；它不保证跨长录音的身份连续（§8.1）</td>
 </tr>
@@ -734,7 +767,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">空间平滑</td>
-<td>把线阵切成重叠子阵分别估协方差再平均，牺牲孔径换去相干（§4.6）</td>
+<td>第4章把物理线阵切成重叠子阵，对子阵协方差取平均，以孔径代价恢复相干源所需的秩；其元素单位为观测幅度平方。第3章差分协同阵的滞后向量外积平滑则基于二阶统计再构造矩阵，元素单位为观测幅度四次方；两者输入与统计对象不同，不能直接混用（<a href="04_doa-estimation.html#sec-4-6">§4.6</a>、<a href="03_array-geometry.html#sec-3-3">§3.3</a>）</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">差分协同阵</td>
@@ -755,8 +788,8 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tbody>
 </table></div>
 <h3 id="sec-u-c1e472a7cd">MWF 的参考目标、秩一化简与噪声权重极限</h3>
-<p>多通道维纳滤波（Multichannel Wiener Filter，MWF）的参考目标是所选麦克风上的目标声像，不必等于原始源信号。语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）沿用目标与噪声不相关的模型，最小化“目标失真 + $\mu$ 倍残余噪声”的均方代价。本书第 5 章式(5-12)定义 $\vec w_{\mathrm{SDW}}=(\mathbf R_{ss}+\mu\mathbf R_{nn})^{-1}\mathbf R_{ss}\vec e_r$；$\mu=1$ 为普通 MWF，增大 $\mu$ 会提高残余噪声的代价。相关原始模型及参考取点见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章专题</a>。</p>
-<p>若目标是秩一模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$，源功率 $\phi_s>0$，噪声协方差 $\mathbf R_{nn}$ 厄米正定，并把参考响应归一化为 $a_r=\vec e_r^H\vec a=1$，则令 $q=\vec a^H\mathbf R_{nn}^{-1}\vec a>0$，可把 SDW-MWF 写成无失真 MVDR 权重乘实标量 $G_\mu=\phi_s q/(\mu+\phi_s q)$。参考归一化条件不能省略：一般复参考响应还会带来 $a_r^*$ 因子，输出保护的是该参考声像。<a href="05_beamforming.html#e05-20">第 5 章 E05-20</a>给出复参考的具体计算；<a href="https://arxiv.org/pdf/1707.00201" title="citation">Wang 等作者预印本（2017），§§2、3.1～3.2，式(1)～(13)</a>说明了对应的失真加噪声目标和秩一形式。</p>
+<p>多通道维纳滤波（Multichannel Wiener Filter，MWF）的参考目标是所选麦克风上的目标声像，不必等于原始源信号。语音失真加权多通道维纳滤波（Speech-Distortion-Weighted Multichannel Wiener Filter，SDW-MWF）最小化“目标失真 + $\mu$ 倍残余噪声”的均方代价。本书第 5 章式(5-12)定义 $\vec w_{\mathrm{SDW}}=(\mathbf R_{ss}+\mu\mathbf R_{nn})^{-1}\mathbf R_{ss}\vec e_r$；当目标与噪声的互二阶矩 $E[\vec s\vec n^H]=\mathbf0$ 时，$\mu=1$ 对应混合观测的普通MWF；零均值且不相关是一组充分条件。若存在非零均值，只说“协方差为零”还不够。增大 $\mu$ 会提高残余噪声的代价。相关原始模型及参考取点见<a href="05_beamforming.html#sec-u-fb93744989">第 5 章专题</a>。</p>
+<p>若目标是秩一模型 $\mathbf R_{ss}=\phi_s\vec a\vec a^H$，源功率 $\phi_s>0$，权重参数 $\mu>0$，噪声协方差 $\mathbf R_{nn}$ 厄米正定，并把参考响应归一化为 $a_r=\vec e_r^H\vec a=1$，则令 $q=\vec a^H\mathbf R_{nn}^{-1}\vec a>0$，可把 SDW-MWF 写成无失真 MVDR 权重乘实标量 $G_\mu=\phi_s q/(\mu+\phi_s q)$。此处 $\mu>0$ 保证正定噪声项使总矩阵可逆；$\mu\to0^+$ 的秩一极限不等于把 $\mu=0$ 直接代入一般矩阵逆。参考归一化条件不能省略：一般复参考响应还会带来 $a_r^*$ 因子，输出保护的是该参考声像。<a href="05_beamforming.html#e05-20">第 5 章 E05-20</a>给出复参考的具体计算；<a href="https://arxiv.org/pdf/1707.00201" title="citation">Wang 等作者预印本（2017），§§2、3.1～3.2，式(1)～(13)</a>说明了对应的失真加噪声目标和秩一形式。</p>
 <p>对于固定、半正定的 $\mathbf R_{ss}$，若 $\mathbf R_{nn}$ 正定，可把总矩阵写成 $\mu(\mathbf R_{nn}+\mathbf R_{ss}/\mu)$，括号中的矩阵最小特征值不低于 $\lambda_{\min}(\mathbf R_{nn})>0$，其逆范数有统一上界。因此总逆矩阵包含趋零的 $1/\mu$，权重在 $\mu\to\infty$ 时趋零。若噪声矩阵有零空间，这个论证缺少可逆的极限矩阵，不能照搬。E12-12 比较正定噪声与噪声零空间；“每个有限 $\mu$ 下总矩阵可逆”不是权重必趋零的充分条件。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-9dd3091211">定位与追踪</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:32em">
@@ -777,7 +810,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">ITD / ILD</td>
-<td>双耳时间差（Interaural Time Difference，ITD）/双耳声级差（Interaural Level Difference，ILD）。双重理论把低频细结构 ITD 与高频 ILD 视为主要线索，但不是硬分界：低频可有 ILD，调制高频声也可提供包络 ITD（§1.1）</td>
+<td>本书ITD取左耳到达时间减右耳到达时间，ILD取右耳声级减左耳声级（§1.1）；符号由这两种分别定义的差决定。双耳时间差（Interaural Time Difference，ITD）/双耳声级差（Interaural Level Difference，ILD）。双重理论把低频细结构 ITD 与高频 ILD 视为主要线索，但不是硬分界：低频可有 ILD，调制高频声也可提供包络 ITD（§1.1）</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">HRTF</td>
@@ -896,7 +929,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">孔径（aperture）</td>
-<td>阵列的最大跨度 $D$；分辨率 ≈ 波长/孔径</td>
+<td>阵列的最大跨度 $D$。常规波束的角宽具有 $\lambda/D$ 的量级关系，系数随几何、转向和加权变化；它不能统一代表所有DOA算法的分辨率或估计误差，见<a href="03_array-geometry.html#sec-3-1">§3.1</a>及<a href="02_basics-signal-model.html#sec-2-6">§2.6</a></td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">阵列流形（manifold）</td>
@@ -940,7 +973,7 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">IPNLMS</td>
-<td>改进比例 NLMS：按抽头幅度分配各系数的更新量。常见定义中，混合系数 $\alpha=-1$ 退化为 NLMS，$\alpha=1$ 接近纯比例更新，$\alpha=0$ 是两部分的折中；具体取值要与所用公式和数据一同验证（§6.2）</td>
+<td>改进比例 NLMS：按抽头幅度分配各系数的更新量。原论文常用 $\alpha$ 表示混合系数，第6章改记 $\kappa$。$\kappa=-1$ 时各抽头权重均为 $1/L$，还须取 $\varepsilon_{\mathrm{NLMS}}=L\delta_{\mathrm{IPNLMS}}$ 才与相应NLMS正则项完全一致；$\kappa=1$ 为纯比例端点，零初值可能使所有更新权重为零；$\kappa=0$ 混合均匀与比例两部分。具体取值要与所用公式和数据一同验证（§6.2）</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">CNG（舒适噪声）</td>
@@ -1136,7 +1169,7 @@ $$</p>
 =|t|^2+|2-t|^2
 =2|t-1|^2+2\text{。}$$</p>
 <p>模平方非负，因此 $t=1$ 唯一使范数最小；最小范数解为 $[1,1]^\top$，矩阵秩为 1。作为边界检查，取 $t=\mathrm j$ 时，真实平方范数为 $|\mathrm j|^2+|2-\mathrm j|^2=1+5=6$，而误写 $t^2+(2-t)^2$ 会得到非实数 $2-4\mathrm j$。奇异值的解析值为 $\sqrt{10}$ 和 0；浮点运算可能把后者显示成接近零的小正数。运行代码时记录 NumPy 版本、截断比率和对应的奇异值阈值，不把显示出来的近零值当成数学上的独立观测。</p>
-<p>残差为零只说明输入方程被满足，没有说明两个参数可分别辨认。增加重复行不会改变这一点，需要新增独立观测或明确的先验约束。</p>
+<p>残差为零只说明输入方程被满足，没有说明两个参数可分别辨认。增加同一参数方向的重复行仍不改变秩：即使重复测量的噪声相互独立，也不能消除参数零空间。要从观测中辨认两个参数，新增行必须提供新的参数方向；例如追加 $[1,-1]$ 可使设计矩阵从秩1升至秩2，而追加 $[1,1]$ 仍是秩1。明确的先验约束也可选出一个解，但该信息来自先验，不能称为观测新增了方向。</p>
 <h3 id="sec-u-9c73a9ff7c">E12-04：频谱相位加权能使空间噪声白化吗？</h3>
 <p>在一个固定频点，设两麦噪声零均值，协方差为 $\mathbf R_{nn}=\operatorname{diag}(4,1)$，两个通道的噪声功率单位相同。求一个对角白化矩阵 $\mathbf W$，算出白化后的噪声协方差；若目标导向矢量原为 $\vec a=[1,1]^\top$，处理后应使用哪一个导向矢量？最后判断只对互功率谱作 PHAT 加权能否得到同样的结果。</p>
 <p>第一路噪声功率是第二路的 4 倍，所以把第一路幅度乘 $1/2$，第二路保持原样：</p>

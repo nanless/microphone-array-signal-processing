@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -1572,7 +1572,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>另一个名称相近的 <code>get_mvdr_vector_merl</code> 有独立问题：固定版本把每个候选参考通道的输出功率全部相加，再对单个标量 <code>argmax</code>，因此总选第 0 列。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/examples/audit_beamformer_reference.py">诊断脚本</a>从固定原文件提取这个函数的原始 AST，仅提供 NumPy 依赖后执行，没有改写函数或执行整个模块；普通包导入因缺少 <code>paderbox</code> 失败。不能把这个提取调用称为原包完整运行。</p>
 <p>输入只有一个频点，噪声 SCM 为 <code>I2</code>、目标 SCM 为 <code>diag(1,4)</code>。独立按标量功率算得两候选输出 SNR 为 1、4，应选权重 <code>(0,0.8)</code>，原函数实际返回 <code>(0.2,0)</code>；交换两路目标功率后，第 0 列恰是正确参考，得到 <code>(0.8,0)</code>。这一对测试说明固定实现的选择缺陷，不能推断同文件的 Souden 接口也有此错。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/reports/beamformer_reference_audit.json">逐项报告</a>记录原文件、函数片段与诊断脚本摘要、环境和两次完整输出；上游源码保持原样，失败仍保留。</p>
 <span id="sec-59" class="anchor-alias" aria-hidden="true"></span><span id="49-mwfsdw-mwf-与秩一化简" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-305fd5299c">49. MWF、SDW-MWF 与秩一化简</h3>
-<p>对应 §5.7、§5.9。以参考通道目标声像为估计对象，一般 SDW-MWF 解由 <code>(Rs+mu Rn)w=Rs e_ref</code> 得到。ESPnet <code>get_sdw_mwf_vector</code> 明确提供该解，并有 <code>approx_low_rank_psd_speech</code> 选项；<code>mu=1</code> 对应普通 MWF。其 <code>get_mwf_vector</code> 的参数虽名为 <code>psd_n</code>，docstring 指的是观测协方差，不能因为变量名含 n 就传入纯噪声 SCM。</p>
+<p>对应 §5.7、§5.9。以参考通道目标声像为估计对象，一般 SDW-MWF 解由 <code>(Rs+mu Rn)w=Rs e_ref</code> 得到，其中 <code>mu&gt;0</code>，矩阵为目标与噪声的未中心化二阶矩；零均值时也等于协方差。ESPnet <code>get_sdw_mwf_vector</code> 明确提供该解，并有 <code>approx_low_rank_psd_speech</code> 选项；当目标与噪声的互二阶矩为零时，<code>mu=1</code> 对应混合观测的普通MWF，见<a href="../05_beamforming.html#sec-u-fb93744989">正文的代价与条件</a>。其 <code>get_mwf_vector</code> 的参数虽名为 <code>psd_n</code>，docstring 指的是观测协方差，不能因为变量名含 n 就传入纯噪声 SCM。</p>
 <p>pb_bss <code>get_wmwf_vector</code> 实际计算 <code>Phi/(mu+trace(Phi))</code> 的参考列，其中 <code>Phi=Rn^-1 Rs</code>，这是秩一目标条件下的化简。独立手算反例取 <code>Rn=I</code>、<code>Rs=diag(2,1)</code>、<code>mu=1</code>、参考 0：一般解第一项为 <code>2/3</code>，该迹化简第一项为 <code>2/(1+3)=1/2</code>。改成 <code>Rs=diag(2,0)</code> 后两者均为 <code>2/3</code>。本次<a href="#beamformer-upstream-audit">原函数提取调用</a>得到的两个结果分别为 <code>[.5,0]</code> 和 <code>[2/3,0]</code>，与上述手算相符。一般 MWF 的期望由标量 <code>2/(2+1)</code> 独立计算，不从上游输出反造答案。这定位了模型边界，不说明秩一方法本身错误；没有运行完整外部包或增强音频链。</p>
 <p>最小工程实验应同时比较全秩与秩一 SCM，并记录目标失真、残留噪声和所用参考。令 <code>mu→0</code> 在非奇异全秩情形接近参考通道直通，并不普遍等于 MVDR；只有相应秩一模型和极限解释下才能作该联系。源码文档里的简短等价描述应随假设阅读，不能直接复制进算法对比表。</p>
 <span id="sec-60" class="anchor-alias" aria-hidden="true"></span><span id="50-mcra由局部最小值控制噪声更新" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-2973a53a28">50. MCRA：由局部最小值控制噪声更新</h3>

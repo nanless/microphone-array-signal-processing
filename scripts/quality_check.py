@@ -109,7 +109,7 @@ EXPECTED_SECTION_COUNTS = {
 # 基线，不从构建脚本或待检产物反推。
 EXPECTED_SUBSECTION_COUNTS = {
     "01_problem-definition.md": 18,
-    "02_basics-signal-model.md": 44,
+    "02_basics-signal-model.md": 46,  # 两个独立主题：STFT合成与协方差启动权重
     "03_array-geometry.md": 31,
     "04_doa-estimation.md": 45,
     "05_beamforming.md": 41,
@@ -146,8 +146,8 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 694
-EXPECTED_OUTLINE_ITEM_COUNT = 861
+EXPECTED_SUBSECTION_COUNT = 696
+EXPECTED_OUTLINE_ITEM_COUNT = 863
 EXPECTED_FIGURE_NUMBERS = set(range(1, 73))
 EXPECTED_EXERCISE_COUNT = 332
 EXPECTED_EXERCISE_COUNTS = {

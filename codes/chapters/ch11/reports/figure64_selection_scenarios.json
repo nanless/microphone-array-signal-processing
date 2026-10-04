@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "script_sha256": "e703a0ae703aef373458812c1d93a94708116136a8e6caa70f0ab22a73668e9d",
+  "script_sha256": "bf808f6aadae8184fd8b636008b79c1fcf3e4d35701706dd299a525ca39f8eb0",
   "audio_manifest_sha256": "44317a45ae0765f5b76fca37e4ecf602d8ebcbb8f2878dd6545da574c1dacec5",
   "scope": "mathematical tones; scenario-weighted NMSE, not pooled reference energy or mean dB",
   "integer_pcm": {

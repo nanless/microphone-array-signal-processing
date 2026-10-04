@@ -722,7 +722,7 @@ FastEnhancer的计时器故意返回0和0.01，人工会话输出确定性斜坡
 
 因此原条件$K=Q$对应本书的$Q=S$。在共同频点和样本时间轴上，节点$u$观测$\vec x_u$，各节点目标为同一潜在向量$\vec s$的节点特定变换$\vec d_u=\mathbf B_u\vec s$。$Q=S$时，$\mathbf B_u$须为满秩方阵。集中式LMMSE的权重满足$\mathbf R_{xx}\mathbf W_u^\star=\mathbf R_{xd_u}$；DANSE节点保留自己的原观测，接收其他节点的$Q$维线性组合，先在此局部空间求解，再用解的本地块更新以后广播。广播是本地观测的组合，不是把包含远端观测的完整增强输出再循环广播。模型与更新定位在Part I §II、§III-A、§IV-A；单维与多维顺序结论分别见Theorems III.1、IV.1。[Part I原文](https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf "citation")
 
-上述顺序结论讨论满秩观测、共同目标满秩变换、固定精确二阶统计和轮转更新。它说明合适的**自适应**广播可到达集中式最优输出，不能证明任意预先固定的少数混合都无损；本书§15.8给出了相关噪声改变最优远端方向的反例。有限快拍、失配VAD和非平稳输入使局部统计不再是定理中的精确矩阵。若广播维数低于共同目标维数，最优方向可能丢失；过估维数造成的秩亏和伪逆情形，也不能简单套用满秩权重收敛结论。[Part I §IV-C：DANSE Under Rank Deficiency](https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf "citation")
+上述顺序结论讨论满秩的观测二阶矩矩阵 $\mathbf R_{xx}$、共同目标满秩变换、固定精确二阶统计和轮转更新。它说明合适的**自适应**广播可到达集中式最优输出，不能证明任意预先固定的少数混合都无损；本书§15.8给出了相关噪声改变最优远端方向的反例。有限快拍、失配VAD和非平稳输入使局部统计不再是定理中的精确矩阵。若广播维数低于共同目标维数，最优方向可能丢失；过估维数造成的秩亏和伪逆情形，也不能简单套用满秩权重收敛结论。[Part I §IV-C：DANSE Under Rank Deficiency](https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf "citation")
 
 同时更新时，各节点求解所用的其他广播随后也改变。Part II §IV-B式(22)～(28)的$rS$-DANSE$^{+}$多了在全部广播空间中优化$\mathbf G$的步骤；其Theorem IV.1要求$0<\alpha_i\le1$、$\alpha_i\to0$且$\sum_i\alpha_i=\infty$，并保留上述统计和共同目标条件。去掉额外$\mathbf G$优化的简化$rS$版本在§IV-C另作经验讨论。固定$0.5$或$0.7$的混合既不满足趋零条件，也不能替代额外优化，故不援用该定理。Part II §IV-D的参数异步允许节点在不同迭代事件更新，但脚注8仍要求采样同步；异步结论还要求各节点持续获得更新机会。[Part II原文，5297～5298页](https://homes.esat.kuleuven.be/~abertran/reports/09-178.pdf "citation")
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>扩展专题Ⅱ · 分布式麦克风协同增强 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -623,6 +623,7 @@ J_u(\mathbf T_u\vec h)-J_u(\vec w_u^\star)
 <p>若要把压缩称作完整概率意义的充分统计，还须另外检查条件分布等要求；联合高斯模型下的相关结论也要写清分布前提。本篇统一使用“对指定LMMSE任务无损”，不把线性代价的等价扩大成一般信息无损。</p>
 <span id="sec-20" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-15-7">15.7 白噪声锚点：两支远端麦何时能合成一路</h2>
 <span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-5600ae9460">集中式与只用本地的差别</h3>
+<p>这里的白噪声指所研究频点上的空间噪声协方差为单位矩阵：通道间互二阶矩为零，各通道噪声方差相同。它并不自动要求每个通道的时间序列在所有时滞上都是白的。</p>
 <p>本书构造两节点、各两麦的实数单频模型。节点1含全局通道1、2，节点2含通道3、4。取</p>
 <p>$$\begin{gathered}
 \vec a=[1,\tfrac12,2,-\tfrac12]^\top,\\
@@ -697,7 +698,7 @@ z_u&=\vec f_u^H\vec x_u,\\
 <p>图70　解析柱将目标失真与噪声残留分开，实际PCM点使用重读文件的总误差。白噪声的正确压缩可无损；相关噪声中的旧方向有损，适配方向恢复指定目标的集中式值。固定方向比较不等于运行完整自适应DANSE。</p>
 <span id="sec-30" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-15-10">15.10 顺序、同时、松弛与异步的保证分别是什么</h2>
 <span id="sec-31" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-18078c5ddf">固定精确统计的顺序收敛</h3>
-<p>原始顺序DANSE的单目标定理要求观测矩阵满秩，各节点目标是同一潜在标量的非零复数倍，使用精确二阶统计并轮转更新。其多维推广要求广播/估计维数与共同目标子空间维数相同，各节点目标变换满秩。<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf" title="citation">Part I §III-B Theorem III.1、§IV-B Theorem IV.1</a>。</p>
+<p>原始顺序DANSE的单目标定理要求观测二阶矩矩阵 $\mathbf R_{xx}$ 满秩（在该半正定模型中即正定；并非要求目标传播矩阵满秩），各节点目标是同一潜在标量的非零复数倍，使用精确二阶统计并轮转更新。其多维推广要求广播/估计维数与共同目标子空间维数相同，各节点目标变换满秩。<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf" title="citation">Part I §III-B Theorem III.1、§IV-B Theorem IV.1</a>。</p>
 <p>这些条件解释了为何一个共同目标可在收敛后由每个远端节点广播一路，却没有保证任意预先固定的一路压缩都无损。相关噪声不必一律排除；需要正确的全局统计和能更新到相应方向的算法。§15.8反例否定的是旧固定压缩的普遍无损性。</p>
 <span id="sec-32" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-dafaec3692">同时更新使用的输入马上改变</h3>
 <p>同时更新让各节点基于同一旧广播状态分别求新局部解，再一起替换广播。各节点求解时假定的远端方向随后都变了；局部最优不自动组成全网收敛步骤。为了分开这些层次，本书既运行固定统计的同步更新，也用E15-21的固定二次型反例解释耦合；后者不是DANSE算法的替代实现。</p>
@@ -714,7 +715,7 @@ z_u&=\vec f_u^H\vec x_u,\\
 &=(1-\alpha_i)\mathbf F_u^i\mathbf G_{uu}^{i+1}\\
 &\quad+\alpha_i\mathcal F_u(\{\mathbf F_v^i\}).
 \end{aligned}\tag{15-14}$$</p>
-<p>它与式(15-13)的简化规则不同。原文证明要求满秩观测、共同目标子空间及满秩目标变换、精确统计，以及</p>
+<p>它与式(15-13)的简化规则不同。原文证明要求满秩的观测二阶矩矩阵 $\mathbf R_{xx}$、共同目标子空间及满秩目标变换、精确统计，以及</p>
 <p>$$\begin{gathered}
 \alpha_i\in(0,1],\\
 \lim_{i\to\infty}\alpha_i=0,\\
@@ -855,7 +856,8 @@ z_u&=\vec f_u^H\vec x_u,\\
 <p>本专题使用16kHz、32000点的两秒数学合成记录，目标由700/1300Hz组成，噪声方向由1900/2300/2900/3500Hz组成，所有导出文件共同增益为1。观测是即时线性混合，没有房间传播尾部，也没有自然语音或盲活动检测。</p>
 <p>目标的两条余弦峰幅分别为0.1、0.06，稳窗均方功率为$P=0.0068$。音频协方差是前面单位方差模型整体乘$P$，因此权重和NMSE保持不变，绝对数字幅度平方MSE则乘$P$。未乘$P$的$2/13$不能直接叫音频绝对均方误差。</p>
 <p>评分窗为$1600:30400$，共28800点。同步基础混合记录所用频率在这段窗内完成整数周期，使已知分量的有限窗交叉项抵消。这是构造出来的有限记录正交性；不能用它证明随机源独立、真实声音不相关或算法能够盲估噪声。</p>
-<p>白噪声模型的正交分量构造与相关噪声模型的混合构造服务于§15.7/15.8中的协方差。音频中比较集中式、仅本地、旧固定压缩和适配压缩，是为了听出已知观测方向的作用。固定压缩控制没有运行完整DANSE更新，也没有变成设备性能排名。</p>
+<p>本节把§15.7/15.8的单位方差矩阵实现为完整频带、指定稳定窗内的通道零时滞二阶矩控制。各噪声方向使用不同载频；因此这些确定性纯音随时间仍相关，各个STFT频点的噪声矩阵也不都等于 $P\mathbf I$。例如1900Hz分量只进入白噪声控制的第一个通道，不能把全频带稳窗矩阵当成该频点的空间白噪声矩阵。</p>
+<p>白噪声控制的正交分量与相关噪声控制的混合分量保存所声明的全频带矩阵和线性代价。音频中比较集中式、仅本地、旧固定压缩和适配压缩，是为了听出已知观测方向的作用。固定压缩控制没有运行完整DANSE更新，也没有变成设备性能排名。</p>
 <span id="sec-52" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-35c5b6cc4d">三层评分分别回答三个问题</h3>
 <p>解析层根据已知协方差计算式(15-3)；浮点层根据实际导出前的目标与噪声分量计算有限窗功率；PCM层必须重读实际量化文件，用同窗、同参考做整数误差统计。PCM16按32768解码，不能把整数32767当作另一种归一化后混算。</p>
 <p>设实际整数参考为$D[n]$，实际整数输出为$Y[n]$，评分窗为$\mathcal I$。总PCM误差及归一化误差为</p>
@@ -1058,7 +1060,7 @@ P_{\mathrm{ref}}&=\sum_{n\in\mathcal I}D[n]^2,\\
 <p><a id="e15-22"></a></p>
 <span id="sec-78" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-35fc515c3d">E15-22　原定理的三个步长条件</h3>
 <p><strong>题目。</strong> 检查$1/(i+1)$、固定$1/2$、$2^{-i-1}$、$1/(i+1)^2$是否满足式(15-15)。满足条件是否就能给简化更新套用定理？</p>
-<p><strong>解答。</strong> 第一序列在$(0,1]$、趋零且总和发散，满足全部。固定$1/2$不趋零；后两种趋零但总和有限。此定理针对带额外$\mathbf G$优化的$rS$-DANSE$^+$，还需精确统计、满秩观测及共同目标满秩变换，并非只看步长。原$K=Q$应按该论文的局部定义映射为本篇广播维数$Q$等于潜在目标维数$S$。</p>
+<p><strong>解答。</strong> 第一序列在$(0,1]$、趋零且总和发散，满足全部。固定$1/2$不趋零；后两种趋零但总和有限。此定理针对带额外$\mathbf G$优化的$rS$-DANSE$^+$，还需精确统计、满秩的观测二阶矩矩阵 $\mathbf R_{xx}$及共同目标满秩变换，并非只看步长。原$K=Q$应按该论文的局部定义映射为本篇广播维数$Q$等于潜在目标维数$S$。</p>
 <p><strong>无限和的理由。</strong> 将调和项按$[2^j,2^{j+1}-1]$分组，每组至少贡献约$1/2$，所以总和无界。几何序列总和恰为1；平方倒数由积分比较得到有限和。有限程序输出前若干项只能展示取值，不能独立证明无限极限或总和。先作上述解析判断，再将结论与具体算法的额外优化和目标条件配套核对。</p>
 <p><a id="e15-23"></a></p>
 <span id="sec-79" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1d70029682">E15-23　树上同样本求和的消息路径</h3>

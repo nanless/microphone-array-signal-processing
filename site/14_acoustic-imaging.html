@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>扩展专题Ⅰ · 声学成像与噪声源诊断 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -416,7 +416,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>声学成像在一组候选位置上计算与观测相符的源贡献，把结果画成空间图。这里的“图”表示给定频点或频带的源量分布。它可以用来选择降噪部位，比较改动前后某一区域的贡献，或检查弱源是否被强源的旁瓣遮住。</p>
 <p>一个高亮点需要结合传播模型解释：它可能是实际源，也可能是反射像、离网格源的分配结果、错误深度的投影，或通道失配造成的假峰。图片清晰度不能单独证明源强和源位正确。</p>
 <span id="sec-4" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-88a0040394">与定位、增强和语义成像的区别</h3>
-<p>第 4 章的到达方向估计（Direction of Arrival，DOA）主要输出方向或位置；第 5 章的波束形成可以输出供重建的复数谱，最终得到增强波形。本篇用相似的空间权重计算二阶统计量，并进一步估计源强。一个算法可能同时提供几个输出，但这些输出需要分别定义和验证。</p>
+<p>第 4 章的波达方向估计（Direction of Arrival，DOA）主要输出方向或位置；第 5 章的波束形成可以输出供重建的复数谱，最终得到增强波形。本篇用相似的空间权重计算二阶统计量，并进一步估计源强。一个算法可能同时提供几个输出，但这些输出需要分别定义和验证。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
@@ -1130,7 +1130,7 @@ x_v[n]&=0.1\cos(2\pi\,2n/24)\\
 <li>Acoular维护者的<a href="https://github.com/acoular/acoular" title="citation">官方仓库</a>及本书<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json">来源锁定表</a>，用于检查固定实现身份；方法级数值对照与算法边界见<a href="research/01_spatial_and_tracking.html">空间算法研究手册</a>。</li>
 </ul>
 <hr />
-<p><a href="index.html">返回导读</a> ｜ <a href="11_selection-guide.html">上一篇：总结与选型指南</a> ｜ <a href="12_appendix-symbols-math.html">下一篇：附录 A</a></p><div class="pn"><span><a href="11_selection-guide.html">← 上一篇</a></span><span><a href="15_distributed-enhancement.html">下一篇 →</a></span></div>
+<p><a href="index.html">返回导读</a> ｜ <a href="11_selection-guide.html">上一篇：总结与选型指南</a> ｜ <a href="15_distributed-enhancement.html">下一篇：扩展专题Ⅱ：分布式协同增强</a></p><div class="pn"><span><a href="11_selection-guide.html">← 上一篇</a></span><span><a href="15_distributed-enhancement.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

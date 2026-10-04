@@ -4,7 +4,7 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 332 道可运行代码练习、72 张脚本生成的图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 332 道可运行代码练习、72 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
@@ -41,7 +41,7 @@ English version: [README_EN.md](README_EN.md)
 | 目录/文件 | 说明 |
 |---|---|
 | `chapters/` | 教程正文 16 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`14`/`15` 是扩展专题Ⅰ/Ⅱ，`12`/`13` 是附录 A/B；阅读顺序以导航为准） |
-| `figures/` | 72 张插图（`fig01`～`fig72_*.png`），全部由脚本生成、可复现 |
+| `figures/` | 72 张编号图（`fig01`～`fig72_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章、扩展专题Ⅰ/Ⅱ及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/` | 主清单统一管理 27 组、109 个按章节存放的本书合成 WAV；由脚本生成，不直接编辑 |
 | `codes/chapters/ch01/binaural_audio/`、`codes/chapters/ch08/gss_audio/`、`codes/chapters/ch09/moving_audio/`、`codes/chapters/ch09/tracking_audio/`、`codes/chapters/appendix_b/room_audio/` | 五套独立合成实验资产，分别为 5、5、3、2、18 个 WAV；中间状态、轨迹/逐帧观测或房间数值报告随各自清单保存 |

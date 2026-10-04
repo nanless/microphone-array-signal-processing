@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 7 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 7 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[06_aec.md](06_aec.md) ｜ 下一篇：[08_speech-separation.md](08_speech-separation.md)
 
@@ -237,7 +237,7 @@ $$\begin{aligned}
 E(n)&=X(n)-\hat r(n).
 \end{aligned}\tag{7-2}$$
 
-两个向量均为 $K\times1$；上标 $H$ 是共轭转置，预测结果仍是标量。$G$ 在这一轮整段求解中固定，而功率 $\lambda(n)$ 随帧变化。这一时变功率模型是WPE加权的来源。[Nakatani等，2010](https://doi.org/10.1109/TASL.2010.2052251)；可直接核对的交替公式见[Kinoshita等，2017，§3.1式(8)～(12)](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.pdf)。
+两个向量均为 $K\times1$；上标 $H$ 是共轭转置，预测结果仍是标量。系数向量 $\vec g$ 在这一轮整段求解中固定，而功率 $\lambda(n)$ 随帧变化。这一时变功率模型是WPE加权的来源。[Nakatani等，2010](https://doi.org/10.1109/TASL.2010.2052251)；可直接核对的交替公式见[Kinoshita等，2017，§3.1式(8)～(12)](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.pdf)。
 
 所用复高斯还需要一个条件。令 $E=a+\mathrm jb$，$a,b$ 是独立、零均值实高斯量，各自方差为 $\lambda/2$，于是 $\mathbb E|E|^2=\lambda$。这种圆对称、proper复高斯的密度是
 
@@ -296,12 +296,12 @@ $$\begin{aligned}
 \mathbf R\vec g&=\vec r.
 \end{aligned}\tag{7-7}$$
 
-$\mathbf R$ 为 $K\times K$ 厄米半正定矩阵，$\vec r$ 为 $K\times1$。任意向量 $u$ 满足 $u^H\mathbf Ru=\sum_n|u^H\vec x(n)|^2/\lambda(n)\ge0$。正权重下，只有历史向量张成整个参数空间时，$\mathbf R$ 才正定；有效帧数不少于 $K$ 是必要而非充分条件。重复观测不能代替独立方向，见E07-11。
+$\mathbf R$ 为 $K\times K$ 厄米半正定矩阵，$\vec r$ 为 $K\times1$。任意向量 $\vec u$ 满足 $\vec u^H\mathbf R\vec u=\sum_n|\vec u^H\vec x(n)|^2/\lambda(n)\ge0$。正权重下，只有历史向量张成整个参数空间时，$\mathbf R$ 才正定；有效帧数不少于 $K$ 是必要而非充分条件。重复观测不能代替独立方向，见E07-11。
 
 实际求解可加入相对对角加载：
 
 $$\begin{aligned}
-(\mathbf R+\delta I)\vec g&=\vec r,\\
+(\mathbf R+\delta \mathbf I)\vec g&=\vec r,\\
 \delta&=\epsilon\operatorname{tr}(\mathbf R)/K.
 \end{aligned}\tag{7-8}$$
 
@@ -311,22 +311,22 @@ $\epsilon\ge0$ 无量纲，$\delta$ 与 $\mathbf R$ 同量纲。固定 $\lambda$
 
 正规方程把每一帧的信息先压成二阶统计量。若数据已接近线性相关，这一步还会放大求解的数值困难。
 
-把多输出情况也包括进来：设历史长度为 $D$，有效帧数为 $T_v$，当前通道数为 $M$，令正权重为 $w_n=1/\lambda_n$。设计矩阵 $A\in\mathbb C^{T_v\times D}$ 的第 $n$ 行为 $\sqrt{w_n}q_n^H$；目标矩阵 $B\in\mathbb C^{T_v\times M}$ 的第 $n$ 行为 $\sqrt{w_n}\vec X_n^H$。单输出时 $B$ 退化为一列。
+把多输出情况也包括进来：设历史长度为 $D$，有效帧数为 $T_v$，当前通道数为 $M$，令正权重为 $w_n=1/\lambda_n$。设计矩阵 $\mathbf A\in\mathbb C^{T_v\times D}$ 的第 $n$ 行为 $\sqrt{w_n}\vec q_n^H$；目标矩阵 $\mathbf B\in\mathbb C^{T_v\times M}$ 的第 $n$ 行为 $\sqrt{w_n}\vec X_n^H$。单输出时 $\mathbf B$ 退化为一列。
 
-这个共轭方向来自先把预测残差取共轭：$\vec E_n^H=\vec X_n^H-q_n^HG$。因此加权平方和就是 $\|AG-B\|_F^2$，而 $A^HA=R$、$A^HB=P$。下标 $F$ 表示把矩阵所有元素的平方模相加后开方的Frobenius范数。本书把加载写成增广最小二乘：
+这个共轭方向来自先把预测残差取共轭：$\vec E_n^H=\vec X_n^H-\vec q_n^H\mathbf G$。因此加权平方和就是 $\|\mathbf A\mathbf G-\mathbf B\|_F^2$，而 $\mathbf A^H\mathbf A=\mathbf R$、$\mathbf A^H\mathbf B=\mathbf P$。下标 $F$ 表示把矩阵所有元素的平方模相加后开方的Frobenius范数。本书把加载写成增广最小二乘：
 
 $$\begin{aligned}
-\hat G&=\arg\min_G\left\|
-\begin{bmatrix}A\\\sqrt\delta I_D\end{bmatrix}G
--\begin{bmatrix}B\\0\end{bmatrix}\right\|_F^2,\\
-\delta&=\epsilon\|A\|_F^2/D.
+\hat{\mathbf G}&=\arg\min_{\mathbf G}\left\|
+\begin{bmatrix}\mathbf A\\\sqrt\delta \mathbf I_D\end{bmatrix}\mathbf G
+-\begin{bmatrix}\mathbf B\\0\end{bmatrix}\right\|_F^2,\\
+\delta&=\epsilon\|\mathbf A\|_F^2/D.
 \end{aligned}\tag{7-9}$$
 
-增广下半部分贡献 $\delta\|G\|_F^2$，所以它与式(7-8)是同一个固定权重、固定加载的目标；$\delta=0$ 时可直接省去零行。
+增广下半部分贡献 $\delta\|\mathbf G\|_F^2$，所以它与式(7-8)是同一个固定权重、固定加载的目标；$\delta=0$ 时可直接省去零行。
 
-$A$ 满列秩时，二范数条件数满足 $\kappa_2(A^HA)=\kappa_2(A)^2$。直接对设计矩阵作QR分解（分解为具有正交列的矩阵与上三角矩阵）或奇异值分解（Singular Value Decomposition，SVD）可以避开先平方条件数的这一步；它不能消除原数据本身的病态，也不能创造缺失观测。QR与SVD的不同秩条件见[LAPACK用户指南，线性最小二乘](https://www.netlib.org/lapack/lug/node27.html)。
+$\mathbf A$ 满列秩时，二范数条件数满足 $\kappa_2(\mathbf A^H\mathbf A)=\kappa_2(\mathbf A)^2$。直接对设计矩阵作QR分解（分解为具有正交列的矩阵与上三角矩阵）或奇异值分解（Singular Value Decomposition，SVD）可以避开先平方条件数的这一步；它不能消除原数据本身的病态，也不能创造缺失观测。QR与SVD的不同秩条件见[LAPACK用户指南，线性最小二乘](https://www.netlib.org/lapack/lug/node27.html)。
 
-本书的 `solver="design_lstsq"` 把增广矩阵直接交给NumPy的最小二乘求解，不先生成 $R$，更不根据已平方的 $R$ 的数值秩拒绝原设计。默认 `solver="normal"` 保留正规方程路径；其奇异回退也是对正规矩阵作最小二乘，所以无法补回形成 $A^HA$ 时丢失的信息。[E07-19](#e07-19)用一个两行矩阵把这种区别逐步算出。
+本书的 `solver="design_lstsq"` 把增广矩阵直接交给NumPy的最小二乘求解，不先生成 $\mathbf R$，更不根据已平方的 $\mathbf R$ 的数值秩拒绝原设计。默认 `solver="normal"` 保留正规方程路径；其奇异回退也是对正规矩阵作最小二乘，所以无法补回形成 $\mathbf A^H\mathbf A$ 时丢失的信息。[E07-19](#e07-19)用一个两行矩阵把这种区别逐步算出。
 
 两条路径的条件数诊断分别对应增广设计矩阵与已加载正规矩阵，不能把它们当成同一尺度的数字比较。设计求解仍受本书float64实现的保守乘积范围限制，不承诺处理任意极端尺度。
 
@@ -395,21 +395,21 @@ X_m(n)&=E_m(n)+\hat r_m(n).
 
 每个滞后 $k$ 对应一个 $M\times M$ 系数矩阵。把 $K$ 个滞后的所有通道历史堆叠后，回归向量长度为 $MK$，联合系数可写成 $MK\times M$。因此每个频点的正规方程矩阵是 $MK\times MK$，而不是单通道的 $K\times K$。
 
-为防止“尺寸相同但顺序不同”的错误，先固定lag-major顺序：每个滞后内依次放第1至第 $M$ 路，再放下一个滞后。令当前列向量为 $\vec X_n\in\mathbb C^M$，历史为 $q_n\in\mathbb C^{D}$，$D=MK$。$G$ 的第 $m$ 列是预测第 $m$ 路的全部历史系数，形状为 $D\times M$：
+为防止“尺寸相同但顺序不同”的错误，先固定lag-major顺序：每个滞后内依次放第1至第 $M$ 路，再放下一个滞后。令当前列向量为 $\vec X_n\in\mathbb C^M$，历史为 $\vec q_n\in\mathbb C^{D}$，$D=MK$。$\mathbf G$ 的第 $m$ 列是预测第 $m$ 路的全部历史系数，形状为 $D\times M$：
 
 $$\begin{aligned}
-q_n&=\begin{bmatrix}\vec X_{n-\Delta}\\ \vdots\\\vec X_{n-\Delta-K+1}\end{bmatrix},\\
-R&=\sum_{n\in\mathcal V}q_nq_n^H/\lambda_n,\\
-P&=\sum_{n\in\mathcal V}q_n\vec X_n^H/\lambda_n,\\
-RG&=P,\\
-\vec E_n&=\vec X_n-G^Hq_n.
+\vec q_n&=\begin{bmatrix}\vec X_{n-\Delta}\\ \vdots\\\vec X_{n-\Delta-K+1}\end{bmatrix},\\
+\mathbf R&=\sum_{n\in\mathcal V}\vec q_n\vec q_n^H/\lambda_n,\\
+\mathbf P&=\sum_{n\in\mathcal V}\vec q_n\vec X_n^H/\lambda_n,\\
+\mathbf R\mathbf G&=\mathbf P,\\
+\vec E_n&=\vec X_n-\mathbf G^H\vec q_n.
 \end{aligned}\tag{7-12}$$
 
-$R$ 为 $D\times D$，$P$ 为 $D\times M$，最后一行输出为 $M\times1$。一次分解 $R$ 后可以求解 $M$ 个右端，不必为每个输出重新分解同一个矩阵。E07-08从连续六帧构造两维复数正规方程，E07-10检查同时置换历史和系数时输出保持不变。
+$\mathbf R$ 为 $D\times D$，$\mathbf P$ 为 $D\times M$，最后一行输出为 $M\times1$。一次分解 $\mathbf R$ 后可以求解 $M$ 个右端，不必为每个输出重新分解同一个矩阵。E07-08从连续六帧构造两维复数正规方程，E07-10检查同时置换历史和系数时输出保持不变。
 
 #### 共享功率是一项模型选择
 
-本书多通道实现用各通道预测残差的平方模均值更新一个共享 $\lambda(n,f)$，因此各输出通道使用相同的帧权重。这个平均来自把残差协方差限制为 $\lambda I_M$ 的球形复高斯工作模型；并非仅从“有 $M$ 个通道”就必然得到，也不保证真实早期声场在空间上独立同分布。
+本书多通道实现用各通道预测残差的平方模均值更新一个共享 $\lambda(n,f)$，因此各输出通道使用相同的帧权重。这个平均来自把残差协方差限制为 $\lambda \mathbf I_M$ 的球形复高斯工作模型；并非仅从“有 $M$ 个通道”就必然得到，也不保证真实早期声场在空间上独立同分布。
 
 更一般的空间协方差需要分清哪些量固定、哪些量更新。增益未校准的强通道会支配单位阵模型中的均值；[E07-06](#e07-06)给出推导、数字例子和边界。
 
@@ -423,34 +423,34 @@ $$\begin{aligned}
 
 全零残差仍没有正的无约束内部最优值。平均分母为 $M$ 来自这一个共享参数模型，不能凭多通道数量直接指定。原论文的逐通道方差与缩放单位阵（scaled identity）结构分别见[Yoshioka与Nakatani，2012，§V-A、§V-B](https://www.audiolabs-erlangen.de/resources/aps-w23/papers/sap_Yoshioka2012.pdf)。紧凑阵列各路功率变化接近可作为建模理由，不构成真实残差空间独立的证明。
 
-例如声明 $\vec E_n\sim\mathcal{CN}(0,\lambda_n C)$，其中 $C\in\mathbb C^{M\times M}$ 是已知、正定、所有帧共用的空间形状矩阵。每帧负对数似然含 $M\log\lambda_n+\log\det C+\vec E_n^HC^{-1}\vec E_n/\lambda_n$。固定所有正的 $\lambda_n$，对 $G^*$ 求导仍能得到
+例如声明 $\vec E_n\sim\mathcal{CN}(0,\lambda_n \mathbf C)$，其中 $\mathbf C\in\mathbb C^{M\times M}$ 是已知、正定、所有帧共用的空间形状矩阵。每帧负对数似然含 $M\log\lambda_n+\log\det \mathbf C+\vec E_n^H\mathbf C^{-1}\vec E_n/\lambda_n$。固定所有正的 $\lambda_n$，对 $\mathbf G^*$ 求导仍能得到
 
 $$\begin{aligned}
-(RG-P)C^{-1}&=0\quad\Longrightarrow\quad RG=P,\\
-\hat\lambda_n&=\frac{\vec E_n^HC^{-1}\vec E_n}{M}
+(\mathbf R\mathbf G-\mathbf P)\mathbf C^{-1}&=0\quad\Longrightarrow\quad \mathbf R\mathbf G=\mathbf P,\\
+\hat\lambda_n&=\frac{\vec E_n^H\mathbf C^{-1}\vec E_n}{M}
 \quad(\vec E_n\ne0).
 \end{aligned}\tag{7-14}$$
 
-第一行说明：时间不变的可逆 $C$ 可以从这一次预测器的正规方程右侧消去，固定相同权重时 $G$ 不必改变。[Drude等，2018，§4式(4)后的说明](https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf)也指出这一取消条件。第二行却改变了功率更新，因此下一轮的帧权重及最终迭代结果仍可能改变；不能把“当前固定功率的解相同”扩大成整条迭代相同。
+第一行说明：时间不变的可逆 $\mathbf C$ 可以从这一次预测器的正规方程右侧消去，固定相同权重时 $\mathbf G$ 不必改变。[Drude等，2018，§4式(4)后的说明](https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf)也指出这一取消条件。第二行却改变了功率更新，因此下一轮的帧权重及最终迭代结果仍可能改变；不能把“当前固定功率的解相同”扩大成整条迭代相同。
 
-取 $C=\begin{bmatrix}1&1/2\\1/2&1\end{bmatrix}$，则 $C^{-1}=\tfrac43\begin{bmatrix}1&-1/2\\-1/2&1\end{bmatrix}$。同相残差 $(1,1)^T$ 的二次型是 $4/3$，共享功率为 $2/3$；反相残差 $(1,-1)^T$ 的二次型是4，共享功率为2。若用 $C=I$，两者的共享功率都为1。相同总平方模没有消除空间形状的影响。
+取 $\mathbf C=\begin{bmatrix}1&1/2\\1/2&1\end{bmatrix}$，则 $\mathbf C^{-1}=\tfrac43\begin{bmatrix}1&-1/2\\-1/2&1\end{bmatrix}$。同相残差 $(1,1)^T$ 的二次型是 $4/3$，共享功率为 $2/3$；反相残差 $(1,-1)^T$ 的二次型是4，共享功率为2。若用 $\mathbf C=\mathbf I$，两者的共享功率都为1。相同总平方模没有消除空间形状的影响。
 
-若 $C$ 随帧变化，一般不能从求和后的导数中提取同一个右乘矩阵，上述取消就不再成立。逐通道自由更新方差也不等同于固定 $C$。若同时估计 $C$ 与 $\lambda_n$，还须指定尺度约定，例如 $\operatorname{tr}(C)=M$，否则把 $C$ 乘正常数、把 $\lambda_n$ 除以该常数会给出相同协方差。
+若 $\mathbf C$ 随帧变化，一般不能从求和后的导数中提取同一个右乘矩阵，上述取消就不再成立。逐通道自由更新方差也不等同于固定 $\mathbf C$。若同时估计 $\mathbf C$ 与 $\lambda_n$，还须指定尺度约定，例如 $\operatorname{tr}(\mathbf C)=M$，否则把 $\mathbf C$ 乘正常数、把 $\lambda_n$ 除以该常数会给出相同协方差。
 
 #### 帧数、阶数与计算成本
 
-例如 $M=8,K=10$ 时 $D=80$，$R$ 为 $80\times80$。总帧数为 $T$ 时，完整历史对应的有效帧数为 $T_v=\max(0,T-\Delta-K+1)$。有效帧数若少于80，未加载统计矩阵必然秩亏；等于或多于80也可能因通道相关、静音或重复观测而病态。应该同时检查有效数据、数值秩与条件数。
+例如 $M=8,K=10$ 时 $D=80$，$\mathbf R$ 为 $80\times80$。总帧数为 $T$ 时，完整历史对应的有效帧数为 $T_v=\max(0,T-\Delta-K+1)$。有效帧数若少于80，未加载统计矩阵必然秩亏；等于或多于80也可能因通道相关、静音或重复观测而病态。应该同时检查有效数据、数值秩与条件数。
 
 令有效帧数为 $T_v$。每个频点、每次迭代的主要数量级如下；这些是运算阶数，不是硬件速度测量。
 
 | 步骤 | 运算数量级 |
 |---|---|
-| 构造 $R$ | $O(T_vD^2)$ |
-| 构造多输出互相关 $P$ | $O(T_vDM)$ |
-| 分解 $R$ | $O(D^3)$ |
+| 构造 $\mathbf R$ | $O(T_vD^2)$ |
+| 构造多输出互相关 $\mathbf P$ | $O(T_vDM)$ |
+| 分解 $\mathbf R$ | $O(D^3)$ |
 | 利用分解解 $M$ 个右端 | $O(D^2M)$ |
 
-再乘频点数和迭代次数，才能估计整段主要工作量。若同时缓存257个频点的全部 $R$，每个complex128元素16字节，则仅这些矩阵约占25.10 MiB，全部 $G$ 另占约2.51 MiB；尚未计入输入谱、历史、输出和求解器工作区。本书实现逐频处理，不能把上述“同时缓存全部矩阵”的预算当作其实际峰值内存。E07-15给出完整换算。
+再乘频点数和迭代次数，才能估计整段主要工作量。若同时缓存257个频点的全部 $\mathbf R$，每个complex128元素16字节，则仅这些矩阵约占25.10 MiB，全部 $\mathbf G$ 另占约2.51 MiB；尚未计入输入谱、历史、输出和求解器工作区。本书实现逐频处理，不能把上述“同时缓存全部矩阵”的预算当作其实际峰值内存。E07-15给出完整换算。
 
 晚期混响会同时出现在多个麦克风上，但幅度和相位不同，多通道观测因此提供额外空间信息。相对收益取决于混响、阵列和数据长度，具体数字应查原论文的实验条件。[Yoshioka & Nakatani 2012](https://doi.org/10.1109/TASL.2012.2210879 "citation")
 
@@ -514,19 +514,19 @@ WPE → GSS → MVDR/GEV 也可不使用神经分离网络，见第 8 章。Raj 
 
 #### 递推统计与先验输出
 
-下面是本书直接累计正规矩阵的教学递推。固定频点，以 $q_t$ 表示历史列向量，当前标量观测为 $X_t$，功率 $\lambda_t>0$ 只能从当前及已到达数据取得：
+下面是本书直接累计正规矩阵的教学递推。固定频点，以 $\vec q_t$ 表示历史列向量，当前标量观测为 $X_t$，功率 $\lambda_t>0$ 只能从当前及已到达数据取得：
 
 $$\begin{aligned}
-R_t&=\alpha R_{t-1}+\frac{q_tq_t^H}{\lambda_t},\\
-r_t&=\alpha r_{t-1}+\frac{q_tX_t^*}{\lambda_t},\\
-(R_t+\delta I)g_t&=r_t.
+\mathbf R_t&=\alpha \mathbf R_{t-1}+\frac{\vec q_t\vec q_t^H}{\lambda_t},\\
+\vec r_t&=\alpha \vec r_{t-1}+\frac{\vec q_tX_t^*}{\lambda_t},\\
+(\mathbf R_t+\delta \mathbf I)\vec g_t&=\vec r_t.
 \end{aligned}\tag{7-17}$$
 
-$\alpha\in[0,1]$ 是遗忘因子；$\delta\ge0$ 与 $R_t$ 同量纲。多输出时只需把互相关向量改成与式(7-12)一致的多列矩阵。在未加载的可解条件下，展开递推可看出旧样本被赋予指数下降的权重；先验初始化也会按同一规则衰减。E07-13给出显式的批量等价式。
+$\alpha\in[0,1]$ 是遗忘因子；$\delta\ge0$ 与 $\mathbf R_t$ 同量纲。多输出时只需把互相关向量改成与式(7-12)一致的多列矩阵。在未加载的可解条件下，展开递推可看出旧样本被赋予指数下降的权重；先验初始化也会按同一规则衰减。E07-13给出显式的批量等价式。
 
 本书这一流程先用旧系数生成当前输出，再更新统计量供下一帧使用：
 
-$$E_t^{\mathrm{prior}}=X_t-g_{t-1}^Hq_t.
+$$E_t^{\mathrm{prior}}=X_t-\vec g_{t-1}^H\vec q_t.
 \tag{7-18}$$
 
 使用当帧新系数输出仍可能是因果运算，但已经是不同的输出定义；不能混用两者评分。启动时可用零系数或声明的旁路。不能把离线居中平滑直接放入此流程。
@@ -549,7 +549,7 @@ $$E_t^{\mathrm{prior}}=X_t-g_{t-1}^Hq_t.
 
 这个例子只演示因果统计量顺序，不包含交替更新的功率估计。$\lambda_t$ 也必须只用当前与历史信息，不能沿用图21的居中平滑。
 
-$\alpha$ 越接近1，指数记忆越长；接近0时旧统计迅速衰减，估计也更依赖当帧。实际系统需选择加载、静音处理或状态重置策略，并分别验证；静音冻结不是所有算法共有的定义。直接累计 $R$ 与递推其逆矩阵的数值边界也不同，见E07-13。[Drude et al., 2018，§4.2～§4.3](https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf "citation")、[Kinoshita et al., Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html "citation")
+$\alpha$ 越接近1，指数记忆越长；接近0时旧统计迅速衰减，估计也更依赖当帧。实际系统需选择加载、静音处理或状态重置策略，并分别验证；静音冻结不是所有算法共有的定义。直接累计 $\mathbf R$ 与递推其逆矩阵的数值边界也不同，见E07-13。[Drude et al., 2018，§4.2～§4.3](https://groups.uni-paderborn.de/nt/pubs/2018/ITG_2018_Drude_Paper.pdf "citation")、[Kinoshita et al., Interspeech 2017](https://www.isca-archive.org/interspeech_2017/kinoshita17_interspeech.html "citation")
 
 帧移为 8 ms 时，0.25 s 约含 31 帧，2 s 含 250 帧。这个换算可以用来估计统计样本量和块等待时间，但不能单独决定参数。起始值应在目标数据上同时检查拖尾衰减、语音失真、计算量和端到端延迟，再调整块长、遗忘因子、预测阶数和正则化强度。
 
@@ -619,6 +619,8 @@ WPE 的模型目标是抑制可由延迟历史预测的晚期混响，而不是�
 | 大间距分布式阵列 | 通道到达时间不同，希望保留的早期目标可能仍与所取历史相关 | 麦克风相关延迟：按到达时延给各通道定各自延迟（[Lohmann et al., ICASSP 2023](https://doi.org/10.1109/ICASSP49357.2023.10096992 "citation")） |
 
 启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。
+
+分布式采集还要保证各通道采样时刻位于声明的共同时间轴，再按各自预测时延读取历史。采样率偏差、通信等待和缺包会改变可用观测，不能只修改预测延迟。样本与时钟同步、远端数据可用性及控制实验见[扩展专题Ⅱ§15.15](15_distributed-enhancement.md#sec-15-15)；该专题的DANSE增强目标与本章WPE的延迟预测目标不同。
 
 #### WPD将历史与空间约束放入同一目标
 
@@ -771,7 +773,7 @@ ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转�
 
 5. 写出最大似然交替的两步，以及固定 $\lambda$ 时的正规方程。
 
-    **答案**：固定 $\lambda$，按式(7-7)计算加权自相关 $R$、互相关 $\vec r$，解 $R\vec g=\vec r$；固定 $G$，在未平滑标量模型且残差非零时用 $\lambda=|E|^2$ 更新功率；零残差须另行处理。实际平滑、下限、对角加载和停止条件均要随实现报告。
+    **答案**：固定 $\lambda$，按式(7-7)计算加权自相关 $\mathbf R$、互相关 $\vec r$，解 $\mathbf R\vec g=\vec r$；固定预测系数，未平滑标量模型且残差非零时用 $\lambda=|E|^2$ 更新功率；零残差须另行处理。实际平滑、下限、对角加载和停止条件均要随实现报告。
 
 6. 手算算例 7-3，并解释权重如何改变估计。
 
@@ -807,7 +809,7 @@ ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转�
 
 #### E07-03：加载修复了什么？
 
-给定 $R=\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$r=[1,1]^\top$，按 $R+0.1\operatorname{tr}(R)I/2$ 加载，求特征值、条件数和解。
+给定 $\mathbf R=\begin{bmatrix}1&1\\1&1\end{bmatrix}$、$\vec r=[1,1]^\top$，按 $\mathbf R+0.1\operatorname{tr}(\mathbf R)\mathbf I/2$ 加载，求特征值、条件数和解。
 
 **解答**：原特征值为 0、2，不能唯一求逆；加载矩阵对角元素增加 0.1，特征值变为 0.1、2.1，条件数为 21。解的两项均为 $1/2.1\approx0.47619$。加载选出稳定的正则化解，但不会补回缺失的独立观测，也会改变无加载目标。
 
@@ -821,13 +823,13 @@ ESPnet 的 DNN-WPE 外层输入为 `(批, 帧, 通道, 频点)`，内部才转�
 
 #### E07-05：WPD 的历史权重什么时候不为零？
 
-按式(7-19)、式(7-20)，取当前两麦及一个历史块组成四维向量，扩展导向为 $\bar v=[1,1,0,0]^\top$。给定加权协方差
+按式(7-19)、式(7-20)，取当前两麦及一个历史块组成四维向量，扩展导向为 $\bar{\vec v}=[1,1,0,0]^\top$。给定加权协方差
 
-$$\bar R=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$
+$$\bar{\mathbf R}=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$
 
-求满足 $\bar w^\top\bar v=1$ 的最小功率权重，并与强制历史权重为零比较。
+求满足 $\bar{\vec w}^\top\bar{\vec v}=1$ 的最小功率权重，并与强制历史权重为零比较。
 
-**解答**：解 $\bar R u=\bar v$。第 1、3 行给出 $2u_1+u_3=1$、$u_1+2u_3=0$，所以 $u_1=2/3,u_3=-1/3$；另两项为 $u_2=1,u_4=0$。分母 $\bar v^\top u=5/3$，得到 $\bar w=[0.4,0.6,-0.2,0]^\top$。约束为 $0.4+0.6=1$，目标值为 $\bar w^\top\bar R\bar w=0.6$。
+**解答**：解 $\bar{\mathbf R} \vec u=\bar{\vec v}$。第 1、3 行给出 $2u_1+u_3=1$、$u_1+2u_3=0$，所以 $u_1=2/3,u_3=-1/3$；另两项为 $u_2=1,u_4=0$。分母 $\bar{\vec v}^\top \vec u=5/3$，得到 $\bar{\vec w}=[0.4,0.6,-0.2,0]^\top$。约束为 $0.4+0.6=1$，目标值为 $\bar{\vec w}^\top\bar{\mathbf R}\bar{\vec w}=0.6$。
 
 历史权重强制为零时，当前块协方差为 $\operatorname{diag}(2,1)$，最优权重为 $[1/3,2/3,0,0]^\top$，目标值为 $2/3$。非零当前—历史相关使第三项能够参与抵消；若把两处互相关 1 改为 0，历史权重又回到零。
 
@@ -837,13 +839,13 @@ $$\bar R=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$
 
 #### E07-06：共享 WPE 功率为什么除以通道数？
 
-固定一个频点、一帧和预测系数，不进行时间平滑。两通道复残差为 $E_1=1+\mathrm j$、$E_2=2$。在 $\vec E\sim\mathcal{CN}(0,\lambda I_M)$ 的工作模型下求共享方差，再把第二个通道乘以 2，比较估计。
+固定一个频点、一帧和预测系数，不进行时间平滑。两通道复残差为 $E_1=1+\mathrm j$、$E_2=2$。在 $\vec E\sim\mathcal{CN}(0,\lambda \mathbf I_M)$ 的工作模型下求共享方差，再把第二个通道乘以 2，比较估计。
 
 **第 1 步：把通道数写入似然。** 对 $M$ 维 proper 复高斯向量，协方差行列式是 $\lambda^M$，指数中的二次型是 $\sum_m|E_m|^2/\lambda$。忽略与 $\lambda$ 无关的常数后，负对数似然与式(7-13)相同。令导数为零，相当于 $M\lambda=\sum_m|E_m|^2$，所以正的共享方差等于各通道残差功率的平均。
 
 **第 2 步：代入本题。** $|1+\mathrm j|^2=2$，$|2|^2=4$，故 $\hat\lambda=(2+4)/2=3$。若逐通道单独估计，得到的是 2 和 4；共享模型通过同一个参数约束两通道，不能把这三个数混用。
 
-**第 3 步：改变通道增益。** 第二路乘以 2 后，残差为 $[1+\mathrm j,4]$，其功率变为 16，共享估计为 $(2+16)/2=9$；把所有通道都乘以 2 则得到 $4\times3=12$。单通道增益变化和全阵列共同缩放并不等价。若共同乘以非零常数 $c$，同时令 $\lambda$ 乘以 $|c|^2$，正规方程中分子与分母抵消，$R$ 和 $P$ 保持不变。另一种操作是只把全部逆功率权重乘同一正常数，此时两边才共同缩放。逐通道增益不均匀通常还会改变各帧相对权重，不满足上述共同缩放关系。
+**第 3 步：改变通道增益。** 第二路乘以 2 后，残差为 $[1+\mathrm j,4]$，其功率变为 16，共享估计为 $(2+16)/2=9$；把所有通道都乘以 2 则得到 $4\times3=12$。单通道增益变化和全阵列共同缩放并不等价。若共同乘以非零常数 $c$，同时令 $\lambda$ 乘以 $|c|^2$，正规方程中分子与分母抵消，$\mathbf R$ 和 $\mathbf P$ 保持不变。另一种操作是只把全部逆功率权重乘同一正常数，此时两边才共同缩放。逐通道增益不均匀通常还会改变各帧相对权重，不满足上述共同缩放关系。
 
 全零残差时，无约束似然把最优值推向 $\lambda\downarrow0$，没有正的内部极小值，也不能对零功率取倒数。实际 [`offline_wpe()`](../codes/chapters/ch07/core/dereverberation.py)另设相对功率地板，并对完全静音频点旁路，因此实现不是无约束的逐帧极大似然。代码与独立检查见 [enhancement_step_exercises.py](../codes/chapters/ch00/cross_chapter/enhancement_step_exercises.py) 的 `E07-06`。本题只核对功率更新，不证明球形模型符合真实房间。
 
@@ -853,50 +855,50 @@ $$\bar R=\begin{bmatrix}2&0&1&0\\0&1&0&0\\1&0&2&0\\0&0&0&1\end{bmatrix}，$$
 
 沿用 E07-05 的四维协方差，按“当前两麦、一个延迟历史块”排列。固定所有 $\lambda_t>0$，不更新功率、不加正则化。先证明分解，再独立复算系数和一帧输出。
 
-**第 1 步：把矩阵和输出按角色拆开。** 记当前向量 $x_t\in\mathbb C^M$，延迟历史 $q_t\in\mathbb C^D$，滤波系数分别为 $w\in\mathbb C^M$ 和 $h\in\mathbb C^D$。这里 $q_t$ 包含与前文相同的保护延迟；本题 $M=D=2$。同一统计量分块为
+**第 1 步：把矩阵和输出按角色拆开。** 记当前向量 $\vec x_t\in\mathbb C^M$，延迟历史 $\vec q_t\in\mathbb C^D$，滤波系数分别为 $\vec w\in\mathbb C^M$ 和 $\vec h\in\mathbb C^D$。这里 $\vec q_t$ 包含与前文相同的保护延迟；本题 $M=D=2$。同一统计量分块为
 
 $$\begin{aligned}
-\bar R&=\begin{bmatrix}A&B\\B^H&C\end{bmatrix},\qquad
-\bar w=\begin{bmatrix}w\\h\end{bmatrix},\\
-y_t&=w^Hx_t+h^Hq_t.
+\bar{\mathbf R}&=\begin{bmatrix}\mathbf A&\mathbf B\\\mathbf B^H&\mathbf C\end{bmatrix},\qquad
+\bar{\vec w}=\begin{bmatrix}\vec w\\\vec h\end{bmatrix},\\
+y_t&=\vec w^H\vec x_t+\vec h^H\vec q_t.
 \end{aligned}$$
 
-$A$ 是当前帧的 $M\times M$ 加权协方差，$C$ 是历史的 $D\times D$ 加权协方差，$B$ 是 $M\times D$ 当前—历史互相关。三块都用相同的 $1/\lambda_t$ 和有效帧；它们不是分别估计的噪声矩阵。
+$\mathbf A$ 是当前帧的 $M\times M$ 加权协方差，$\mathbf C$ 是历史的 $D\times D$ 加权协方差，$\mathbf B$ 是 $M\times D$ 当前—历史互相关。三块都用相同的 $1/\lambda_t$ 和有效帧；它们不是分别估计的噪声矩阵。
 
-**第 2 步：展开交叉项，再配成完整平方。** 令 $G=C^{-1}B^H$，形状为 $D\times M$；令 $S=A-BC^{-1}B^H$。后者称为关于历史块的 Schur 补。由于本题假定 $\bar R$ 正定，$C$ 和 $S$ 都正定。
+**第 2 步：展开交叉项，再配成完整平方。** 令 $\mathbf G=\mathbf C^{-1}\mathbf B^H$，形状为 $D\times M$；令 $\mathbf S=\mathbf A-\mathbf B\mathbf C^{-1}\mathbf B^H$。后者称为关于历史块的 Schur 补。由于本题假定 $\bar{\mathbf R}$ 正定，$\mathbf C$ 和 $\mathbf S$ 都正定。
 
-先将展开式分行写出，再记 $h+Gw$ 为 $u$：
+先将展开式分行写出，再记 $\vec h+\mathbf G\vec w$ 为 $\vec u$：
 
 $$\begin{aligned}
-\bar w^H\bar R\bar w
-&=w^HAw+w^HBh\\
-&\quad+h^HB^Hw+h^HCh\\
-&=w^HSw+u^HCu,\\
-u&=h+Gw,\\
-h_\star&=-Gw_\star,\\
-w_\star&=\frac{S^{-1}v}{v^HS^{-1}v},\\
-y_t&=w_\star^H(x_t-G^Hq_t).
+\bar{\vec w}^H\bar{\mathbf R}\bar{\vec w}
+&=\vec w^H\mathbf A\vec w+\vec w^H\mathbf B\vec h\\
+&\quad+\vec h^H\mathbf B^H\vec w+\vec h^H\mathbf C\vec h\\
+&=\vec w^H\mathbf S\vec w+\vec u^H\mathbf C\vec u,\\
+\vec u&=\vec h+\mathbf G\vec w,\\
+\vec h_\star&=-\mathbf G\vec w_\star,\\
+\vec w_\star&=\frac{\mathbf S^{-1}\vec v}{\vec v^H\mathbf S^{-1}\vec v},\\
+y_t&=\vec w_\star^H(\vec x_t-\mathbf G^H\vec q_t).
 \end{aligned}\tag{7-21}$$
 
-核对完整平方时，用 $CG=B^H$ 展开平方：它产生两项原有的交叉项，额外产生 $w^HBC^{-1}B^Hw$，恰好抵消 $S$ 中被减去的项。第二项非负，而无失真约束只涉及 $w^Hv=1$，所以每个固定 $w$ 下都能取 $h=-Gw$ 把第二项降到零。剩下的就是对 $S$ 作加权 MPDR。
+核对完整平方时，用 $\mathbf C\mathbf G=\mathbf B^H$ 展开平方：它产生两项原有的交叉项，额外产生 $\vec w^H\mathbf B\mathbf C^{-1}\mathbf B^H\vec w$，恰好抵消 $\mathbf S$ 中被减去的项。第二项非负，而无失真约束只涉及 $\vec w^H\vec v=1$，所以每个固定 $\vec w$ 下都能取 $\vec h=-\mathbf G\vec w$ 把第二项降到零。剩下的就是对 $\mathbf S$ 作加权 MPDR。
 
-**第 3 步：解释为什么第一步是 WPE。** $CG=B^H$ 正是以全部当前通道为输出的加权预测正规方程。把 $z_t=x_t-G^Hq_t$ 代入 $\sum_tz_tz_t^H/\lambda_t$，得到 $A-BG-G^HB^H+G^HCG=S$。因此 $S$ 是**预测残差的同权加权协方差**，而非随意指定的后级噪声协方差。这里的 $z_t$ 只是本题临时残差记号。
+**第 3 步：解释为什么第一步是 WPE。** $\mathbf C\mathbf G=\mathbf B^H$ 正是以全部当前通道为输出的加权预测正规方程。把 $\vec z_t=\vec x_t-\mathbf G^H\vec q_t$ 代入 $\sum_t\vec z_t\vec z_t^H/\lambda_t$，得到 $\mathbf A-\mathbf B\mathbf G-\mathbf G^H\mathbf B^H+\mathbf G^H\mathbf C\mathbf G=\mathbf S$。因此 $\mathbf S$ 是**预测残差的同权加权协方差**，而非随意指定的后级噪声协方差。这里的 $\vec z_t$ 只是本题临时残差记号。
 
-**第 4 步：逐项代入。** 本题 $A=\operatorname{diag}(2,1)$、$B=\operatorname{diag}(1,0)$、$C=\operatorname{diag}(2,1)$、$v=[1,1]^\top$。
+**第 4 步：逐项代入。** 本题 $\mathbf A=\operatorname{diag}(2,1)$、$\mathbf B=\operatorname{diag}(1,0)$、$\mathbf C=\operatorname{diag}(2,1)$、$\vec v=[1,1]^\top$。
 
 | 中间量 | 计算 | 结果 |
 |---|---|---|
-| 预测矩阵 $G$ | 解 $CG=B^\top$ | $\operatorname{diag}(1/2,0)$ |
-| 残差统计量 $S$ | $A-BG$ | $\operatorname{diag}(3/2,1)$ |
-| 未归一方向 | $S^{-1}v$ | $[2/3,1]^\top$ |
-| 无失真分母 | $v^\top S^{-1}v$ | $5/3$ |
-| 当前与历史系数 | $w,\ -Gw$ | $[2/5,3/5]^\top,\ [-1/5,0]^\top$ |
+| 预测矩阵 $\mathbf G$ | 解 $\mathbf C\mathbf G=\mathbf B^\top$ | $\operatorname{diag}(1/2,0)$ |
+| 残差统计量 $\mathbf S$ | $\mathbf A-\mathbf B\mathbf G$ | $\operatorname{diag}(3/2,1)$ |
+| 未归一方向 | $\mathbf S^{-1}\vec v$ | $[2/3,1]^\top$ |
+| 无失真分母 | $\vec v^\top \mathbf S^{-1}\vec v$ | $5/3$ |
+| 当前与历史系数 | $\vec w,\ -\mathbf G\vec w$ | $[2/5,3/5]^\top,\ [-1/5,0]^\top$ |
 
-对一组额外指定的快照 $x=[2,1]^\top,q=[2,3]^\top$，WPE 残差为 $z=[1,1]^\top$，后级输出为 $2/5+3/5=1$。直接四维滤波也得到 $(2/5)2+(3/5)1-(1/5)2=1$。这个快照只检查两种表示的输出等式，不声称它单独生成了给定协方差。目标值仍为 $w^TSw=3/5$，与 E07-05 独立四维求解一致。
+对一组额外指定的快照 $\vec x=[2,1]^\top,\vec q=[2,3]^\top$，WPE 残差为 $\vec z=[1,1]^\top$，后级输出为 $2/5+3/5=1$。直接四维滤波也得到 $(2/5)2+(3/5)1-(1/5)2=1$。这个快照只检查两种表示的输出等式，不声称它单独生成了给定协方差。目标值仍为 $\vec w^T\mathbf S\vec w=3/5$，与 E07-05 独立四维求解一致。
 
-**适用边界。** 若 $B=0$，则 $G=0$，历史不参与滤波；若 $C$ 奇异，上述求逆证明不能直接使用。本式针对固定功率的一次求解；两条迭代流水线还须使用相同的功率更新、初始化和停止条件，才可以继续比较。
+**适用边界。** 若 $\mathbf B=0$，则 $\mathbf G=0$，历史不参与滤波；若 $\mathbf C$ 奇异，上述求逆证明不能直接使用。本式针对固定功率的一次求解；两条迭代流水线还须使用相同的功率更新、初始化和停止条件，才可以继续比较。
 
-给整块 $\bar R$ 加 $\delta I$ 后，代数分解依然成立，但得到的是 $G_\delta=(C+\delta I)^{-1}B^H$ 和 $S_\delta=A+\delta I-BG_\delta$。只对 WPE 历史块加载，再直接用其残差的经验协方差做后级，通常不是同一个 $S_\delta$；两模块各自的相对加载也不能自动视为同一个正则化问题。因此“串联即可等价”必须连同权重、统计帧和正则化一起核对。
+给整块 $\bar{\mathbf R}$ 加 $\delta \mathbf I$ 后，代数分解依然成立，但得到的是 $\mathbf G_\delta=(\mathbf C+\delta \mathbf I)^{-1}\mathbf B^H$ 和 $\mathbf S_\delta=\mathbf A+\delta \mathbf I-\mathbf B\mathbf G_\delta$。只对 WPE 历史块加载，再直接用其残差的经验协方差做后级，通常不是同一个 $\mathbf S_\delta$；两模块各自的相对加载也不能自动视为同一个正则化问题。因此“串联即可等价”必须连同权重、统计帧和正则化一起核对。
 
 分解依据见 [Boeddeker 等，ICASSP 2020，§4 和附录](https://arxiv.org/pdf/1910.13707)；本题的完整平方、数字和快照为本书复算。运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`；[代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)另检查复数互相关、共同缩放、零互相关与奇异矩阵。这里没有运行真实音频，也不从目标值较小推断语音质量必然更好。
 
@@ -908,28 +910,28 @@ y_t&=w_\star^H(x_t-G^Hq_t).
 
 **第1步：构造实际历史。** 有效帧是3、4、5，它们读取第0、1、2帧，所以历史恰好是上述三个二维向量。由式(7-7)，三项外积及互相关累加得到
 
-$$R=\begin{bmatrix}2&-\mathrm j\\\mathrm j&3\end{bmatrix},\qquad
-r=\begin{bmatrix}3\\4\mathrm j\end{bmatrix}.$$
+$$\mathbf R=\begin{bmatrix}2&-\mathrm j\\\mathrm j&3\end{bmatrix},\qquad
+\vec r=\begin{bmatrix}3\\4\mathrm j\end{bmatrix}.$$
 
 例如互相关第二项为 $2(0,1)^T(\mathrm j/2)=(0,\mathrm j)^T$，第三项为 $(3,3\mathrm j)^T$，说明当前输出必须取共轭。
 
-**第2步：解方程并检查残差。** 两行分别是 $2g_1-\mathrm jg_2=3$、$\mathrm jg_1+3g_2=4\mathrm j$，解为 $g=(1,\mathrm j)^T$。用 $g^Hq$ 得预测值 $1,-\mathrm j,2$，残差依次为 $-1,\mathrm j/2,1$，因此
+**第2步：解方程并检查残差。** 两行分别是 $2g_1-\mathrm jg_2=3$、$\mathrm jg_1+3g_2=4\mathrm j$，解为 $\vec g=(1,\mathrm j)^T$。用 $\vec g^H\vec q$ 得预测值 $1,-\mathrm j,2$，残差依次为 $-1,\mathrm j/2,1$，因此
 
 $$J=1+2\times\frac14+1=\frac52.$$
 
 残差的加权互相关也可直接算：第一帧贡献 $(-1,0)^T$，第二帧 $(0,-\mathrm j)^T$，第三帧 $(1,\mathrm j)^T$，总和为零。这是最小二乘最优点的正交关系，不表示残差与历史在统计意义上独立。
 
-**第3步：加绝对加载 $\delta=1$。** 解 $(R+I)g_\delta=r$，得
+**第3步：加绝对加载 $\delta=1$。** 解 $(\mathbf R+\mathbf I)\vec g_\delta=\vec r$，得
 
-$$g_\delta=\begin{bmatrix}8/11\\9\mathrm j/11\end{bmatrix},\qquad
-e_\delta=\begin{bmatrix}-8/11\\7\mathrm j/22\\16/11\end{bmatrix}.$$
+$$\vec g_\delta=\begin{bmatrix}8/11\\9\mathrm j/11\end{bmatrix},\qquad
+\vec e_\delta=\begin{bmatrix}-8/11\\7\mathrm j/22\\16/11\end{bmatrix}.$$
 
 此时原加权误差为 $689/242\approx2.8471$，高于2.5；但惩罚后目标为
 
-$$J(g_\delta)+\|g_\delta\|^2
+$$J(\vec g_\delta)+\|\vec g_\delta\|^2
 =\frac{89}{22}\approx4.0455.$$
 
-未加载解的同一惩罚目标是 $2.5+2=4.5$，所以加载确实优化了另一个目标。由 $r-Rg_\delta=\delta g_\delta$ 可知，加权残差互相关不再为零。这里的δ是绝对加载量，不能直接当作无量纲相对加载系数ε。
+未加载解的同一惩罚目标是 $2.5+2=4.5$，所以加载确实优化了另一个目标。由 $\vec r-\mathbf R\vec g_\delta=\delta \vec g_\delta$ 可知，加权残差互相关不再为零。这里的δ是绝对加载量，不能直接当作无量纲相对加载系数ε。
 
 #### E07-09：功率地板和平滑是否仍在最小化原目标？
 
@@ -943,26 +945,26 @@ $$J(g_\delta)+\|g_\delta\|^2
 
 #### E07-10：换了历史顺序，为什么矩阵尺寸仍对而结果错了？
 
-**题设。** 两路观测使用零起始通道编号 $m=0,1$，令 $X_m(t)=10m+t$。取当前 $t=5$、$\Delta=2,K=3$，lag-major系数为 $g=[1,\mathrm j,2,-\mathrm j,0,1]^T$。
+**题设。** 两路观测使用零起始通道编号 $m=0,1$，令 $X_m(t)=10m+t$。取当前 $t=5$、$\Delta=2,K=3$，lag-major系数为 $\vec g=[1,\mathrm j,2,-\mathrm j,0,1]^T$。
 
-按滞后先后、每个滞后内按通道排列，历史为 $q=[3,13,2,12,1,11]^T$。预测值是
+按滞后先后、每个滞后内按通道排列，历史为 $\vec q=[3,13,2,12,1,11]^T$。预测值是
 
 $$\begin{aligned}
-g^Hq&=3-13\mathrm j+4+12\mathrm j+11\\
+\vec g^H\vec q&=3-13\mathrm j+4+12\mathrm j+11\\
 &=18-\mathrm j.
 \end{aligned}$$
 
-**同步置换。** 改成每个通道内先放完历史，零起始置换索引为 $[0,2,4,1,3,5]$。得到 $q'=[3,2,1,13,12,11]^T$ 与 $g'=[1,2,0,\mathrm j,-\mathrm j,1]^T$。预测仍为 $3+4-13\mathrm j+12\mathrm j+11=18-\mathrm j$。
+**同步置换。** 改成每个通道内先放完历史，零起始置换索引为 $[0,2,4,1,3,5]$。得到 $\vec q'=[3,2,1,13,12,11]^T$ 与 $\vec g'=[1,2,0,\mathrm j,-\mathrm j,1]^T$。预测仍为 $3+4-13\mathrm j+12\mathrm j+11=18-\mathrm j$。
 
-若只换历史而沿用旧系数，结果成为 $3-2\mathrm j+2+13\mathrm j+11=16+11\mathrm j$。用置换矩阵 $\Pi$ 表示时，$(\Pi g)^H(\Pi q)=g^Hq$，因为 $\Pi^H\Pi=I$；相应统计矩阵也必须变成 $\Pi R\Pi^H$。这只能协调排列顺序，不能修复§7.5中实际时间索引不同的问题。
+若只换历史而沿用旧系数，结果成为 $3-2\mathrm j+2+13\mathrm j+11=16+11\mathrm j$。用置换矩阵 $\mathbf \Pi$ 表示时，$(\mathbf \Pi \vec g)^H(\mathbf \Pi \vec q)=\vec g^H\vec q$，因为 $\mathbf \Pi^H\mathbf \Pi=\mathbf I$；相应统计矩阵也必须变成 $\mathbf \Pi \mathbf R\mathbf \Pi^H$。这只能协调排列顺序，不能修复§7.5中实际时间索引不同的问题。
 
 #### E07-11：四帧数据一定足够估计两个参数吗？
 
 **题设。** 直接给定四组二维回归快照，权重全为1，当前输出为 $[1,2,1,2]$。第一组所有历史均为 $(1,1)^T$；第二组历史依次为 $e_1,e_2,e_1,e_2$，其中 $e_1=(1,0)^T,e_2=(0,1)^T$。这些快照用于比较求解器，不声明它们来自同一段连续单通道记录。
 
-第一组 $R=4\mathbf1\mathbf1^T$，特征值为0、8，秩为1。$r=(6,6)^T$，所以仅约束 $g_1+g_2=3/2$；最小范数解为 $(3/4,3/4)^T$。任何保持两项和不变的系数，在这些快照上都无法区分。
+第一组 $\mathbf R=4\mathbf1\mathbf1^T$，特征值为0、8，秩为1。$\vec r=(6,6)^T$，所以仅约束 $g_1+g_2=3/2$；最小范数解为 $(3/4,3/4)^T$。任何保持两项和不变的系数，在这些快照上都无法区分。
 
-第二组 $R=2I$、$r=(2,4)^T$，两个特征值均为2，唯一解为 $(1,2)^T$。两组帧数和参数数完全相同，区别在于回归向量是否覆盖两个独立方向。
+第二组 $\mathbf R=2\mathbf I$、$\vec r=(2,4)^T$，两个特征值均为2，唯一解为 $(1,2)^T$。两组帧数和参数数完全相同，区别在于回归向量是否覆盖两个独立方向。
 
 给第一组加 $\delta=1$，解变成 $(2/3,2/3)^T$。矩阵虽可逆，原来的“两个参数差值不可辨识”并未被数据解决，而是正则化选出了一个解。不要把加载后的数值满秩当作原数据具有独立信息。
 
@@ -993,7 +995,7 @@ r_3&=\alpha^3r_0+\sum_{i=1}^3\alpha^{3-i}q_iX_i.
 
 **第3步：零历史期间保留什么？** 若接着两帧的回归量均为零，继续遗忘得到 $R=7/8,r=117/160$；若冻结统计，两者保持 $7/2,117/40$。这两种情况下系数比值暂时相同，但之后遇到非零输入时权重不同。无论选择哪种统计策略，实际时间和历史缓冲仍须推进，不能反复把同一个旧帧当作新历史。
 
-**数值边界另查。** 逆矩阵递推在零回归量下可能执行 $P\leftarrow P/\alpha$，其增长与上述直接 $R$ 衰减是同一问题的两面。锁定nara实现从单位逆矩阵启动、连续零帧时，$\alpha=0.95$在第13838个调用首次出现非有限状态；$\alpha=0.5$在第1024个调用出现。之后切回非零输入也可能传播非有限输出。参数、调用计数和环境见[静音边界实跑报告](../codes/chapters/ch07/reports/chapter07_online_wpe_silence.json)及[复现入口](../codes/chapters/ch07/examples/wpe_silence_boundary.py)。这些是固定双精度实现的边界，不是所有在线WPE的通用寿命；本题直接累计R的教学递推也不是该上游逆更新接口。
+**数值边界另查。** 逆矩阵递推在零回归量下可能执行 $\mathbf P\leftarrow\mathbf P/\alpha$，其增长与上述直接 $R$ 衰减是同一问题的两面。锁定nara实现从单位逆矩阵启动、连续零帧时，$\alpha=0.95$在第13838个调用首次出现非有限状态；$\alpha=0.5$在第1024个调用出现。之后切回非零输入也可能传播非有限输出。参数、调用计数和环境见[静音边界实跑报告](../codes/chapters/ch07/reports/chapter07_online_wpe_silence.json)及[复现入口](../codes/chapters/ch07/examples/wpe_silence_boundary.py)。这些是固定双精度实现的边界，不是所有在线WPE的通用寿命；本题直接累计R的教学递推也不是该上游逆更新接口。
 
 #### E07-14：MINT可逆为什么仍会放大噪声？
 
@@ -1011,38 +1013,38 @@ $a=0.5,b=-0.5$ 时，两权重均为1/2。输出噪声方差为 $(u_1^2+u_2^2)\s
 
 #### E07-15：从矩阵维数算内存，而不是猜运行速度
 
-**题设。** 取 $M=8,K=10,F=257$，每个complex128元素16字节，假设同时完整保存全部频点的R和G，不使用厄米压缩存储。
+**题设。** 取 $M=8,K=10,F=257$，每个complex128元素16字节，假设同时完整保存全部频点的 $\mathbf R$ 和 $\mathbf G$，不使用厄米压缩存储。
 
-历史维数 $D=MK=80$，一个频点的R有6400个复数元素。全部R占
+历史维数 $D=MK=80$，一个频点的 $\mathbf R$ 有6400个复数元素。全部 $\mathbf R$ 占
 
 $$257\times80^2\times16=26\,316\,800\ \mathrm B,$$
 
-除以 $2^{20}$ 为25.09765625 MiB。G为每频 $80\times8$，因此全部G占2,631,680 B，即2.509765625 MiB。
+除以 $2^{20}$ 为25.09765625 MiB。$\mathbf G$ 为每频 $80\times8$，因此全部 $\mathbf G$ 占2,631,680 B，即2.509765625 MiB。
 
-**增加麦克风。** 若M增至16而K不变，D增至160，R和G存储都增为4倍，分别约100.39与10.04 MiB。固定有效帧数时，统计外积的维数平方项约4倍，密集分解的维数立方项约8倍；这不是承诺运行时间必为8倍。
+**增加麦克风。** 若M增至16而K不变，D增至160，$\mathbf R$ 和 $\mathbf G$ 存储都增为4倍，分别约100.39与10.04 MiB。固定有效帧数时，统计外积的维数平方项约4倍，密集分解的维数立方项约8倍；这不是承诺运行时间必为8倍。
 
-这些数还没包含输入、输出、历史副本、P矩阵或求解器工作区。逐频复用缓存、批处理或GPU接口会改变峰值内存与计时方式，应另测实际程序，不把预算当作基准测试。
+这些数还没包含输入、输出、历史副本、$\mathbf P$ 矩阵或求解器工作区。逐频复用缓存、批处理或GPU接口会改变峰值内存与计时方式，应另测实际程序，不把预算当作基准测试。
 
 #### E07-16：整块加载后，后级协方差少了哪一项？
 
-**题设。** 沿用E07-07的 $A=C=\operatorname{diag}(2,1)$、$B=\operatorname{diag}(1,0)$、$v=(1,1)^T$。这次先给整块扩展协方差加 $\delta I$，$\delta=1$。
+**题设。** 沿用E07-07的 $\mathbf A=\mathbf C=\operatorname{diag}(2,1)$、$\mathbf B=\operatorname{diag}(1,0)$、$\vec v=(1,1)^T$。这次先给整块扩展协方差加 $\delta \mathbf I$，$\delta=1$。
 
-**第1步：分解已加载矩阵。** 先求历史预测器： $G_\delta=(C+I)^{-1}B^H=\operatorname{diag}(1/3,0)$。
+**第1步：分解已加载矩阵。** 先求历史预测器： $\mathbf G_\delta=(\mathbf C+\mathbf I)^{-1}\mathbf B^H=\operatorname{diag}(1/3,0)$。
 
-Schur补为 $S_\delta=A+I-BG_\delta=\operatorname{diag}(8/3,2)$。
+Schur补为 $\mathbf S_\delta=\mathbf A+\mathbf I-\mathbf B\mathbf G_\delta=\operatorname{diag}(8/3,2)$。
 
-**第2步：从原数据计算预测残差统计。** 令 $R_z$ 为使用同样权重、有效帧，但数据本身没有虚构加载样本的残差协方差。展开得
+**第2步：从原数据计算预测残差统计。** 令 $\mathbf R_z$ 为使用同样权重、有效帧，但数据本身没有虚构加载样本的残差协方差。展开得
 
 $$\begin{aligned}
-R_z&=A-BG_\delta-G_\delta^HB^H\\
-&\quad+G_\delta^HCG_\delta,\\
-S_\delta&=R_z+\delta I
-+\delta G_\delta^HG_\delta.
+\mathbf R_z&=\mathbf A-\mathbf B\mathbf G_\delta-\mathbf G_\delta^H\mathbf B^H\\
+&\quad+\mathbf G_\delta^H\mathbf C\mathbf G_\delta,\\
+\mathbf S_\delta&=\mathbf R_z+\delta \mathbf I
++\delta \mathbf G_\delta^H\mathbf G_\delta.
 \end{aligned}\tag{7-22}$$
 
-第二行关系可由 $(C+\delta I)G_\delta=B^H$ 代回第一行验证。本题 $R_z=\operatorname{diag}(14/9,1)$，必须加的修正为 $\operatorname{diag}(10/9,1)$。两者相加才等于 $S_\delta$；只加一个I会漏掉 $G_\delta^HG_\delta$。
+第二行关系可由 $(\mathbf C+\delta \mathbf I)\mathbf G_\delta=\mathbf B^H$ 代回第一行验证。本题 $\mathbf R_z=\operatorname{diag}(14/9,1)$，必须加的修正为 $\operatorname{diag}(10/9,1)$。两者相加才等于 $\mathbf S_\delta$；只加一个I会漏掉 $\mathbf G_\delta^H\mathbf G_\delta$。
 
-**第3步：比较最终权重。** 用正确Sδ得到当前权重 $(3/7,4/7)^T$、历史权重 $(-1/7,0)^T$，与直接求解已加载四维问题一致，带加载目标值为8/7。若误用 $R_z+I=\operatorname{diag}(23/9,2)$，当前权重变成 $(18/41,23/41)^T$、历史为 $(-6/41,0)^T$，已经不是同一个解。
+**第3步：比较最终权重。** 用正确的 $\mathbf S_\delta$ 得到当前权重 $(3/7,4/7)^T$、历史权重 $(-1/7,0)^T$，与直接求解已加载四维问题一致，带加载目标值为8/7。若误用 $\mathbf R_z+\mathbf I=\operatorname{diag}(23/9,2)$，当前权重变成 $(18/41,23/41)^T$、历史为 $(-6/41,0)^T$，已经不是同一个解。
 
 因此，分别对WPE和后级做看似相同的加载，并不自动等于对原联合问题加载。这个例子只检验固定统计量下的正则化一致性，不据目标值比较语音质量。
 
@@ -1101,7 +1103,7 @@ $$c_r[q]=\frac18\sum_{k=0}^{7}
 \log|H(2\pi k/8)|^2\,e^{\mathrm j2\pi kq/8}.
 \tag{7-25}$$
 
-$q$ 是倒频率采样点索引。两组相同的输入对数功率经过相同逆DFT，逐项得到相同的 $c_r[q]$。若改用 $\log|H|$，所得序列只是本题的一半，仍无法区分两条路径。
+$k$ 在式(7-25)中是8点DFT的频点索引，取0～7，与前文预测滞后的 $k$ 含义不同；$q$ 是倒频率采样点索引。两组相同的输入对数功率经过相同逆DFT，逐项得到相同的 $c_r[q]$。若改用 $\log|H|$，所得序列只是本题的一半，仍无法区分两条路径。
 
 **第2步：复算复数值。**
 
@@ -1121,28 +1123,28 @@ $q$ 是倒频率采样点索引。两组相同的输入对数功率经过相同�
 
 **题设。** 本书直接给定两个实回归快照，权重均为1，取 $\varepsilon=10^{-9}$，不加载：
 
-$$A=\begin{bmatrix}1&1\\0&\varepsilon\end{bmatrix},\qquad
-b=\begin{bmatrix}0\\-\varepsilon\end{bmatrix}.$$
+$$\mathbf A=\begin{bmatrix}1&1\\0&\varepsilon\end{bmatrix},\qquad
+\vec b=\begin{bmatrix}0\\-\varepsilon\end{bmatrix}.$$
 
-这是固定设计矩阵及目标，不声称来自一段连续语音。求精确系数，再比较 `solve_prediction_design()` 的 `normal` 与 `design_lstsq`。与WPE复数约定连接时，每行应解释为 $\sqrt{w_n}q_n^H$，目标为 $\sqrt{w_n}X_n^*$，不能把共轭方向颠倒。
+这是固定设计矩阵及目标，不声称来自一段连续语音。求精确系数，再比较 `solve_prediction_design()` 的 `normal` 与 `design_lstsq`。与WPE复数约定连接时，每行应解释为 $\sqrt{w_n}\vec q_n^H$，目标为 $\sqrt{w_n}X_n^*$，不能把共轭方向颠倒。
 
-**第1步：先用代数确定答案。** $\det A=\varepsilon\ne0$，第二行给 $g_2=-1$，第一行给 $g_1=1$。所以唯一精确解是 $(1,-1)^T$，拟合残差为零。原矩阵的最大奇异值约为 $\sqrt2$，最小约为 $\varepsilon/\sqrt2$，故条件数约为 $2/\varepsilon=2\times10^9$；唯一并不代表稳定。
+**第1步：先用代数确定答案。** $\det \mathbf A=\varepsilon\ne0$，第二行给 $g_2=-1$，第一行给 $g_1=1$。所以唯一精确解是 $(1,-1)^T$，拟合残差为零。原矩阵的最大奇异值约为 $\sqrt2$，最小约为 $\varepsilon/\sqrt2$，故条件数约为 $2/\varepsilon=2\times10^9$；唯一并不代表稳定。
 
 **第2步：查看形成正规方程时丢了什么。** 精确算术给出
 
-$$A^TA=\begin{bmatrix}1&1\\1&1+10^{-18}\end{bmatrix},\qquad
-A^Tb=\begin{bmatrix}0\\-10^{-18}\end{bmatrix}.$$
+$$\mathbf A^T\mathbf A=\begin{bmatrix}1&1\\1&1+10^{-18}\end{bmatrix},\qquad
+\mathbf A^T\vec b=\begin{bmatrix}0\\-10^{-18}\end{bmatrix}.$$
 
 float64在1附近的间距约为 $2.22\times10^{-16}$，因此 $1+10^{-18}$ 舍入为1。数值正规矩阵两列相同，秩变为1；但直接设计中的 $10^{-9}$ 仍被保留。已经舍入的矩阵无法再区分两个参数的差。
 
-**第3步：分析两条实际求解路径。** `normal` 在奇异矩阵错误后对舍入的正规矩阵作最小二乘。它的最佳两项和为 $-10^{-18}/2$；最小范数再把和平均分配，得到约 $(-2.5\times10^{-19},-2.5\times10^{-19})^T$。`design_lstsq` 直接对原 $A$ 求解，恢复约 $(1,-1)^T$。前者的原设计平方误差约 $10^{-18}$，虽数值很小，系数却与精确答案明显不同。额外指定未用于拟合的行 $(1,-1)$ 时，真系数预测为2，正规方程回退解预测约为0；这只诊断该例未辨识的差方向，不冒充真实测试语音。
+**第3步：分析两条实际求解路径。** `normal` 在奇异矩阵错误后对舍入的正规矩阵作最小二乘。它的最佳两项和为 $-10^{-18}/2$；最小范数再把和平均分配，得到约 $(-2.5\times10^{-19},-2.5\times10^{-19})^T$。`design_lstsq` 直接对原 $\mathbf A$ 求解，恢复约 $(1,-1)^T$。前者的原设计平方误差约 $10^{-18}$，虽数值很小，系数却与精确答案明显不同。额外指定未用于拟合的行 $(1,-1)$ 时，真系数预测为2，正规方程回退解预测约为0；这只诊断该例未辨识的差方向，不冒充真实测试语音。
 
 | 求解路径 | 实际诊断矩阵 | 数值秩 | 二范数条件数 |
 |---|---|---:|---:|
-| `normal` | 舍入后的 $A^TA$ | 1 | $\infty$ |
-| `design_lstsq` | 原设计 $A$ | 2 | 约 $2\times10^9$ |
+| `normal` | 舍入后的 $\mathbf A^T\mathbf A$ | 1 | $\infty$ |
+| `design_lstsq` | 原设计 $\mathbf A$ | 2 | 约 $2\times10^9$ |
 
-**加载与支持边界。** 如需同一个固定 $\delta>0$ 的正则目标，直接路径按式(7-9)增广 $\sqrt\delta I$，正规路径加 $\delta I$；不能只给其中一条加载后声称算法更准确。加载会抑制本题的弱差方向，也会改变答案。直接设计求解解决的是避免预先平方条件数这一项困难；极端尺度、原始病态、有限样本与模型错误仍须独立检查。本题的唯一求解核与诊断在[WPE数值核](../codes/chapters/ch07/core/dereverberation.py)，独立两行代数及复数加载测试在[数值回归](../tests/test_codes_wpe_numerics.py)。
+**加载与支持边界。** 如需同一个固定 $\delta>0$ 的正则目标，直接路径按式(7-9)增广 $\sqrt\delta \mathbf I$，正规路径加 $\delta \mathbf I$；不能只给其中一条加载后声称算法更准确。加载会抑制本题的弱差方向，也会改变答案。直接设计求解解决的是避免预先平方条件数这一项困难；极端尺度、原始病态、有限样本与模型错误仍须独立检查。本题的唯一求解核与诊断在[WPE数值核](../codes/chapters/ch07/core/dereverberation.py)，独立两行代数及复数加载测试在[数值回归](../tests/test_codes_wpe_numerics.py)。
 
 <a id="e07-20"></a>
 
@@ -1163,7 +1165,7 @@ t_\star&=\frac{\lambda-db}{d^2+2\lambda}
 
 **第2步：逐项代入三种设计。**
 
-| $\lambda$ | $u_1,u_2$ | 残留反射 $r$ | 噪声方差倍数 $\|u\|^2$ |
+| $\lambda$ | $u_1,u_2$ | 残留反射 $r$ | 噪声方差倍数 $\|\vec u\|^2$ |
 |---|---|---:|---:|
 | 0 | $-49,50$ | 0 | 4901 |
 | $10^{-4}$ | $-16,17$ | 0.33 | 545 |
@@ -1175,10 +1177,10 @@ t_\star&=\frac{\lambda-db}{d^2+2\lambda}
 
 $$\begin{aligned}
 \operatorname{MSE}_{\mathrm{population}}
-&=r^2P_s+\sigma^2\|u\|^2,\\
+&=r^2P_s+\sigma^2\|\vec u\|^2,\\
 \lambda&=\sigma^2/P_s,\\
 \operatorname{MSE}_{\mathrm{population}}/P_s
-&=r^2+\lambda\|u\|^2.
+&=r^2+\lambda\|\vec u\|^2.
 \end{aligned}\tag{7-27}$$
 
 源不必跨时白：直接项已由约束消去，误差中没有需要与当前源去相关的第二个源项。若噪声先于路径加入、路间相关、与源相关或方差不同，不能直接使用此式。真实有限记录的噪声互乘和源—噪声交叉项也不必恰好为零。

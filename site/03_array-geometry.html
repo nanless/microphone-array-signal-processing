@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -327,7 +327,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-45ef2e2df1">E03-17：允许每频源幅不同，多频还能分开混叠方向吗？</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是正文第 3 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 3 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a> ｜ 下一篇：<a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></p>
 </blockquote>
 <hr />
@@ -797,51 +797,51 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>分布式阵列还需同时估计节点时钟关系（§10.2），否则 TDOA 会包含系统偏差。</p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-4-4">3.4.4 失配灵敏度表：先坏哪、坏多少</h3>
 <p>下表汇总不同失配首先影响的量、误差尺度和补偿方法。表中的数值用于比较误差的数量级，不是各种设备的统一验收门限。</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:70em">
 <thead>
 <tr>
-<th scope="col">失配类型</th>
-<th scope="col">示例量级</th>
-<th scope="col">首先受影响的量</th>
-<th scope="col">按该示例计算</th>
-<th scope="col">可采取的措施</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:7em">失配类型</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">示例量级</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">首先受影响的量</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">按该示例计算</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:16em">可采取的措施</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>增益失配</td>
-<td>1%（约 0.1 dB）</td>
-<td>差分/超指向的零陷深度</td>
-<td>本例后方残差相对单麦幅度为 −40 dB；相对前方单位响应约 −31 dB（§3.1 算例 3-1 第 5 步）</td>
-<td>在受控条件下测量相对增益并补偿</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">增益失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">1%（约 0.1 dB）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">差分/超指向的零陷深度</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">本例后方残差相对单麦幅度为 −40 dB；相对前方单位响应约 −31 dB（§3.1 算例 3-1 第 5 步）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">在受控条件下测量相对增益并补偿</td>
 </tr>
 <tr>
-<td>相位失配</td>
-<td>2°（高频段）</td>
-<td>高频指向精度</td>
-<td>2° 相位误差在 8 kHz 约等于 0.24 mm 等效位置误差，MUSIC 峰可能偏移、旁瓣可能抬高</td>
-<td>同增益，一起标</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">相位失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">2°（高频段）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">高频指向精度</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">2° 相位误差在 8 kHz 约等于 0.24 mm 等效位置误差，MUSIC 峰可能偏移、旁瓣可能抬高</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">在受控条件下，按频率测量并补偿相对复响应；已知方向与可靠参考的例子见 §3.4.1</td>
 </tr>
 <tr>
-<td>位置误差</td>
-<td>沿入射方向的相对投影误差 2 mm</td>
-<td>高频导向矢量</td>
-<td>8 kHz 下约 17° 相位误差；1 kHz 下约 2°。后者对常规主瓣可能较小，但在依赖精确相消的零陷中仍可能显著：两路残余幅度约 $2\sin(1°)=0.0349$，相对单路约 −29 dB</td>
-<td>有锚/无锚位置标定</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">位置误差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">沿入射方向的相对投影误差 2 mm</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">高频导向矢量</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">8 kHz 下约 17° 相位误差；1 kHz 下约 2°。后者对常规主瓣可能较小，但在依赖精确相消的零陷中仍可能显著：两路残余幅度约 $2\sin(1°)=0.0349$，相对单路约 −29 dB</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">有锚/无锚位置标定</td>
 </tr>
 <tr>
-<td>耦合与壳体散射</td>
-<td>随结构、频率而变</td>
-<td>零陷深度、旁瓣电平</td>
-<td>不能仅由一个间距门槛判断；须比较自由场模型与实测流形</td>
-<td>使用实测流形，或对已知 $\mathbf C(f)$ 做正则化逆补偿</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">耦合与壳体散射</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">随结构、频率而变</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">零陷深度、旁瓣电平</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">不能仅由一个间距门槛判断；须比较自由场模型与实测流形</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">使用实测流形，或对已知 $\mathbf C(f)$ 做正则化逆补偿</td>
 </tr>
 <tr>
-<td>时钟漂移（分布式）</td>
-<td>相对采样率误差 50 ppm</td>
-<td>TDOA 系统性偏差</td>
-<td>累计采样数差换算为 0.18 s，口径见表下（§2.1、§10.2）</td>
-<td>共时钟/在线同步补偿</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:7em">时钟漂移（分布式）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">相对采样率误差 50 ppm</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">TDOA 系统性偏差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">累计采样数差换算为 0.18 s，口径见表下（§2.1、§10.2）</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:16em">共时钟/在线同步补偿</td>
 </tr>
 </tbody>
 </table></div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 6 章 · 声学回声消除（AEC） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -244,7 +244,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-2">6.1.2 线性自适应滤波：NLMS 回顾</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-b9e5e5324e">算例 6-1：NLMS 的一步手算</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-fbe21f4372">步长、正则项与充分激励</a></li>
-<li><a href="06_aec.html#sec-6-2">6.2 工程化自适应：频域、子带、比例、RLS 与卡尔曼</a></li>
+<li><a href="06_aec.html#sec-6-2">6.2 工程化自适应：频域、子带、比例、仿射投影、RLS 与卡尔曼</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-2-1">6.2.1 PBFDAF：从长回声路径到逐块更新</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-c4b10b0f16">算例 6-2：PBFDAF 选定核心算子的乘法计数</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-abb4951b74">算例 6-3：两个样本一块，为什么要丢掉前半块</a></li>
@@ -342,7 +342,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-1-2">6.1.2 线性自适应滤波：NLMS 回顾</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-b9e5e5324e">算例 6-1：NLMS 的一步手算</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-fbe21f4372">步长、正则项与充分激励</a></li>
-<li><a href="06_aec.html#sec-6-2">6.2 工程化自适应：频域、子带、比例、RLS 与卡尔曼</a></li>
+<li><a href="06_aec.html#sec-6-2">6.2 工程化自适应：频域、子带、比例、仿射投影、RLS 与卡尔曼</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-6-2-1">6.2.1 PBFDAF：从长回声路径到逐块更新</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-c4b10b0f16">算例 6-2：PBFDAF 选定核心算子的乘法计数</a></li>
 <li>&nbsp;&nbsp;<a href="06_aec.html#sec-u-abb4951b74">算例 6-3：两个样本一块，为什么要丢掉前半块</a></li>
@@ -423,7 +423,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="06_aec.html#sec-6-17">6.17 延伸阅读</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 6 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 6 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="05_beamforming.html">第 5 章 · 波束形成</a> ｜ 下一篇：<a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a></p>
 </blockquote>
 <hr />
@@ -590,7 +590,8 @@ e'(n)&=d-\hat{\vec w}^{\top}(n+1)\vec x\\
 <p><strong>收敛还需要充分激励</strong>。NLMS 每步只能沿当前输入方向 $\vec{x}(n)$ 修正（见算例 6-1 第 3 步）。纯音或窄带参考不能充分激励所有滤波器系数，未被激励的方向会收敛得很慢。调试时可用已知宽带测试信号检查滤波器是否能辨识目标路径；这项测试不能代替真实节目内容上的收敛与双讲验证。</p>
 <p>单位脉冲是一个容易混淆的边界例子。对 $L$ 抽头回归器，单个单位脉冲会依次产生 $L$ 个标准基向量，因此方向并不缺失；但每个方向只更新一次。</p>
 <p>若 $\mu=0.5$、初值为零且忽略非零 $\varepsilon$ 的微小影响，每个抽头只走到真实值的一半。要继续逼近真实路径，需要重复脉冲或其他持续激励；输入归零后应按上面的零能量规则跳过更新。</p>
-<span id="sec-6-1-3" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-2">6.2 工程化自适应：频域、子带、比例、RLS 与卡尔曼</h2>
+<span id="sec-6-1-3" class="anchor-alias" aria-hidden="true"></span><span id="sec-5" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-2">6.2 工程化自适应：频域、子带、比例、仿射投影、RLS 与卡尔曼</h2>
+<p>长路径的分块计算见 §6.2.1～§6.2.2，分带后的表示与可辨识性见 §6.2.3。随后比较改变抽头学习分配的 IPNLMS（§6.2.4）、利用最近多个观测的<a href="#sec-u-204b533044">仿射投影专题</a>、利用指数加权历史的 RLS（§6.2.5），以及显式描述路径变化与观测干扰的 Kalman 方法（§6.2.6）。仿射投影是独立的更新方法；它的小窗口约束与 RLS 的历史最小二乘目标分别讲解。</p>
 <p><strong>时域实现的计算量</strong>。若每个样本重新计算长度 $L$ 的参考能量，时域 NLMS 的滤波、更新和能量求和各约需 $L$ 次乘法，即朴素实现约 $3L$ 次。参考窗口每次只移入、移出一个样本时，也可递推能量 $p_n=p_{n-1}+x[n]^2-x[n-L]^2$，使这一项每样本只需常数次运算；滤波与更新仍约需 $2L$ 次乘法。</p>
 <p>$L=1024$、8 kHz 时，朴素口径约为 2500 万次乘法/秒，能量递推口径的主要项约为 1600 万次/秒；两者都不含内存访问和控制开销。能量递推需按启动零填充初始化，并在长时浮点运行中定期核对直接求和，避免累计舍入误差。</p>
 <p>48 kHz、4096 抽头时主要项达到每秒数亿次；抽头越多、输入频谱越不均匀，收敛通常越慢。常见改进包括频域分块、子带处理、比例步长和卡尔曼估计。</p>
@@ -1915,76 +1916,78 @@ e&=d-\hat y.
 </table></div>
 <span id="sec-6-1-13" class="anchor-alias" aria-hidden="true"></span><span id="sec-21" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-6-12">6.12 AEC 诊断方法与 NLP 工作点</h2>
 <p><strong>诊断表</strong>（按“征兆 → 量测 → 工具 → 判据”排列）：</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="tutorial-budget-table" style="--tutorial-table-width:70em">
 <thead>
 <tr>
-<th scope="col">#</th>
-<th scope="col">征兆</th>
-<th scope="col">量测</th>
-<th scope="col">工具/信号</th>
-<th scope="col">判断依据</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:3em">#</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:9em">征兆</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:10em">量测</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:20em">工具/信号</th>
+<th scope="col" class="tutorial-short-column" style="--tutorial-column-width:18em">判断依据</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>D1</td>
-<td>ERLE 低于项目基线</td>
-<td>参考与真实播放是否一致</td>
-<td>对比参考与实际播放内容；查抽头点</td>
-<td>改变音源、音量或后处理时，参考应包含相同变化或有明确补偿</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D1</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">ERLE 低于项目基线</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">参考与真实播放是否一致</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">对比参考与实际播放内容；查抽头点</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">改变音源、音量或后处理时，参考应包含相同变化或有明确补偿</td>
 </tr>
 <tr>
-<td>D2</td>
-<td>ERLE 不再上升</td>
-<td>延迟失配</td>
-<td>互相关峰、图30（a）和延迟日志</td>
-<td>峰位置应落入滤波器覆盖范围；多峰时检查多路径与周期信号</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D2</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">ERLE 不再上升</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">延迟失配</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">互相关峰、图30（a）和延迟日志</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">先核总延迟的搜索窗与参考缓存，再核对齐后非负的完整路径支持；相关峰不能证明路径已覆盖</td>
 </tr>
 <tr>
-<td>D3</td>
-<td>双讲后恢复慢</td>
-<td>自适应控制</td>
-<td>DTD 判决、步长和路径失配日志</td>
-<td>恢复过程相对同一设备的远端单讲基线无异常停滞</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D3</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">双讲后恢复慢</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">自适应控制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">DTD 判决、步长和路径失配日志</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">恢复过程相对同一设备的远端单讲基线无异常停滞</td>
 </tr>
 <tr>
-<td>D4</td>
-<td>ERLE 随播放电平出现平台</td>
-<td>非线性占比</td>
-<td>多个播放电平的 ERLE 与失真对比</td>
-<td>电平降低后残余非线性同步减小，见图31的仿真机制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D4</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">ERLE 随播放电平出现平台</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">非线性占比</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">多个播放电平的 ERLE 与失真对比</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">电平降低后残余非线性同步减小，见图31的仿真机制</td>
 </tr>
 <tr>
-<td>D5</td>
-<td>断续/闷罐/背景声突然消失</td>
-<td>NLP 过度抑制</td>
-<td>旁路 NLP；有独立、时间匹配的干净近端参考且满足标准适用条件时才评估 ITU-T P.863；无此真值时看 AECMOS Other 维、盲听和任务指标。历史回归若保留 PESQ，须固定 P.862 实现与带宽口径</td>
-<td>旁路后语音改善 → 检查近端损伤并减小过强抑制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D5</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">断续/闷罐/背景声突然消失</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">NLP 过度抑制</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">旁路 NLP；有独立、时间匹配的干净近端参考且满足标准适用条件时才评估 ITU-T P.863；无此真值时看 AECMOS Other 维、盲听和任务指标。历史回归若保留 PESQ，须固定 P.862 实现与带宽口径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">旁路后语音改善 → 检查近端损伤并减小过强抑制</td>
 </tr>
 <tr>
-<td>D6</td>
-<td>沉默段背景突变</td>
-<td>CNG 频谱与电平</td>
-<td>沉默段频谱与真实底噪对照</td>
-<td>以盲听和频带差异共同调节，不使用统一 dB 阈值</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D6</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">沉默段背景突变</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">CNG 频谱与电平</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">沉默段频谱与真实底噪对照</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">以盲听和频带差异共同调节，不使用统一 dB 阈值</td>
 </tr>
 <tr>
-<td>D7</td>
-<td>长通话逐渐变差</td>
-<td>采样率偏移（Sample Rate Offset，SRO）累积漂移</td>
-<td>覆盖最长目标会话的延迟估计曲线</td>
-<td>残余速率差应满足相干性和任务指标要求</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D7</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">长通话逐渐变差</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">采样率偏移（Sample Rate Offset，SRO）累积漂移</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">覆盖最长目标会话的延迟估计曲线</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">残余速率差应满足相干性和任务指标要求</td>
 </tr>
 <tr>
-<td>D8</td>
-<td>切歌或切设备后失效</td>
-<td>延迟突变</td>
-<td>对齐切换事件的 ERLE 与延迟轨迹</td>
-<td>在项目规定时间内恢复，并检查搜窗是否覆盖新路径</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:3em">D8</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:9em">切歌或切设备后失效</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:10em">延迟突变</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:20em">对齐切换事件的 ERLE 与延迟轨迹</td>
+<td class="tutorial-short-column" style="--tutorial-column-width:18em">在项目规定时间内恢复，并检查搜窗是否覆盖新路径</td>
 </tr>
 </tbody>
 </table></div>
 <p>D1～D3检查参考、延迟和双讲控制；D4用于判断非线性残余；D5～D6检查近端语音和舒适噪声；D7～D8检查长时漂移和链路切换。</p>
+<p>D2 的两项检查对应不同范围：播放到采集的总延迟须能被搜索窗找到，并能从参考缓存取到相应样本；完成对齐后，残余路径的全部非零抽头才须落入长度 $L$ 的因果滤波器索引 $0$ 到 $L-1$。残余支持含负时延时，应调整参考取点或缓冲；尾部超出 $L-1$ 时，应重新选择对齐与覆盖长度。</p>
+<p>图30的300点纯延迟可以先补偿，再由短滤波器覆盖剩余路径，不能只根据331点相关峰判断是否可覆盖；完整支持条件见<a href="#sec-6-4">§6.4</a>。出现多个相关峰时，还需检查多路径与周期信号。</p>
 <p>ITU-T 已于 2024 年 1 月 5 日删除 P.862、P.862.1、P.862.2 和 P.862.3，并指向 P.863、P.863.1 与 P.863.2；因此 PESQ 只宜用于需要延续既有 P.862 基线的历史回归，新测试应先确认 P.863 的带宽、预处理和适用条件。<a href="https://www.itu.int/rec/T-REC-P.862" title="citation">ITU-T P.862 状态页</a>、<a href="https://www.itu.int/rec/T-REC-P.863-201803-I" title="citation">ITU-T P.863</a></p>
 <p>本书使用的真实 AEC Challenge 播放环回与麦克风配对录音没有独立干净近端语音真值，不能直接对它们计算 P.863 的近端语音质量。<a href="https://www.itu.int/rec/T-REC-P.863.1-201906-I" title="citation">ITU-T P.863.1</a>要求按参考语音与退化语音的规定条件使用该指标；AECMOS 自动分数也不能代替真人听测。</p>
 <blockquote>
@@ -2187,6 +2190,18 @@ e&=d-\hat y.
 <td>分区预测、有效误差、更新及投影</td>
 <td>§6.2.1</td>
 <td>冻结权重时仍须推进参考块历史</td>
+</tr>
+<tr>
+<td>图57</td>
+<td>单列 NLMS、两列完全投影与正则改变量</td>
+<td>仿射投影专题、E06-34</td>
+<td>系数平面的给定观测约束；零后验交点不证明真实路径已收敛</td>
+</tr>
+<tr>
+<td>图58</td>
+<td>同源无噪/含噪学习轨迹与冻结后的留出误差</td>
+<td>E06-39</td>
+<td>系数误差、浮点分量与实际 PCM 总残差分开，不是干净 ERLE 或工业排名</td>
 </tr>
 </tbody>
 </table></div>

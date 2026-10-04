@@ -16,6 +16,7 @@ HISTORICAL_SEQUENTIAL_IDS = json.loads(
 
 HISTORICAL_SECTION_IDS = {
     "00_overview.md": {
+        "sec-u-dacd520d2c": "sec-u-726cf32300",  # 明示编号图，仍是同一插图地图
         "sec-u-2afd7c6509": "sec-u-461c9549d0",  # 15文件→16文件，同一文件地图
         "sec-u-9c77d218fe": "sec-u-dacd520d2c",  # 69图→72图，同一插图地图
         "sec-u-06e6cf7b78": "sec-u-2afd7c6509",  # 14文件→15文件，原文件地图
@@ -42,6 +43,7 @@ HISTORICAL_SECTION_IDS = {
         "sec-u-627ed3907e": "sec-u-ec3f837100",  # 47 张历史标题
     },
     "01_problem-definition.md": {
+        "sec-u-81896116fa": "sec-u-5e074a7e92",  # 理想收益标题，原任务与收益主题
         "sec-u-05ec932a34": "sec-u-c36b7ac16e",  # 客厅里的远场语音问题：标题改为远距离
     },
     "04_doa-estimation.md": {

@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程第 10 章。前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 10 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[09_source-tracking.md](09_source-tracking.md) ｜ 下一篇：[11_selection-guide.md](11_selection-guide.md)
 
@@ -858,7 +858,7 @@ PipeWire 的 `capture/source/sink/playback` 依次是麦克风采集、应用读
 
 ### 10.11 本章练习
 
-以下二十七题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py)：
+以下三十三题的输入均为本书构造的教学数据。先手算，再运行 E10-01～12 与 E10-14 的 [`exercises_engineering.py`](../codes/chapters/ch00/cross_chapter/exercises_engineering.py)：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering

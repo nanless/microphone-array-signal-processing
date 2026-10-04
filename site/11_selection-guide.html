@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -343,7 +343,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程第 11 章。前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 11 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a> ｜ 下一篇：<a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></p>
 </blockquote>
 <hr />
@@ -595,7 +595,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><strong>非共线三麦及平面阵</strong>：能提供两个独立的平面投影约束，但理想自由场下阵面上下镜像仍不可分。精度还受孔径、频带、遮挡和标定影响，不能把“三麦”简单归为单麦处理。</li>
 <li><strong>圆阵</strong>：便于覆盖水平面。阵元数和半径应由所需角分辨率、最高频率与结构尺寸共同确定，不存在“全向必须至少四麦、六麦最好”的通用答案。</li>
 <li><strong>球阵或三维阵</strong>：适合需要俯仰角、声场分析或多方向波束的任务。可用球谐阶数受阵元采样、无量纲频率 $kr$（$k=2\pi f/c$ 为波数，$r$ 为球阵半径）、径向滤波噪声放大和标定误差共同限制，详见 §10.8。</li>
-<li><strong>稀疏阵</strong>：差分共阵可增加二阶统计中的虚拟滞后数，但不会凭空增加独立物理通道，也不保证宽带、相干声源和有限快拍下都能得到同样的自由度。应按第 3 章的适用条件验证。</li>
+<li><strong>稀疏阵</strong>：差分协同阵可增加二阶统计中的虚拟滞后数，但不会凭空增加独立物理通道，也不保证宽带、相干声源和有限快拍下都能得到同样的自由度。应按第 3 章的适用条件验证。</li>
 </ul>
 <p>白噪声增益（White Noise Gain，WNG）和指向性指数（Directivity Index，DI）之间常有取舍。更窄的波束或更深的零陷可能放大传感器自噪声和标定误差。对角加载、WNG 约束和限制工作频带都能改善鲁棒性，但通常会牺牲一部分空间选择性。</p>
 <h3 id="sec-u-d12e9fbcdd">平面镜像为什么不能靠换算法消除</h3>
@@ -772,6 +772,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>场景权重已知时，可按式(11-5)计算共同目标。若只能确定某个场景的占比范围，应保留各场景损失，并计算这个范围内的最坏组成；不能把范围中点擅自称为部署概率。对于两个场景，加权损失是占比的线性函数，因此闭区间内的最大值在端点取得。</p>
 <p>另一种任务是要求每个场景都尽量好，此时比较的是各场景损失的最大值。它相当于允许场景占比取整个范围，而非只取某个已知的占比区间。两种任务都可以用于选型，但目标和结果须分别命名。<a href="#e11-25">E11-25</a>把同两种FIR放在单音、双音目标场景中，分别复算固定组成、组成不确定与逐场景最坏损失，并读取八个独立PCM文件。</p>
 <span id="sec-7" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-6">11.6 练习</h2>
+<p>E11-10～25的统一入口是在仓库根目录运行 <code>.venv/bin/python -m codes.chapters.ch11.chapter11_experiments</code>；E11-01～09沿用各题列出的入口。先独立手算，再核对程序的条件与输出。</p>
 <span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b322947d6d">题 1：带播放的周向语音终端（E11-05）</h3>
 <p>需求是水平面周向覆盖，设备会播放音乐，主要任务是唤醒和单人指令。两种示意圆阵半径都为 4 cm，分别放 4 麦和 6 麦；声速取 343 m/s，需求频率上限 4 kHz。先以相邻麦弦长 $2r\sin(\pi/M)$ 与 $c/(2d_{\rm adjacent})$ 作<strong>单对筛查</strong>，再写出必要模块和两个关键对照实验。这个筛查不保证整个圆阵流形没有其他歧义。</p>
 <p><strong>答案要点</strong>：四麦相邻弦长为 $0.08\sin45°\approx0.05657$ m，对应筛查界约 3032 Hz，低于 4 kHz；六麦相邻弦长为 $0.08\sin30°=0.04$ m，对应 4287.5 Hz，高于 4 kHz。按本题相邻单对条件，只保留六麦候选继续研究，仍需用完整阵列几何和工作频带核对歧义与波束质量。</p>
@@ -1308,6 +1309,8 @@ S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
 </tbody>
 </table></div>
 <p>实际PCM结果代入式(11-19)，q为0.25时总分约0.1415130419、0.2366884696，仍选3抽头；q为0.75时约0.1940588947、0.0791530025，仍选9抽头。组成区间最坏值分别约0.1940588947、0.2366884696；逐场景最大值分别约0.2203318211、0.3154562032。两种最坏任务仍都选3抽头，数值与解析计算分别保留。</p>
+<p><strong>先取分贝会改变什么？</strong> 以实际PCM结果和共同组成 $q=0.25$ 为例，按式(11-19)先在线性域平均、再取 $10\log_{10}J_L$，3/9抽头分别约为−8.4920、−6.2582 dB，仍选3抽头。若把两个场景各自的NMSE先取分贝，再按同一q平均，则分别约为−8.6803、−12.2935 dB，反而选9抽头。</p>
+<p>后者等价于对线性误差取加权几何平均，衡量的是另一个目标；它不能代替本题已定义的加权算术平均。这个反例使用上表真实整数E/D，不用解析近似替换PCM评分。</p>
 <p><strong>试听与复现。</strong> 先调低音量。每个场景按目标、混合、3抽头、9抽头的顺序比较；两场景的目标不同，不能单凭听起来更安静给总体评分。</p>
 <p><a href="scenario_audio/selection_single_target.wav">S单音目标</a><audio class="audio-sample" controls preload="none" aria-label="S单音目标" src="scenario_audio/selection_single_target.wav">请使用上方 WAV 链接下载。</audio></p>
 <p><a href="scenario_audio/selection_single_mixture.wav">S混合输入</a><audio class="audio-sample" controls preload="none" aria-label="S混合输入" src="scenario_audio/selection_single_mixture.wav">请使用上方 WAV 链接下载。</audio></p>
@@ -1321,6 +1324,7 @@ S_L&=\max\{\mathcal E_{L,S},\mathcal E_{L,D}\}.
 <p>运行 E11-25，入口将解析与浮点模型、正式PCM评分分开。独立清单见 <a href="scenario_audio/MANIFEST.json">MANIFEST.json</a>，检查只读，不通过时拒绝评分。目标、混合与输出独立量化，因此实际PCM误差从输出和同域目标逐点相减求能量，不把解析频率衰减直接充作文件评分。只有已知且互不重叠的频点，使本例能解释目标和噪声各自作用；它不运行盲增强、ASR或主观听测。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
 <p>需要估计工业噪声源的空间贡献时，继续阅读<a href="14_acoustic-imaging.html">扩展专题Ⅰ：声学成像</a>，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。</p>
+<p>多个设备在受限通信下共同增强波形时，继续阅读<a href="15_distributed-enhancement.html">扩展专题Ⅱ：分布式协同增强</a>，先核对第5章的参考目标和第10章的同步条件。仅将同步麦克风接到一台处理器，并不要求运行DANSE。</p>
 <p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />
 <blockquote>

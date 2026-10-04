@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 1 章 · 问题定义与双耳启示 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="f3c31ce171c8"><style>
+<meta name="source-digest" content="da8b52b156df"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
@@ -234,7 +234,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap cur" aria-current="page">第 1 章 · 问题定义与双耳启示</div>
 <ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
-<li><a href="01_problem-definition.html#sec-u-81896116fa">导入：从客厅场景认识阵列任务</a></li>
+<li><a href="01_problem-definition.html#sec-u-5e074a7e92">任务定义与理想阵列收益</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-c36b7ac16e">客厅里的远距离语音问题</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-2fa0be7e3b">空间处理的三项任务</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-8057829d0f">先分清音量、功率与信噪比</a></li>
@@ -274,7 +274,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="01_problem-definition.html#sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</a></li>
-<li><a href="01_problem-definition.html#sec-u-81896116fa">导入：从客厅场景认识阵列任务</a></li>
+<li><a href="01_problem-definition.html#sec-u-5e074a7e92">任务定义与理想阵列收益</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-c36b7ac16e">客厅里的远距离语音问题</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-2fa0be7e3b">空间处理的三项任务</a></li>
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-8057829d0f">先分清音量、功率与信噪比</a></li>
@@ -297,14 +297,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="01_problem-definition.html#sec-u-5a8c86a7c7">E01-09：保持目标不变，为什么自噪声还会被放大</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 1 章（正文共 11 章，另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 1 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：（无） ｜ 下一篇：<a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-5cd90bfd4e">1. 从一个生活场景出发：问题定义</h1>
 <p>本章从客厅里的远距离语音交互出发，区分定位、波束形成和追踪的输入输出，再计算阵列为什么有时能降低噪声、有时却会削弱目标。双耳听觉则提供一个参照：时间差、声级差和方向相关谱形分别包含什么信息，机器阵列能借鉴到哪一步。</p>
 <p>读完本章，应能复算四麦理想增益，说明它为什么不是每段录音都能得到的保证；能区分混合总功率与分量 SNR、时间差与声级差，并分清几何模型的预测与人的听觉实验结果。</p>
-<h2 id="sec-u-81896116fa">导入：从客厅场景认识阵列任务</h2>
+<span id="sec-u-81896116fa" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-5e074a7e92">任务定义与理想阵列收益</h2>
 <span id="sec-u-05ec932a34" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c36b7ac16e">客厅里的远距离语音问题</h3>
 <p>想象你坐在客厅里，对 3 米外的智能音箱说“今天天气怎么样”。音箱要听清这句话，需要面对几类不同的干扰：</p>
 <ol>
@@ -581,6 +581,7 @@ $$</p>
 <pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
 .venv/bin/python -m codes.chapters.ch01.chapter01_experiments
 </code></pre>
+<p>第一条命令是第 1～5 章的跨章入口，会输出 28 道题的结果，其中还包含第 4 章的最小描述长度（Minimum Description Length，MDL）声源数估计重复试验：7 组条件、每组 200 次。阅读本章时只需核对其中的 E01-01～E01-03；第二条命令运行本章的 E01-04～E01-09。</p>
 <p>以下数字来自本书手算及确定性实验，不是设备或听者实测。中间计算保留更多位，表中按所列精度舍入。</p>
 <h3 id="sec-u-13bdf48a99">E01-01：四只麦不一定得到 6 dB</h3>
 <p>目标已经等幅对齐，四路零均值噪声的功率均为 1，任意两路噪声的相关系数均为 $\rho$。对四路信号取平均，分别计算 $\rho=0、0.5、1$ 时的输出噪声功率和相对单麦的 SNR 改善。为什么完全相同的噪声不会被平均消除？</p>
@@ -684,7 +685,7 @@ $$</p>
 <p>两个窗口共用样本，并非两次独立随机实验。四点的乘积均值刚好为零，也不能证明两个随机过程统计独立。这道题说明的是：有限记录必须保留实际交叉项；换一个截取范围就可能改变估计值。这里没有加入目标，不能仅凭这两项噪声读数宣称某个语音增强算法的 SNR 性能提高。</p>
 <h3 id="sec-u-7c4b67ce5c">E01-05：差一个采样点，为什么高频损失更大</h3>
 <p>采样率为 $f_s=16000$ Hz，两路等幅目标分别为 $s[n]$ 和 $s[n-1]$，残余时差为 $1/f_s=62.5\ \mu\mathrm{s}$。不做补偿就取平均，分别计算 1 kHz 和 4 kHz 正弦目标的幅度与功率变化。本题没有噪声。</p>
-<p><strong>参考答案。</strong> 令 $s[n]=\cos(\omega n)$，其中数字角频率 $\omega=2\pi f/f_s$。用两个余弦相加的恒等式：</p>
+<p><strong>参考答案。</strong> 令 $s[n]=\cos(\omega n)$，其中数字角频率 $\omega=2\pi f/f_s$，单位为 rad/样本。用两个余弦相加的恒等式：</p>
 <p>$$
 \begin{aligned}
 y[n]&=\frac{\cos(\omega n)+\cos(\omega(n-1))}{2}\\
