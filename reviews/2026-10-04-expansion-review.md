@@ -2256,3 +2256,15 @@ ROOT最终29共享网页、两个键盘右端全部整幅RGBA与真正已看51eb
 来源最终接受记录SHAd03061658e9758dead89c392a35a42ee6071ec733532b083868ced226d27b09f，前806～82217PDF全同已实际看候选；69代表scope网页、2式12-1右端、2修好E05目标与17纸页共90实际接受对象，85整幅继承/5新original实际看。100总捕获只99同/1差，不把31冗余截图称额外逐图接受。122真实goto每宽61个全部实际ID/meta/heading bounds通过；E05两标题top67.171875/66.890625大于44.5/46.25页头，ROOT也独立original看两图。数学最终SHA47369b0ef68284ee870d79755171db47dd8a5149c0ddfea69243f669ab4f5c62、媒体最终SHA9d429ddf75a20f0a9bc431b1753dc0241f62c9adfc391562b496ebf5633ddfb3，三路连续17+15+7=39PDF完整覆盖，无开放P1/P2。
 
 最后源差异、独立旧19题/22display/7编号式、实际359题/739h4/906大纲、534WAV及23保护JSON、80图RGBA、正式current d71cfe…与最终525c/6f375/6f645…再次核对。完整2568项（10环境skip）、出版52、锚构建25与隔离20各真实退出0，重叠不相加。原FFTW前缀C复编译、完整NumPy/native包闭包、完整上游波束整链、PDF/UA辅助技术与输出流人工听测仍未执行，不写成通过。S3-A-01～08均已验证，按附录主题普通提交、推送并核远端成功后才开始B，不宣称全书任务完成。
+
+
+### 附录A已推送后的固定日期发布纠正
+
+附录主题第一次普通commit/push实际成功d822e62765e0742818f86742bc2a526b65657c92，origin/main真实等于HEAD、当时工作区干净；raw/main当前求解报告实际200且字节同d71cfe…，证据masp-stage3-appa-post-push-remote.json。没有启动B。随后ROOT重新分段通读完整939行AGENTS，第一批大输出截断后补读全部范围，不称截断输出已完整阅读；当前规范SHAaf0d5fc0bda16b3f5aaacd593c529afd31c288088320a052fbdaecb423b3c12b。
+
+S3-A-09（发布参数P2）：最后一次锚修复的PDF漏传8.3要求的固定封面日期参数；它的真实日期虽为2026-10-05，但不能据默认日常构建声称正式日期已固定。ROOT保留已推送6f645…原文件，不强推、改旧commit或伪换历史报告；实际重新执行`.venv/bin/python scripts/build_pdf.py --build-date 2026-10-05`并实际EXIT0。当前PDF SHA76fba79eda6f48767d2fd5f05529b66301a7910df3559428431422a0d0406687，SourceDigest仍6f375ffece7f、886页，cover真实5日。日期明确固定不等于Chrome元数据等全PDF逐字节可复现，未作该声明。
+
+ROOT随后真实重新渲染A前17页150dpi/中15页140dpi/后7页130dpi，对三个角色已实际验收最终PNG逐整幅RGBA/尺寸核对，39/39完全相同；共享cover/目录/导读/题数/符号五页130dpi也5/5完全相同，才继承此前真正逐页验收，证据masp-stage3-appa-root/fixed-date/final-acceptance.json。网页/source/音频/图与算法代码全部未变化，既有2568/52/25/20及525c44live/fullquality不重算为新的结果。正在最后核combined HTML与PDF门禁，成功后只按日期纠正主题补充提交并push，再进B。
+
+
+固定日期combined HTML/PDF专项门禁实际EXIT0：FINAL FIXED-DATE COMBINED HTML AND PDF GATES PASSED，仍如实保留PDF/UA未完整验收通知。S3-A-09现已验证；只是该章发布配置补充，不夹带B或算法变更。39+5页全像素证据、前次独立三角色记录与所有失败均保存，随后只提交本PDF和当前统一台账，普通push不覆盖历史。
