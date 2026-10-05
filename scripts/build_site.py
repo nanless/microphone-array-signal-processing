@@ -325,6 +325,7 @@ CSS = """
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
+@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}

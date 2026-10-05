@@ -1,12 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 B · 路径地图与练习 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="525c7075d556"><style>
+<meta name="source-digest" content="701e27a4a25e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
+@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -291,6 +292,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-21c0740952">E13-12：共同缩放不会改变 DRR，为什么直接平方会算错？</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-6bac564963">E13-13：时间原点和时间单位为何不应改变 T20 外推？</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-0c2386925c">E13-14：两个同 DRR 的短 RIR，实际 PCM 输出还一样吗？</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-68046aa090">E13-15：同一指数尾只保存一部分，T20 外推为什么会变短？</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -332,6 +334,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-21c0740952">E13-12：共同缩放不会改变 DRR，为什么直接平方会算错？</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-6bac564963">E13-13：时间原点和时间单位为何不应改变 T20 外推？</a></li>
 <li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-0c2386925c">E13-14：两个同 DRR 的短 RIR，实际 PCM 输出还一样吗？</a></li>
+<li>&nbsp;&nbsp;<a href="13_appendix-guide.html#sec-u-68046aa090">E13-15：同一指数尾只保存一部分，T20 外推为什么会变短？</a></li>
 <li><a href="13_appendix-guide.html#sec-13-7">13.7 复现说明</a></li>
 </ul></nav></details>
 <blockquote>
@@ -402,10 +405,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p><strong>会议</strong>：ICASSP（信号处理旗舰会）、Interspeech（语音领域旗舰会）、WASPAA（音频与声学信号处理研讨会，两年一届）、IWAENC（声学信号增强研讨会）、HSCMA（免提语音通信与麦克风阵列研讨会）、DCASE Workshop（声事件与场景）。</p>
-<p><strong>期刊</strong>：IEEE/ACM Transactions on Audio, Speech, and Language Processing（TASLP，本领域主刊）、IEEE JSTSP（信号处理选题特刊）、JASA（美国声学学会刊）、Speech Communication。</p>
+<p><strong>期刊</strong>：<a href="https://signalprocessingsociety.org/publications-resources/ieee-transactions-audio-speech-and-language-processing" title="citation">IEEE Transactions on Audio, Speech and Language Processing</a>（TASLPRO，本领域主刊）、IEEE JSTSP（信号处理选题特刊）、JASA（美国声学学会刊）、Speech Communication。</p>
 <p><strong>挑战赛</strong>用于了解公开任务和评测口径。</p>
-<p>CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。<a href="https://www.chimechallenge.org/challenges/chime10/index" title="citation">CHiME-10 官方任务页</a>列出 ECHI-2、URGENT、SG-TSE 三项任务；<a href="https://www.chimechallenge.org/challenges/chime10/dates" title="citation">官方日程页</a>列出计划于 2027 年 2 月 4 日开放、提交期暂定为 2027 年 8～9 月。上述日程核实于 2026 年 10 月 2 日，参赛时应重新核对官方日期。</p>
-<p>DCASE 2026 的挑战期及系统提交于 2026 年 6 月 15 日截止，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 10 月 2 日，任务定义、<a href="https://dcase.community/challenge2026/submission" title="citation">提交日期</a>与结果见 <a href="https://dcase.community/challenge2026/" title="citation">DCASE 2026 官方页面</a>和<a href="https://dcase.community/articles/dcase2026-challenge-results-published" title="citation">结果公告</a>。</p>
+<p>CHiME 覆盖远场、多说话人和多通道语音处理；CHiME-9 设置 MCoRec 多会话鸡尾酒会转写与会话聚类、ECHI 低延迟助听对话增强。<a href="https://www.chimechallenge.org/challenges/chime10/index" title="citation">CHiME-10 官方任务页</a>列出 ECHI-2、URGENT、SG-TSE 三项任务；<a href="https://www.chimechallenge.org/challenges/chime10/dates" title="citation">官方日程页</a>列出计划于 2027 年 2 月 4 日开放、提交期暂定为 2027 年 8～9 月。上述日程核实于 2026 年 10 月 5 日，参赛时应重新核对官方日期。</p>
+<p>DCASE 2026 的挑战期及系统提交于 2026 年 6 月 15 日截止，并在 7 月 1 日公布结果；Task 3 是 Semantic Acoustic Imaging SELD，与 DCASE 2024 Task 3 的距离估计设置不同。以上状态核实于 2026 年 10 月 5 日，任务定义、<a href="https://dcase.community/challenge2026/submission" title="citation">提交日期</a>与结果见 <a href="https://dcase.community/challenge2026/" title="citation">DCASE 2026 官方页面</a>和<a href="https://dcase.community/articles/dcase2026-challenge-results-published" title="citation">结果公告</a>。</p>
 <p>其他公开评测包括 REVERB 去混响评测、ICASSP DNS/AEC Challenge，以及已结束的 <a href="https://signalprocessingsociety.org/publications-resources/data-challenges/speech-enhancement-augmented-reality-spear-challenge-2023" title="citation">SPEAR Challenge 2023</a>。SPEAR 使用头戴式 6 通道设备研究 AR 语音增强；它的年份、阵列和任务条件不应外推为当前持续榜单。</p>
 <p><strong>历史脉络</strong>（本领域是雷达/声呐技术向语音的迁移史）：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -503,7 +506,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <h3 id="sec-u-10eb2b38cb">研究方向七：CHiME-9 与大模型后端</h3>
 <p>CHiME-9 设置了两个输入与目标都不同的任务。MCoRec 使用房间中央的 360° 视频和音频，要求转写说话内容，并判断哪些人属于同一段会话；ECHI 则研究让佩戴者听清对话对象的低延迟增强。后一任务的<a href="https://www.chimechallenge.org/challenges/chime9/task2/rules" title="citation">官方规则</a>要求流式处理且算法延迟至多 20 ms。两任务不能共用一张“CHiME-9 语音增强”成绩表。<a href="https://www.chimechallenge.org/challenges/chime9/index" title="citation">CHiME-9 官方任务页</a></p>
 <p>DiCoW（Polok et al., <em>Computer Speech &amp; Language</em> 95:101841，2026，<a href="https://doi.org/10.1016/j.csl.2025.101841" title="citation">DOI 10.1016/j.csl.2025.101841</a>）针对多人混合录音中“只转写指定一人”的问题，把说话人分割给出的活动信息作为条件输入 Whisper；输出是该目标的文字，而不是分离后的干净音轨。这与先分离出波形再送入普通识别器的做法不同。</p>
-<p>作者<a href="https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620" title="citation">演示仓固定提交</a>内有两个不同入口：<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14" title="citation"><code>example.py</code> 使用 DiCoW v1 与 Pyannote 3.1</a>，<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39" title="citation"><code>app.py</code> 使用 DiCoW v2 与 Pyannote 3.1</a>；不能仅凭仓库提交号把两者叫作同版。原工作相关的<a href="https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123534686c198e9" title="citation">训练/推理源码仓固定版本</a>另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。</p>
+<p>作者<a href="https://github.com/BUTSpeechFIT/DiCoW/tree/e9326bd536bf632e823357438b210102903ba620" title="citation">演示仓固定提交</a>内有两个不同入口：<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/example.py#L8-L14" title="citation"><code>example.py</code> 使用 DiCoW v1 与 Pyannote 3.1</a>，<a href="https://github.com/BUTSpeechFIT/DiCoW/blob/e9326bd536bf632e823357438b210102903ba620/app.py#L31-L39" title="citation"><code>app.py</code> 使用 DiCoW v2 与 Pyannote 3.1</a>；不能仅凭仓库提交号把两者叫作同版。原工作相关的<a href="https://github.com/BUTSpeechFIT/TS-ASR-Whisper/tree/0ea6679d44405f5ff39188030123524686c198e9" title="citation">训练/推理源码仓固定版本</a>另行锁定。演示仓后续主分支引入 DiariZen 等新依赖，不应把这套后续演示条件倒写为上述固定提交的必需条件。</p>
 <p>源码、模型和数据分开核对许可：上述代码按 Apache-2.0，<a href="https://huggingface.co/BUT-FIT/DiCoW_v1" title="citation">DiCoW v1 权重</a>与<a href="https://huggingface.co/BUT-FIT/DiCoW_v2" title="citation">DiCoW v2 权重</a>的模型卡各标 CC BY 4.0；后续演示使用的 <a href="https://github.com/BUTSpeechFIT/DiariZen/blob/main/MODEL_LICENSE" title="citation">DiariZen 权重</a>按 CC BY-NC 4.0，不能由代码许可推断其商用权利。<a href="https://huggingface.co/pyannote/speaker-diarization-3.1" title="citation">Pyannote 3.1</a>模型还须核对门控获取条件与访问凭据。取得源码不表示权重已获许可或系统已经运行。</p>
 <p>复现时至少要固定分割标签的来源、目标说话人、录音片段和识别评分方式，并与不加说话人条件的识别结果对照；若分割标签错位，也要检查词漏识别。该方法不能直接当作 ECHI 的 20 ms 助听增强基线。</p>
 <h3 id="sec-u-0a5abcc280">研究方向八：扩散先验用于无监督盲分离</h3>
@@ -834,7 +837,7 @@ D_t(x)&=[1-p_D(x)]D^-(x)\\
 </li>
 <li>
 <p>图 15 的 <code>fig_wng_di()</code> 当前绘出 WNG、DI 及<strong>已加载</strong>超指向解，没有协方差条件数曲线或未加载解。在个人副本中保持六麦圆阵，依次把半径和相邻弦长从 4 cm 改为 2 cm、8 cm；另用同一频率格计算弥散噪声矩阵的二范数条件数，并在可逆条件下另算未加载解。原图底注固定写着 4 cm，修改参数后须改底注和图注，并记录加载量、求解失败频点及同一频率下的 WNG/DI。未加载矩阵奇异时报告未定义或求解失败，不把任意伪逆输出当作原解。</p>
-<p><strong>解释重点</strong>：低频 $kd$ 很小时，各阵元观测接近相同，弥散噪声相干矩阵容易病态；超指向解需要大幅度、相互抵消的权重，因而 WNG 下降。增大间距可能改善低频条件数，也可能在高频引入空间混叠，不能只看一端。</p>
+<p><strong>解释重点</strong>：令波数 $\kappa=2\pi f/c$，单位为rad/m，$d$为麦间距。低频 $\kappa d$ 很小时，各阵元观测接近相同，弥散噪声相干矩阵容易病态；超指向解需要大幅度、相互抵消的权重，因而 WNG 下降。增大间距可能改善低频条件数，也可能在高频引入空间混叠，不能只看一端。</p>
 </li>
 </ol>
 <h3 id="sec-13-6-3">13.6.3 增强、分离与追踪：第 6～9 章的题 9～13</h3>
@@ -1393,7 +1396,7 @@ $$</p>
 $$</p>
 <p>$d_i$ 为相对能量 dB，$z_i$ 无量纲，$\beta_z$ 为每单位 $z$ 的dB变化。截距 $\alpha$ 对应平移后的起点；不必用一个极大的绝对时间截距再反求衰减时长。</p>
 <p><strong>大起点手算。</strong> 令 $t=[10^{16},10^{16}+2,10^{16}+4]\ \mathrm{s}$，对应 $d=[-5,-15,-25]\ \mathrm{dB}$。时间跨度为4 s，故 $z=[0,1/2,1]$；拟合给 $\alpha=-5$、$\beta_z=-20$。原单位斜率为 $-20/4=-5\ \mathrm{dB/s}$，$T_{20}=20/5=4\ \mathrm{s}$，$T_{60}=12\ \mathrm{s}$。不要将未条件化的浮点最小二乘输出直接当作另一种物理衰减。</p>
-<p><strong>单位尺度手算。</strong> 再用 $t=[0,10^{-200},2\times10^{-200}]$ 与相同的三个dB值。$z$仍为 $[0,1/2,1]$，$\beta_z$仍为 $-20$；原时间单位斜率为 $-10^{201}$，$T_{20}=2\times10^{-200}$、$T_{60}=6\times10^{-200}$。反向使用大跨度 $[0,10^{200},2\times10^{200}]$ 时，斜率为 $-10^{-199}$，$T_{20}=2\times10^{200}$、$T_{60}=6\times10^{200}$。通用直线公式的输出时间单位随输入单位变化；但本仓接口参数 <code>times_s</code> 与返回字段明确固定为秒。原始时刻若以毫秒记录，须先除1000再传入接口，不能把毫秒数字直接输入后仍将返回值标成秒。</p>
+<p><strong>单位尺度手算。</strong> 以下两个时间向量仍以秒为单位。先用 $t=[0,10^{-200},2\times10^{-200}]$ 与相同的三个dB值。$z$仍为 $[0,1/2,1]$，$\beta_z$仍为 $-20$；原时间单位斜率为 $-10^{201}$，$T_{20}=2\times10^{-200}$、$T_{60}=6\times10^{-200}$。反向使用大跨度 $[0,10^{200},2\times10^{200}]$ 时，斜率为 $-10^{-199}$，$T_{20}=2\times10^{200}$、$T_{60}=6\times10^{200}$。通用直线公式的输出时间单位随输入单位变化；但本仓接口参数 <code>times_s</code> 与返回字段明确固定为秒。原始时刻若以毫秒记录，须先除1000再传入接口，不能把毫秒数字直接输入后仍将返回值标成秒。</p>
 <p>条件化不能创造已经丢失的时刻差。例如浮点数中 $10^{20}+1$ 可能与 $10^{20}$ 相同，此时输入已经没有可分辨跨度，接口应拒绝。重复或非递增时间、非有限输入、非下降拟合，以及未覆盖规定衰减区间，均需分别检查。该题只拟合给定EDC点，不是从三点就证明真实房间衰减线性；<a href="#sec-u-199b14fd60">E13-05</a>和第16题说明拟合区间与外推的声学条件。</p>
 <h3 id="sec-u-0c2386925c">E13-14：两个同 DRR 的短 RIR，实际 PCM 输出还一样吗？</h3>
 <p><a id="e13-14"></a></p>
@@ -1469,6 +1472,114 @@ $$</p>
 <li><a href="response_audio/response_full_b.wav">B完整输出</a><audio class="audio-sample" controls preload="none" aria-label="B完整输出" src="response_audio/response_full_b.wav">请使用上方 WAV 链接下载。</audio></li>
 </ul>
 <p>这些文件保留相同源、增益与两点卷积尾。试听可以帮助辨认频谱差异，不能替代上述误差计算，也不证明对真实语音的感知质量优劣。</p>
+<h3 id="sec-u-68046aa090">E13-15：同一指数尾只保存一部分，T20 外推为什么会变短？</h3>
+<p><a id="e13-15"></a></p>
+<p><strong>题目与输入。</strong> 取已知、无噪声的指数冲激响应，采样率 $f_s=16000\ \mathrm{Hz}$，无限尾的名义衰减时间为 $T_\infty=0.6\ \mathrm s$。仅改变保存长度 $N$：分别保存3200、9600、32000点，名义记录时长为0.2、0.6、2 s。各记录都从 $n=0$ 开始，已经保存的前缀样本完全相同；$n\ge N$ 的尾部不在记录中。</p>
+<p>求有限记录的归一化倒向能量曲线，并在同一 $-5$～$-25$ dB 规则下计算外推 $T_{60}$。再问：共同乘一个非零幅度，能否补偿缺失的尾部？这是本书给定的指数模型，没有房间几何、测量噪声或真人录音。</p>
+<p><strong>第一步：区分幅度与能量的衰减。</strong> 固定无限模型为</p>
+<p>$$
+\begin{aligned}
+ h_\infty[n]&=10^{-3n/(T_\infty f_s)},\qquad n\ge0,\\
+ q&=10^{-6/(T_\infty f_s)},\\
+ |h_\infty[n]|^2&=q^n.
+\end{aligned}\tag{13-10}
+$$</p>
+<p>$q\approx0.9985619193472844$ 是相邻两个样本的<strong>能量</strong>比例，无量纲。在0.6 s，即9600个采样间隔后，幅度降为 $10^{-3}$，平方降为 $10^{-6}$。指数尾每个样本仍非零；“0.6 s下降60 dB”不表示该时刻之后没有尾声。</p>
+<p><strong>第二步：把有限倒向和算出来。</strong> 对保存的 $N$ 点记录，$E_N[n]$ 是从当前点 $n$ 到最后一点 $N-1$ 的能量和。把首项 $q^n$ 提出来，剩下的有限级数为 $1+q+\cdots+q^{N-n-1}$。其和可由“原级数减去乘 $q$ 后的级数”得到：首项保留，末项留下 $-q^{N-n}$。因此</p>
+<p>$$
+\begin{aligned}
+ E_N[n]&=\sum_{k=n}^{N-1}q^k
+         =\frac{q^n-q^N}{1-q},\\
+ R_N[n]&=\frac{E_N[n]}{E_N[0]}
+         =\frac{q^n-q^N}{1-q^N},\\
+ d_N[n]&=10\log_{10}R_N[n],\qquad 0\le n\lt N.
+\end{aligned}\tag{13-11}
+$$</p>
+<p>$E_N$ 的单位是同一数字幅度平方，$R_N$ 是无量纲的相对能量，$d_N$ 以dB表示。无限尾求和则为 $E_\infty[n]=q^n/(1-q)$，归一化后 $R_\infty[n]=q^n$。有限式多减了 $q^N$，分母也随之改变；有限记录的归一化曲线不能直接用无限尾曲线代替。</p>
+<p><strong>第三步：只用一个点就看见差别。</strong> 取 $N=3200$、$n=1600$，当前点时刻为0.1 s。此时 $q^{1600}=10^{-1}$，$q^{3200}=10^{-2}$，所以</p>
+<p>$$
+\begin{aligned}
+ R_{3200}[1600]&=\frac{0.1-0.01}{1-0.01}
+                  =\frac1{11},\\
+ d_{3200}[1600]&=-10\log_{10}11\\
+              &\approx-10.41392685\ \mathrm{dB}.
+\end{aligned}\tag{13-12}
+$$</p>
+<p>无限尾在同一点为 $R_\infty=0.1$、$d_\infty=-10$ dB。两份记录在这个采样点的幅度相同，倒向能量却不同，因为倒向和还包含该点之后的全部已保存样本。越接近有限记录末端，剩余尾部越少，有限相对曲线下降得越快，因而不再是无限模型中的直线。</p>
+<p><strong>第四步：固定实际拟合的采样点。</strong> 程序用直接指数式生成浮点幅度，再平方、倒向累计并归一化。起点取第一个 $d_N[n]\le-5$ dB 的索引，终点取第一个 $d_N[n]\le-25$ dB 的索引；两个端点都参加拟合，不对阈值作插值。采样索引为零基，最后一个采样时刻是 $(N-1)/f_s$，与名义记录时长 $N/f_s$ 相差一个采样间隔。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">保存点数 $N$</th>
+<th scope="col" style="text-align: right;">名义时长 $N/f_s$（s）</th>
+<th scope="col" style="text-align: right;">最后采样时刻（s）</th>
+<th scope="col">拟合索引，含两端</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3200</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">0.1999375</td>
+<td>786～3011</td>
+</tr>
+<tr>
+<td>9600</td>
+<td style="text-align: right;">0.6</td>
+<td style="text-align: right;">0.5999375</td>
+<td>800～4000</td>
+</tr>
+<tr>
+<td>32000</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">1.9999375</td>
+<td>800～4000</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如3200点记录中，两个拟合端点实际约为 $-5.00557845$ 和 $-25.00677294$ dB，不恰好落在阈值上。9600点记录则约为 $-5.00000939$ 和 $-25.00136923$ dB。32000点记录在当前直接指数、倒向累计的浮点路径上取800与4000；若先把 $q$ 舍入成一个浮点数再反复乘方，极接近阈值的点可能偏到阈值另一侧，使索引差一。入口保留当前路径的真实索引和端点值，不用宽泛容差把这两种算术路径说成完全相同。</p>
+<p><strong>第五步：从所有选中点求斜率。</strong> 令 $t_i=n_i/f_s$，对每个拟合点取 $d_i=d_N[n_i]$。先求时间均值 $\bar t$ 和dB均值 $\bar d$，再用中心化的一元最小二乘式计算斜率：</p>
+<p>$$
+ \beta=\frac{\sum_i(t_i-\bar t)(d_i-\bar d)}
+              {\sum_i(t_i-\bar t)^2}.\tag{13-13}
+$$</p>
+<p>式(13-13)的 $\beta$ 单位为dB/s。沿用E13-05的外推定义，$T_{20}=-20/\beta$、$T_{60}=-60/\beta=3T_{20}$。这里拟合的是整个选中区间，不能把首尾两个阈值之间的时间差直接当作该弯曲曲线的最小二乘 $T_{20}$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">保存点数 $N$</th>
+<th scope="col" style="text-align: right;">斜率（dB/s）</th>
+<th scope="col" style="text-align: right;">$T_{20}$（s）</th>
+<th scope="col" style="text-align: right;">外推 $T_{60}$（s）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3200</td>
+<td style="text-align: right;">−130.1055686025</td>
+<td style="text-align: right;">0.15372132196</td>
+<td style="text-align: right;">0.46116396588</td>
+</tr>
+<tr>
+<td>9600</td>
+<td style="text-align: right;">−100.0051915461</td>
+<td style="text-align: right;">0.19998961745</td>
+<td style="text-align: right;">0.59996885234</td>
+</tr>
+<tr>
+<td>32000</td>
+<td style="text-align: right;">−100.0000000000</td>
+<td style="text-align: right;">0.20000000000</td>
+<td style="text-align: right;">0.60000000000</td>
+</tr>
+</tbody>
+</table></div>
+<p>计算用未舍入的完整曲线，表中才按注明的小数位展示。仅保留0.2 s时，外推约0.4612 s，比无限模型的0.6 s短；保留0.6 s时仍有较小的有限尾影响；保留2 s后，在这个拟合区间内与0.6 s已十分接近。最后一行显示为0.60000000000不表示有限尾严格等于无限尾。</p>
+<p><strong>共同幅度缩放与截断是两种操作。</strong> 若保存的整条记录共同乘非零常数 $a$，$E_N[n]$ 和 $E_N[0]$ 同时乘 $|a|^2$，相对曲线中的该因子消去。因此E13-12的安全缩放可以保护数值计算，却不能补回式(13-11)中缺失的尾部。按同一0.2 s记录乘 $10^{-200}$ 或 $10^{200}$，只要数值核仍在声明的支持域内，拟合值仍约0.4612 s，不会变回0.6 s。</p>
+<p>运行以下入口，可读取E13-15的五种尾长对照、实际拟合区间与共同尺度控制；0.12和0.3 s是额外的代码对照。它复用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/core/room_metrics.py">既有房间指标核</a>的 <code>measured_t60_from_t20</code>，不创建音频或重跑房间仿真。</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
+</code></pre>
+<p><strong>适用边界。</strong> 此题证明给定无噪声指数尾的有限保存会改变倒向能量与外推值，没有执行噪声底修正、ISO测量流程或自动截断校正。真实房间的多段衰减、频带、测量噪声和尾长要分别核验；第16题约0.546 s的PRA房间结果也不能凭这个不同模型的算例归因于有限尾。拟合区间缺失时，现有指标核明确拒绝，不凭名义0.6 s强行补出结果。</p>
 <span id="sec-9" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-13-7">13.7 复现说明</h2>
 <p>先运行代码基线的单元测试和第 10 章示例，核对确定性输出：</p>
 <pre><code class="language-bash">.venv/bin/python -m unittest tests.test_codes_engineering -v
@@ -1479,7 +1590,7 @@ $$</p>
 .venv/bin/python -m codes.chapters.ch00.cross_chapter.engineering_boundary_exercises
 </code></pre>
 <p>第 10 章示例使用确定性输入，覆盖 SRO 直线拟合与线性重采样、VAD 迟滞与语音结束保持时间、峰值保护 AGC、固定容量环形缓冲、处理超时与队列模拟，以及 Q1.15 饱和量化。线性重采样、Python 环形缓冲和调度模拟都是教学基线，不应替换带抗混叠滤波的流式重采样器、无锁实时队列或目标系统测量。</p>
-<p>附录 B 逐步实验运行 E13-03～14 的固定手算与只读 PCM 检查，其中 E13-09 逐份核对房间 WAV 摘要后读取波形、重新计算两个时间窗的 SRP。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分<a href="room_audio/RESULTS.json">结果报告</a>的实际运行证据与本书构造的数学小例。</p>
+<p>附录 B 逐步实验运行 E13-03～15 的固定手算与只读 PCM 检查，其中 E13-09 逐份核对房间 WAV 摘要后读取波形、重新计算两个时间窗的 SRP。它不运行第 16 题的房间仿真，也不下载第 17 题提及的外部系统；房间仿真要按第 16 题使用隔离依赖，并区分<a href="room_audio/RESULTS.json">结果报告</a>的实际运行证据与本书构造的数学小例。</p>
 <p>新增的<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/tracking_time_exercises.py">状态与时间练习</a>分别对应 E09-07 的旧权重递推、E09-08 的测量到消费时间外推、E10-15 的预卷与结束事件、E11-08 的零失败风险上界。先按题面独立手算，再检查代码中间值；四题均有<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_time_state_exercises.py">独立边界测试</a>，不需要模型权重或声卡。</p>
 <p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/engineering_boundary_exercises.py">工程边界练习</a>再区分三类容易混淆的量：E10-16 的恰好完成与真正超期，E10-17 的采样时刻、回调时刻与对应输出时刻，E11-09 的平均错误下降与独立配对方向证据。它们分别用整数刻度、同一时钟的构造时间戳和全部符号排列作独立核查，不将调度模型、时间单位或教学计数写成硬件实测。</p>
 <p>继续做设备实验时，可按<a href="research/03_industrial_deployment.html">工业实现研究</a>的 I01～I32 选择一个主题，例如采集与路由、连续重采样、VAD/AGC/NS、DSP 固件、模型运行时或评分。先固定源码提交，再记录依赖、编译、模型、声学输入和故障状态；“已下载”只能说明源码在本机，不能代替“已编译、已运行、已测量”。</p>

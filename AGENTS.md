@@ -33,8 +33,9 @@
 | 共享文件IO源文件 | `codes/chapters/ch00/io_contracts.py` | 普通父链与成员、严格JSON、元数据类型及报告写入的公共原语 | 生成器和获取工具复用原语；各资产的schema、评分和来源边界由调用者负责。参与生成时须绑定真实SHA；有限写前检查不宣称消除并发竞态或保证崩溃持久性 |
 | 主音频布局 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/*.wav`；`scripts/code_layout.py` 固定组→章节映射 | 27 组、109 个数学合成 WAV，单一总清单、分章存放 | 改生成源后按新布局重生；清单绑定20个真实源，记录每条所属章、生成源 SHA 与 WAV SHA；禁止手改单个 WAV |
 | 已知噪声加权源与生成物 | `codes/chapters/appendix_a/core/weighted_audio.py`、`codes/chapters/appendix_a/examples/generate_weighted_audio.py` → `codes/chapters/appendix_a/weighted_audio/` | 5个16kHz、32000点单/双声道数学合成WAV，独立清单 | 同一700Hz目标与3500/4000Hz干扰，已知固定权重和均1；28800点稳窗解析/浮点分量/实际PCM整数分开，四真实源/增益1；不是盲估噪声、真实阵列或随机独立性证据；只接受六普通成员；首次写目录前独立核固定参数、波形、分量、权重与量化；`--check`严格只读完整回放 |
-| 同DRR频谱源与生成物 | `codes/chapters/appendix_b/core/response_audio.py`、`codes/chapters/appendix_b/examples/generate_response_audio.py` → `codes/chapters/appendix_b/response_audio/` | 5个16kHz、32002点单声道数学合成WAV，独立清单 | 同一2000/4000Hz源、两反射短FIR同能量；增益1、完整两点尾；28800点稳窗解析/浮点分量/实际PCM整数分开；四真实源/六普通成员；不是实房间、盲估计或主观听测，`--check`严格只读回放 |
+| 同DRR频谱源与生成物 | `codes/chapters/appendix_b/core/response_audio.py`、`codes/chapters/appendix_b/examples/generate_response_audio.py` → `codes/chapters/appendix_b/response_audio/` | 5个16kHz、32002点单声道数学合成WAV，独立清单 | 同一2000/4000Hz源、两反射短FIR同能量；增益1、完整两点尾；28800点稳窗解析/浮点分量/实际PCM整数分开；四真实源/六普通成员；首次写前独立核固定类型参数、完整因果波形、解析/浮点/实际PCM指标；不是实房间、盲估计或主观听测，`--check`严格只读回放 |
 | 附录A当前原求解合同 | `codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py` → `codes/chapters/appendix_a/reports/upstream_solver_contracts_current.json` | 从已核源码字节执行固定pb_bss完整原模块的限定helper与独立NumPy接口比较 | 保留旧四例、两NumPy例及另列的四个形状/复数批次控制；当前锁表/状态/完整选集与实际所用源分栏，直接依赖前后核；仓内只写此当前路径，旧报告保持原字节；默认只读stdout，不读取或删除原pyc，不称完整波束整链 |
+| 附录B当前TAC源合同 | `codes/chapters/appendix_b/examples/audit_tac_contracts.py` → `codes/chapters/appendix_b/reports/tac_contracts_current.json` | 作者固定四源的十项AST静态合同、零原神经调用 | 当前锁表/状态、完整选集与所用blob分栏，四项直接执行源前后核；默认stdout，仓内只写此当前路径，旧`tac_contracts.json`与历史身份不改，不称网络或论文评分复现 |
 | 图65数值报告 | `scripts/make_figures.py::fig_weighted_noise` → `codes/chapters/appendix_a/reports/figure65_weighted_noise.json` | 三种已知权重、固定解析误差与三个真实PCM整数E/D | 随图重生；同窗同参考，不拟合增益或延迟，谱线正交只限所声明的稳定整数周期窗 |
 | 图66数值报告 | `scripts/make_figures.py::fig_equal_drr_response` → `codes/chapters/appendix_b/reports/figure66_equal_drr_response.json` | 短反射RIR系数、两频解析功率增益与两个真实PCM整数E/D | 随图重生；RIR DRR与给定源加权反射功率分别命名，完整PCM差含量化，不拟合时延或增益 |
 | STFT卷积源与生成物 | `codes/chapters/ch02/core/stft_convolution.py`、`codes/chapters/ch02/examples/generate_stft_convolution.py` → `codes/chapters/ch02/stft_audio/` | 3个同源、完整尾部、共同增益的数学合成WAV与独立清单 | 浮点/PCM结果分别保留；未改谱往返参考原源，逐帧近似参考完整卷积；`--check`严格只读，不混入主109样本 |
@@ -59,7 +60,7 @@
 | 多频几何源与生成物 | `codes/chapters/ch03/core/geometry_audio.py`、`codes/chapters/ch03/examples/generate_geometry_audio.py` → `codes/chapters/ch03/geometry_audio/` | 3个32kHz双频源/两方向六麦数学合成WAV，独立清单 | 共同增益1；稳定窗逐频消除未知公共源幅，解析/浮点/实际PCM分开；六真实源摘要；不把传播包络边缘称作稳定相位别名，`--check`严格只读 |
 | 已知方向基线源与生成物 | `codes/chapters/ch03/core/baseline_calibration.py`、`core/baseline_audio.py`、`examples/generate_baseline_audio.py` → `codes/chapters/ch03/baseline_audio/` | 六个16kHz、32000点单/双声道数学合成WAV、独立清单 | 500Hz已知方向、固定相对延迟、共同增益1；27200点稳窗850周期，解析/浮点/实际PCM及各通道整数E/D分开；六真实源/七普通成员，只读完整重放；主值反时差须已知绝对值小于1ms，不称盲GCC、真实阵列或设备同步 |
 | 第3章当前原方法合同 | `codes/chapters/ch03/examples/audit_upstream_coarray.py` → 显式当前 `reports/upstream_coarray_contracts.json` | 固定doatools七源码限定方法、DA/SS与给定扰动对照 | 默认stdout；官方origin/blob/许可/洁净前后核、所用身份与完整选集不匹配分栏；原输入失败和历史报告保留，仅新安全当前报告或仓外普通路径写入 |
-| 房间仿真源与生成物 | `codes/chapters/appendix_b/examples/room_srp_exercise.py` → `codes/chapters/appendix_b/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单、一张结果图和 `RESULTS.json` 数值报告 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 109 个样本或称作真实录音；报告、图与清单的摘要须一致；只读核验由 `examples/check_room_assets.py` 检查完整21普通成员及当前直接源，不等于重跑PRA |
+| 房间仿真源与生成物 | `codes/chapters/appendix_b/examples/room_srp_exercise.py` → `codes/chapters/appendix_b/room_audio/` | 6 个源位各有源、仅直达和完整房间输出，共 18 个白噪声合成 WAV、独立清单、一张结果图和 `RESULTS.json` 数值报告 | 使用隔离的 pyroomacoustics 0.10.0 环境生成到新目录并核验后更新；不得混入主清单的 109 个样本或称作真实录音；报告、图与清单的摘要须一致；只读核验由 `examples/check_room_assets.py` 检查完整21普通成员、当前直接源、固定DOA设置和81抽头/40点延迟声明，不等于重跑PRA |
 | 双耳线索源与生成物 | `codes/chapters/ch01/core/binaural_cues.py`、`codes/chapters/ch01/examples/generate_binaural_cues.py` → `codes/chapters/ch01/binaural_audio/` | 5 个双声道数学合成 WAV、独立清单；左声道在前，共同导出增益 1 | 复用主 PCM 编解码，清单绑定四个真实源的 SHA；分开浮点与 PCM 评分；不并入主 109 个或称为 HRTF/真实双耳录音；`--check` 只核对 |
 | 方向谱形源与生成物 | `codes/chapters/ch01/core/spectral_cues.py`、`codes/chapters/ch01/examples/generate_spectral_cues.py` → `codes/chapters/ch01/spectral_audio/` | 两个32000点单声源与两个32001帧双声输出、四个16kHz数学合成WAV与独立清单 | 人工两抽头FIR、1/7kHz两种源谱、共同增益1；完整1点尾；28800点稳窗分开解析/浮点/PCM及整数E/D；四真实源/五普通成员，严格只读重放；不是实测HRIR/HRTF、盲响应估计或方向真值 |
 | 第1章原插值合同 | `codes/chapters/ch01/examples/audit_libmysofa_interpolation.py` → 显式当前 `reports/libmysofa_interpolation.json` | 固定libmysofa完整原插值函数、五人工结构控制 | 原公共延迟中点衰减与逐方向控制分别保留；所用源码身份与完整选集状态分栏；不改上游/旧报告，不称完整SOFA查询/渲染；默认只读stdout，仅显式普通报告路径安全写入 |
@@ -705,7 +706,7 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
 当前完整构建的基线是 80 张编号 PNG 和 1 张房间补图、16 个教程页面（首页加15篇）与 6 个研究手册页面，以及 PDF 的 16 个章级、151 个节级、
-739 个子节级书签，共 906 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+740 个子节级书签，共 907 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。

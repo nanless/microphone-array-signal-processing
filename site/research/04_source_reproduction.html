@@ -1,12 +1,13 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="525c7075d556"><style>
+<meta name="source-digest" content="701e27a4a25e"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
+@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -830,7 +831,7 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <span id="sec-17" class="anchor-alias" aria-hidden="true"></span><span id="tac作者源共享结构核验与未执行原网络的界线" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-16e8efe96b">TAC作者源：共享结构核验与未执行原网络的界线</h3>
 <p>附录B的通道置换问题需要区分两个性质：通道顺序改变时，通道索引输出按相同顺序重排，这是置换等变；跨通道平均不随顺序变化，这是聚合量的置换不变。加入一个通道通常改变平均值，所以支持可变通道数不等于数值输出不随麦数变化。<a href="https://arxiv.org/html/1910.14104v3" title="citation">TAC作者论文v3 §2.1式(1)～(4)</a>用共享变换、平均、拼接与残差连接说明这一步；<a href="../13_appendix-guide.html#e13-11">E13-11</a>分别手算交换通道、只复制一路与复制全部通道。</p>
 <p>本书通过获取工具取得作者<a href="https://github.com/yluo42/TAC/tree/e3373b73358a96af6f64fdbe25327def8d6bd973" title="citation">固定提交 <code>e3373b73358a96af6f64fdbe25327def8d6bd973</code></a>的 <code>README.md</code>、<code>FaSNet.py</code>、<code>utility/__init__.py</code>、<code>utility/models.py</code> 四个文件，独立保存在被忽略的上游工作树。README明确声明CC-BY-NC-SA-3.0-US，源代码未随本教程再分发；没有取得音频、数据、权重或另一 <code>iFaSNet.py</code> 扩展。NumPy/PyTorch是原模块的依赖，但这一审计只使用标准库解析Python语法，不导入两模块或Torch。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/examples/audit_tac_contracts.py">只读合同工具</a>核对origin、完整HEAD、四文件SHA与Git blob、README许可、锁表摘要及前后洁净状态，再执行十项静态AST检查。它不编译或执行原 <code>forward</code>，也没有把本书的独立NumPy夹具作为网络运行证据。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/examples/audit_tac_contracts.py">只读合同工具</a>核对origin、完整HEAD、四文件SHA与Git blob、README许可、当前锁表及获取状态摘要、完整选集与所用文件的独立身份、四项直接执行源的前后摘要及前后洁净状态，再执行十项静态AST检查。它不编译或执行原 <code>forward</code>，也没有把本书的独立NumPy夹具作为网络运行证据。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table class="source-contract-readable-table">
 <thead>
 <tr>
@@ -868,9 +869,10 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 </tbody>
 </table></div>
 <pre><code class="language-bash">.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts
-.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts --report codes/chapters/appendix_b/reports/tac_contracts.json
+.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts --report codes/chapters/appendix_b/reports/tac_contracts_current.json
 </code></pre>
-<p>默认只输出JSON；仅显式 <code>--report</code> 原子保存<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/reports/tac_contracts.json">当前独立报告</a>。报告状态是 <code>passed_static_contracts</code>，保存十项结构定位与方法片段摘要，原运行调用计数为零；工具拒绝重复JSON字段、非有限数字、词法 <code>..</code>、符号链接、非普通目标和上游缓存内报告。报告不替代分离性能、权重/数据授权或设备验收。</p>
+<p>默认只输出JSON；仅显式 <code>--report</code> 原子保存<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/reports/tac_contracts_current.json">当前独立报告</a>。报告状态是 <code>passed_static_contracts</code>，保存十项结构定位与方法片段摘要，原运行调用计数为零；仓内只允许此指定当前报告；仓外普通报告仍可显式保存。工具拒绝旧报告、仓内源码、锁表、状态和快照等其他目标，并核对重复JSON字段、非有限数字、词法 <code>..</code>、符号链接、非普通目标和上游缓存。写前及替换前的有限核验不保证消除并发竞态。报告不替代分离性能、权重/数据授权或设备验收。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/reports/tac_contracts.json">历史报告</a>保留2026-10-01实际运行时的100项目锁表与原工具身份；旧锁表原字节已登记在<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/source_snapshots/SOURCES.55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0.json">来源快照</a>。当前报告绑定115项目锁表及其获取状态，完整选集核对与十项静态结构证据分别记录。原历史报告不换摘要、不升级成神经运行；共享核后续变化也不追溯改写先前报告的真实依赖身份。</p>
 <p>附录B的房间仿真、分数延迟和通道聚合数学例仍按各自的输入、脚本、PCM与统计窗口解释。对照时，<a href="../13_appendix-guide.html#e13-12">E13-12</a>复算共同尺度不变的DRR与极端数值边界，<a href="../13_appendix-guide.html#e13-13">E13-13</a>条件化时间原点与跨度后外推T20，<a href="../13_appendix-guide.html#e13-14">E13-14</a>按同源PCM与稳定评分窗比较同DRR的两条短RIR。这些独立练习不能由静态来源报告统一登记成原神经系统已运行。</p>
 <span id="sec-18" class="anchor-alias" aria-hidden="true"></span><span id="6-何时可以进入设备比较" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-56cf8b0bbf">6. 何时可以进入设备比较</h2>
 <p>只有两套候选实现使用同一输入、评分区域和延迟口径，性能比较才有明确含义。硬件上再分别测量启动加载、

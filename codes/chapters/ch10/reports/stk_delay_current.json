@@ -1509,15 +1509,15 @@
     "dependency_files": [
       {
         "path": "tu0.d",
-        "sha256": "ead5730eee7a7babced5b46b36a009fccfa814227602b14f01fa836b770dfe10"
+        "sha256": "7ae4b378b24c997ce9db987b8d48b2eeb51d0b0c06fe8fdc3b1a22f4031b833b"
       },
       {
         "path": "tu1.d",
-        "sha256": "2c80e546f7b271942f1ca0f41cab248655738a49d8bff03e829362772a058a9d"
+        "sha256": "94219f0a57a7db4f3457d56e66c0432cf1bc60a82e0fa6b48e32070e7ed01af2"
       },
       {
         "path": "tu2.d",
-        "sha256": "80f0849344829b42f4a41fe0f2cc26434514dbb0ff8822ca35031cca5a5e3023"
+        "sha256": "7a1f304a76ea1431bc98c866d7ae83593b0dc9f28ff5caabd122b43afcd15110"
       }
     ],
     "original_compile_inputs": {
@@ -4869,7 +4869,7 @@
   "binary_sha256": "f0e3f672b10405abf88a5966ba62a4d59451b09c985427b38fceed3086c56bc9",
   "actual_dependencies_sha256": {
     "codes/chapters/ch10/examples/run_stk_delay_probe.py": "649912f62b3c20a2ad31df0f515875e016760d5c16923f060839eaf5a2d136a3",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/stk_delay_probe.cpp": "00cf0d68ed5c99feb156d016de587d80ca9ff033aa523943ae1be27e827ea7c0",

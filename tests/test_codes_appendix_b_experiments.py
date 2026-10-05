@@ -113,7 +113,7 @@ class AppendixBExperimentsTest(unittest.TestCase):
 
     def test_e13_08_evidence_levels_do_not_skip_stages(self):
         result = run_exercises()
-        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 15)})
+        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 16)})
         stages = result["E13-08"]
         self.assertTrue(stages["cases_are_hypothetical"])
         self.assertEqual([len(stages[name]) for name in "ABC"], [2, 4, 5])

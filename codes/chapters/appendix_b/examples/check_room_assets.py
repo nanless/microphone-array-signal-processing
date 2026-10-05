@@ -91,6 +91,17 @@ def check_assets(directory=ROOM, *, replay=False):
         _same(library_sources, PRA_PYTHON_SOURCE_SHA256, 'fixed PRA Python source identities')
     _same(manifest['environment'], result['environment'], 'room environment binding')
     config = room.configuration()
+    # Published experiment declaration, not inferred from a matching source SHA.
+    # Default mode checks these settings; it does not rerun PRA or estimate DOA.
+    fixed_doa = {'method': 'far-field SRP-PHAT', 'n_fft': 512, 'hop_length': 128,
+                 'frequency_band_hz': [300.0, 2000.0], 'azimuth_grid_deg': [-80, 80, 1]}
+    _same(config.get('doa'), fixed_doa, 'published room DOA source configuration')
+    _same(result.get('doa'), fixed_doa, 'published room DOA declaration')
+    _same(result.get('fractional_delay_filter_length_samples'), 81,
+          'published room fractional-delay filter length')
+    # PRA's centered odd-length 81-tap delay filter has 40 samples of library
+    # padding. This is not a fitted propagation compensation or an RIR replay.
+    library_global_delay = (81-1)//2
     for key in ('room_dimensions_m', 'microphones_m', 'sample_rate_hz', 'sound_speed_m_s', 'target_t60_s'):
         _same(manifest.get(key), config[key], 'room manifest '+key)
         _same(result.get(key), config[key], 'room results '+key)
@@ -196,6 +207,8 @@ def check_assets(directory=ROOM, *, replay=False):
                     raise ValueError(f'room WAV differs from full PRA replay: {name}; compiled/runtime differences may change PCM LSBs')
     return {'manifest': manifest, 'results': result, 'validation': {
         'actual_pcm_files': 18, 'ordinary_members': 21, 'source_closure_checked': True,
+        'published_doa_configuration_checked': True, 'fractional_delay_filter_length_samples': 81,
+        'library_global_delay_samples': library_global_delay,
         'excitation_replayed': True, 'rir_and_output_replayed': replay}}
 
 

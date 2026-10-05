@@ -2,7 +2,7 @@
   "schema_version": 2,
   "actual_dependencies": {
     "codes/chapters/ch11/examples/audit_meeting_kernel_contracts.py": "71bd94ee728154930b43f8c96918718163908d3d6e9672181bbfcef66e98e959",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c"
@@ -12,7 +12,7 @@
     "dependency_files": [
       {
         "path": "driver.d",
-        "sha256": "af64a147cb514830c36a7f57ae9afe72998be19e189140af0055dc64ad9a8f31"
+        "sha256": "e847b28d43c80433944202e95011ae845da22daa49fd5900fd46abfd211a1ea7"
       }
     ],
     "original_compile_inputs": {
@@ -3397,7 +3397,7 @@
       }
     }
   },
-  "created_utc": "2026-10-04T22:55:32.871291+00:00",
+  "created_utc": "2026-10-05T02:19:35.465388+00:00",
   "tool_sha256": "71bd94ee728154930b43f8c96918718163908d3d6e9672181bbfcef66e98e959",
   "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/meeteval",
   "revision": "6e3dc81284f2d6928f7ef9e620fd3b6906daa429",
@@ -3732,10 +3732,10 @@
       "-O2",
       "-MD",
       "-MF",
-      "/private/tmp/masp-meeting-kernel-rewpi0zs/driver.d",
-      "/private/tmp/masp-meeting-kernel-rewpi0zs/driver.cc",
+      "/private/tmp/masp-meeting-kernel-wmj_fwxt/driver.d",
+      "/private/tmp/masp-meeting-kernel-wmj_fwxt/driver.cc",
       "-o",
-      "/private/tmp/masp-meeting-kernel-rewpi0zs/driver"
+      "/private/tmp/masp-meeting-kernel-wmj_fwxt/driver"
     ],
     "compiler_binary": {
       "path": "/usr/bin/c++",

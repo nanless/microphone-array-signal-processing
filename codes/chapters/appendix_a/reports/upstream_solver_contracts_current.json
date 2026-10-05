@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-10-05T00:22:27.447950+00:00",
+  "created_utc": "2026-10-05T02:19:48.824588+00:00",
   "tool_sha256": "0d6693fddf7de9753bd0711b018c6957d1e87c691a3d2ffae9fcc069c25724b7",
   "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
   "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
@@ -716,13 +716,13 @@
   },
   "direct_sources_before": {
     "codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py": "0d6693fddf7de9753bd0711b018c6957d1e87c691a3d2ffae9fcc069c25724b7",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "direct_sources_after": {
     "codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py": "0d6693fddf7de9753bd0711b018c6957d1e87c691a3d2ffae9fcc069c25724b7",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },

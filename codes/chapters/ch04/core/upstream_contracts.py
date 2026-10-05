@@ -21,6 +21,10 @@ STATUS = LOCK.with_name("SOURCE_STATUS.json")
 CACHE = LOCK.parent / "upstream/_downloads"
 HISTORICAL_REVISION = "e4d54a158d892b224e37cc49b93066e667babf08"
 PROJECTS = {
+    'tac': ('https://github.com/yluo42/TAC.git',
+        'e3373b73358a96af6f64fdbe25327def8d6bd973',
+        'CC-BY-NC-SA-3.0-US (README declaration; no separate LICENSE)', 'README.md',
+        'd7d98dbb02fb58b907def8e0363e3deff639c8ce362bedb1e8fb5d5d0d617566'),
     'danse-wola': ('https://github.com/AlexanderBertrandLab/Old_Code.git',
         'a24b73fcd2dc028659535d07bb08068b06108616', 'LicenseRef-Bertrand-DANSE-3-Conditions', 'WOLA_DANSE1.m',
         '54fd630bd7f34ac3d9a97db2a30cee6c7a6a1bc496274b53f9ba9f756ce0772b'),

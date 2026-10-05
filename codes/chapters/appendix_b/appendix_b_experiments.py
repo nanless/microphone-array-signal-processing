@@ -1,4 +1,4 @@
-"""Appendix B E13-03..14: fixed-room calculations and evidence boundaries.
+"""Appendix B E13-03..15: fixed-room calculations and evidence boundaries.
 
 This module does not execute pyroomacoustics or create assets. E13-03,
 E13-07 and E13-09 read checked-in synthetic room results or PCM; the other
@@ -320,6 +320,72 @@ def response_audio_anchor(directory=None) -> dict:
             'source_sha256': actual['source_sha256']}
 
 
+def truncated_edc_fixture() -> dict:
+    """E13-15: fixed noiseless exponential tails, not a room measurement.
+
+    Reuse the unique RIR metric implementation for every T60. The explicit
+    reverse sum here exposes the exact sample interval consumed by that
+    implementation; it is not a second regression solver. The geometric
+    curve is an independently derived diagnostic for the same finite model.
+    No waveform, report or other asset is written.
+    """
+    fs, target = 16000, 0.6
+    log_q = -6.0 * math.log(10.0) / (target * fs)
+    q = math.exp(log_q)
+    rows = []
+    for count in (1920, 3200, 4800, 9600, 32000):
+        indices = np.arange(count, dtype=float)
+        impulse = np.exp(0.5 * log_q * indices)
+        energy = np.cumsum(np.square(impulse[::-1]))[::-1]
+        relative = energy / energy[0]
+        decay_db = 10.0 * np.log10(relative)
+        start = int(np.flatnonzero(decay_db <= -5.0)[0])
+        stop = int(np.flatnonzero(decay_db <= -25.0)[0])
+        geometric = (np.exp(log_q * indices)
+                     * np.expm1(log_q * (count - indices))
+                     / math.expm1(log_q * count))
+        t60 = measured_t60_from_t20(impulse, sample_rate=fs)
+        rows.append({
+            'samples': count,
+            'nominal_duration_s': count / fs,
+            'last_sample_time_s': (count - 1) / fs,
+            'fit_start_index': start, 'fit_stop_index_inclusive': stop,
+            'fit_samples': stop - start + 1,
+            'fit_start_time_s': start / fs, 'fit_stop_time_s': stop / fs,
+            'fit_start_db': float(decay_db[start]),
+            'fit_stop_db': float(decay_db[stop]),
+            'slope_db_per_s': -60.0 / t60,
+            't20_s': t60 / 3.0, 't60_extrapolated_s': t60,
+            'geometric_vs_reverse_sum_max_absolute':
+                float(np.max(np.abs(geometric - relative))),
+        })
+    # The point diagnostic uses the closed form, separately from sample
+    # crossing selection and from the fitted metric returned above.
+    point_index, point_count = 1600, 3200
+    finite = (math.exp(log_q * point_index)
+              * math.expm1(log_q * (point_count - point_index))
+              / math.expm1(log_q * point_count))
+    scale_control_samples = 3200
+    scale_impulse = np.exp(0.5 * log_q * np.arange(scale_control_samples, dtype=float))
+    return {
+        'sample_rate_hz': fs, 'infinite_target_t60_s': target,
+        'power_decay_ratio_q': q, 'main_samples': [3200, 9600, 32000],
+        'fit_rule': 'first <= -5 dB through first <= -25 dB, both endpoints included',
+        'cases': rows,
+        'point': {'samples': point_count, 'index': point_index,
+                  'time_s': point_index / fs,
+                  'finite_relative_energy': finite,
+                  'finite_decay_db': 10.0 * math.log10(finite),
+                  'infinite_relative_energy': math.exp(log_q * point_index),
+                  'infinite_decay_db': 10.0 * log_q * point_index / math.log(10.0)},
+        'common_scale_controls': [
+            {'samples': scale_control_samples, 'amplitude': scale,
+             't60_extrapolated_s': measured_t60_from_t20(scale_impulse * scale, fs)}
+            for scale in (1.0, 1e-200, 1e200)],
+        'scope': 'known noiseless finite exponential RIR; no real-room, ISO, noise-floor correction or PRA rerun',
+    }
+
+
 def run_exercises() -> dict:
     results = _read_results()
     manifest = check_room_assets(ROOM)["manifest"]
@@ -344,6 +410,7 @@ def run_exercises() -> dict:
         "E13-12": scaled_rir_metrics(),
         "E13-13": conditioned_t20_times(),
         "E13-14": response_audio_anchor(),
+        "E13-15": truncated_edc_fixture(),
     }
 
 

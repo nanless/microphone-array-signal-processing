@@ -1,4 +1,5 @@
 """Offline TAC source identity, static evidence and safe report boundaries."""
+from contextlib import contextmanager, ExitStack
 import hashlib
 import json
 import os
@@ -141,12 +142,28 @@ class TACSourceAndPathTests(unittest.TestCase):
         lock = self.folder / 'lock.json'
         entry = {'id': 'tac', 'url': audit.ORIGIN, 'revision': revision, 'license': audit.LICENSE,
                  'source_paths': list(files), 'entrypoints': ['README.md', 'utility/models.py', 'FaSNet.py']}
-        lock.write_text(json.dumps({'projects': [entry]}))
+        lock.write_text(json.dumps({'schema_version': 1, 'projects': [entry]}))
+        (checkout / '.git/info/sparse-checkout').write_text('\n'.join(audit.upstream.sparse_patterns(entry)) + '\n')
+        self.refresh_status(lock)
         hashes = {p: audit.digest(v) for p, v in files.items()}
         return checkout, lock, revision, hashes, git
 
+    def refresh_status(self, lock):
+        from codes.chapters.ch00.upstream.fetch_upstreams import inspect_project
+        entry = json.loads(lock.read_text())['projects'][0]
+        status = {'schema_version': 1, 'lock_sha256': audit.digest(lock.read_bytes()),
+                  'projects': [inspect_project(entry, self.cache)]}
+        lock.with_name('status.json').write_text(json.dumps(status))
+
+    @contextmanager
     def fixture_context(self, lock, revision, files):
-        return patch.multiple(audit, LOCK=lock, REVISION=revision, FILES=files)
+        with ExitStack() as stack:
+            stack.enter_context(patch.multiple(audit, LOCK=lock, STATUS=lock.with_name('status.json'),
+                                              REVISION=revision, FILES=files))
+            stack.enter_context(patch.object(audit.upstream, 'CACHE', self.cache))
+            stack.enter_context(patch.dict(audit.upstream.PROJECTS, {'tac': (
+                audit.ORIGIN, revision, audit.LICENSE, 'README.md', files['README.md'])}))
+            yield
 
     def test_fixture_identity_and_git_environment(self):
         checkout, lock, revision, files, _ = self.make_fixture()
@@ -160,19 +177,19 @@ class TACSourceAndPathTests(unittest.TestCase):
     def test_dirty_source_rejected(self):
         checkout, lock, revision, files, _ = self.make_fixture()
         (checkout / 'extra').write_text('untracked')
-        with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'not clean'):
+        with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'clean'):
             audit.verify_sources(self.cache)
 
     def test_wrong_hash_rejected(self):
         _, lock, revision, files, _ = self.make_fixture()
         files['README.md'] = '0' * 64
-        with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'digest/blob'):
+        with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'license|digest/blob'):
             audit.verify_sources(self.cache)
 
     def test_wrong_origin_rejected(self):
         _, lock, revision, files, git = self.make_fixture()
         git('remote', 'set-url', 'origin', 'https://example.invalid/wrong.git')
-        with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'HEAD or origin'):
+        with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'origin or HEAD'):
             audit.verify_sources(self.cache)
 
     def test_lock_identity_and_duplicate_rejected(self):
@@ -181,7 +198,8 @@ class TACSourceAndPathTests(unittest.TestCase):
         variants = ([dict(doc['projects'][0], license='unknown')], doc['projects'] * 2,
                     [dict(doc['projects'][0], source_paths=['README.md'])])
         for entries in variants:
-            lock.write_text(json.dumps({'projects': entries}))
+            lock.write_text(json.dumps({'schema_version': 1, 'projects': entries}))
+            self.refresh_status(lock)
             with self.subTest(entries=entries), self.fixture_context(lock, revision, files), self.assertRaises(ValueError):
                 audit.verify_sources(self.cache)
 
@@ -194,6 +212,7 @@ class TACSourceAndPathTests(unittest.TestCase):
         doc = json.loads(lock.read_text())
         doc['projects'][0]['revision'] = revision
         lock.write_text(json.dumps(doc))
+        self.refresh_status(lock)
         with self.fixture_context(lock, revision, files), self.assertRaisesRegex(ValueError, 'four literal'):
             audit.verify_sources(self.cache)
 

@@ -318,8 +318,8 @@
   },
   "quantization": "signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768",
   "source_sha256": {
-    "codes/chapters/appendix_b/core/response_audio.py": "39c69ee1277d3a43621706235834e2b05dbfe2281fd0b2d5a1a6f3f26fe529ad",
-    "codes/chapters/appendix_b/examples/generate_response_audio.py": "7569d69220041ae370cc5a8ca698513586d0393e7623c3d1d5f7c948da3d8cc0",
+    "codes/chapters/appendix_b/core/response_audio.py": "694c1914a769a9020cd83a8810f14825881ea121e1369eff653cf1993cadd862",
+    "codes/chapters/appendix_b/examples/generate_response_audio.py": "72cba34f16bf13f0b8d185778f6ea8ddf85ad74965c745b1843e3d38110cc2f6",
     "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },

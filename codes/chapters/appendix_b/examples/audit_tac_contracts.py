@@ -8,21 +8,27 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
-import math
-import os
 from pathlib import Path
 import platform
-import stat
-import subprocess
 import sys
-import tempfile
 
 ROOT = Path(__file__).resolve().parents[4]
+if __package__ in (None, ''):
+    sys.path.insert(0, str(ROOT))
+from codes.chapters.ch00.io_contracts import (
+    same_metadata, strict_json_loads, validate_parent_chain, write_json_report,
+)
+from codes.chapters.ch04.core import upstream_contracts as upstream
+
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
+STATUS = LOCK.with_name('SOURCE_STATUS.json')
+HISTORICAL_REPORT = ROOT / 'codes/chapters/appendix_b/reports/tac_contracts.json'
+CURRENT_REPORT = HISTORICAL_REPORT.with_name('tac_contracts_current.json')
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
 REVISION = 'e3373b73358a96af6f64fdbe25327def8d6bd973'
 ORIGIN = 'https://github.com/yluo42/TAC.git'
@@ -40,93 +46,67 @@ def digest(data):
 
 
 def strict_loads(data):
-    def reject(value):
-        raise ValueError('non-finite JSON constant: ' + value)
-    def finite_float(value):
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError('non-finite JSON number: ' + value)
-        return number
-    def unique_object(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError('duplicate JSON field: ' + key)
-            result[key] = value
-        return result
-    return json.loads(data, parse_constant=reject, parse_float=finite_float,
-                      object_pairs_hook=unique_object)
+    return strict_json_loads(data)
 
 
 def ordinary_path(path, *, directory=False, allow_missing=False):
-    path = Path(path)
-    if '..' in path.parts:
-        raise ValueError('lexical parent traversal is forbidden')
-    path = path.absolute()
-    for current in reversed((path, *path.parents)):
-        if current.is_symlink():
-            raise ValueError('symbolic link is forbidden: ' + str(current))
-        if current != path and not current.is_dir():
-            raise ValueError('parent is not a directory: ' + str(current))
+    path = validate_parent_chain(path)
+    if not path.parent.is_dir():
+        raise ValueError('parent is not an existing ordinary directory')
     if path.exists():
-        mode = path.stat().st_mode
-        if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
+        if not (path.is_dir() if directory else path.is_file()):
             raise ValueError('unexpected file type: ' + str(path))
     elif not allow_missing:
         raise ValueError('required path is absent: ' + str(path))
     return path
 
 
+def protected_paths(cache):
+    return (CACHE, ordinary_path(cache, directory=True), LOCK, STATUS,
+            HISTORICAL_REPORT, ROOT / 'codes/chapters/ch00/source_snapshots', ROOT / 'reviews')
+
+
 def report_target(path, cache=CACHE):
     target = ordinary_path(path, allow_missing=True)
-    cache_path = ordinary_path(cache, directory=True)
-    if target.is_relative_to(CACHE.absolute()) or target.is_relative_to(cache_path):
-        raise ValueError('report must not be inside upstream cache')
-    return target
+    return upstream.report_target(target, CURRENT_REPORT, protected=protected_paths(cache))
 
 
 def verify_sources(cache=CACHE):
     checkout = ordinary_path(Path(cache) / 'tac', directory=True)
-    lock_bytes = ordinary_path(LOCK).read_bytes()
-    projects = strict_loads(lock_bytes)['projects']
+    lock, _, lock_sha, _ = upstream.source_documents(LOCK, STATUS)
+    projects = lock['projects']
     matches = [p for p in projects if p['id'] == 'tac']
     if len(matches) != 1:
         raise ValueError('TAC lock entry must be unique')
     entry = matches[0]
-    if (entry['revision'] != REVISION or entry['url'] != ORIGIN or entry['license'] != LICENSE or
-            entry.get('source_paths') != list(FILES) or
+    if (entry.get('revision') != REVISION or entry.get('url') != ORIGIN or
+            entry.get('license') != LICENSE or entry.get('source_paths') != list(FILES) or
+            type(entry.get('entrypoints')) is not list or
             not all(p in entry['entrypoints'] for p in ('README.md', 'FaSNet.py', 'utility/models.py'))):
         raise ValueError('fixed TAC lock identity or selected source paths changed')
-    env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
-    def git(*args, binary=False):
-        result = subprocess.check_output(['git', '-C', str(checkout), *args], env=env,
-                                         stderr=subprocess.PIPE, timeout=20)
-        return result if binary else result.decode().strip()
-    if git('rev-parse', 'HEAD') != REVISION or git('remote', 'get-url', 'origin') != ORIGIN:
-        raise ValueError('upstream HEAD or origin changed')
-    if Path(git('rev-parse', '--show-toplevel')) != checkout:
-        raise ValueError('not an independent checkout')
-    if git('status', '--porcelain', '--untracked-files=all'):
-        raise ValueError('upstream worktree is not clean')
-    # Check literal selected files, not the requested paths alone. No assets or
-    # additional untracked files may silently enter this local source selection.
+    identity = upstream.verify_project('tac', checkout, relatives=tuple(FILES),
+                                       lock_path=LOCK, status_path=STATUS)
+    if identity['lock_sha256'] != lock_sha:
+        raise ValueError('source lock changed during preflight')
+    # Literal local membership is additional evidence, distinct from the full
+    # ordered sparse policy reported by the shared source verifier.
     actual = {p.relative_to(checkout).as_posix() for p in checkout.rglob('*')
               if '.git' not in p.relative_to(checkout).parts and (p.is_file() or p.is_symlink())}
     if actual != set(FILES):
         raise ValueError('working source selection differs from four literal files')
     sources = []
     for relative, expected in FILES.items():
-        content = ordinary_path(checkout / relative).read_bytes()
-        if content != git('show', REVISION + ':' + relative, binary=True) or digest(content) != expected:
+        record = identity['used_files'][relative]
+        if record['sha256'] != expected:
             raise ValueError('source digest/blob mismatch: ' + relative)
-        sources.append({'path': relative, 'sha256': digest(content),
-                        'git_blob': git('rev-parse', REVISION + ':' + relative)})
+        sources.append({'path': relative, 'sha256': record['sha256'], 'git_blob': record['git_blob']})
     readme = ordinary_path(checkout / 'README.md').read_text(encoding='utf-8')
     if ('creativecommons.org/licenses/by-nc-sa/3.0/us/' not in readme or
             'Attribution-NonCommercial-ShareAlike 3.0 United States License' not in readme):
         raise ValueError('README license declaration is absent')
     return {'checkout': str(checkout), 'revision': REVISION, 'origin': ORIGIN,
-            'source_lock_sha256': digest(lock_bytes), 'source_lock_project_count': len(projects),
+            'source_lock_sha256': lock_sha, 'source_lock_project_count': len(projects),
+            'source_status_sha256': identity['status_sha256'], 'source_identity': identity,
             'sources': sources, 'selected_source_files': list(FILES), 'clean': True}
 
 
@@ -200,16 +180,31 @@ def structure_contracts(models, fasnet):
     return rows
 
 
+def actual_dependencies():
+    """Four actual repository source files; no transitive closure claim."""
+    return upstream.dependencies(__file__)
+
+
 def run_audit(cache=CACHE):
+    direct_before = actual_dependencies()
     before = verify_sources(cache)
+    source_before = copy.deepcopy(before['source_identity'])
     checkout = Path(before['checkout'])
     rows = structure_contracts((checkout / 'utility/models.py').read_text(encoding='utf-8'),
                                (checkout / 'FaSNet.py').read_text(encoding='utf-8'))
-    after = verify_sources(cache)
-    if before != after:
-        raise ValueError('upstream or source lock changed during audit')
+    after = upstream.check_unchanged(before['source_identity'])
+    # Repeat literal membership as well as the shared Git/blob/ignored checks.
+    repeated = verify_sources(cache)
+    if not same_metadata(source_before, repeated['source_identity']):
+        raise ValueError('upstream or source documents changed during audit')
+    direct_after = actual_dependencies()
+    if not same_metadata(direct_before, direct_after):
+        raise ValueError('actual direct source identity changed during audit')
     report = {'created_utc': datetime.now(timezone.utc).isoformat(),
-              'tool_sha256': digest(Path(__file__).read_bytes()), **before,
+              'tool_sha256': direct_before[str(Path(__file__).resolve().relative_to(ROOT))], **before,
+              'source_identity_before': source_before, 'source_identity_after': after,
+              'direct_sources_before': direct_before, 'direct_sources_after': direct_after,
+              'direct_source_scope': 'four actual local Python source files; not a complete transitive or installed package closure',
               'status': 'passed_static_contracts', 'before_clean': True, 'after_clean': True,
               'license': {'name': LICENSE, 'declaration_file': 'README.md', 'sha256': FILES['README.md'],
                           'local_source_only': True, 'upstream_code_redistributed': False,
@@ -234,22 +229,10 @@ def run_audit(cache=CACHE):
 
 def write_report(path, report, cache=CACHE):
     target = report_target(path, cache)
-    payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n'
-    strict_loads(payload)
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=target.parent,
-                                         prefix='.tac-report-', delete=False) as handle:
-            temporary = Path(handle.name)
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        report_target(target, cache)
-        os.replace(temporary, target)
-        temporary = None
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
+    # The common writer checks ordinary parents/members and protected paths again
+    # just before replacement. These finite checks do not eliminate all races or
+    # guarantee crash durability.
+    write_json_report(target, report, forbidden_roots=protected_paths(cache))
 
 
 def main(argv=None):

@@ -4,7 +4,7 @@
 
 正文提供关键公式推导、可复算例子、适用边界，以及与各章公式对应的 NumPy/标准库教学代码。
 
-全书有 359 道可运行代码练习、80 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
+全书有 360 道可运行代码练习、80 张脚本生成的编号图和 1 张房间题补充图，以及 27 组共 109 个[主清单合成 WAV](codes/chapters/ch00/audio/MANIFEST.json)。[练习与音频实验手册](codes/chapters/ch00/research/05_exercises_and_audio.md)逐题列出输入、答案、试听条件与代码入口。音频是数学合成样本，不是真实语音或正式听测；第 6 章两组合成 AEC 音频的参数也不完全等同于 E06-07～20 手算题。
 
 第四章另有[四份已知酉聚焦合成WAV](codes/chapters/ch04/focus_audio/MANIFEST.json)：用稳定窗逐频复幅度与实际PCM检查相干双源的多频协方差秩；指定角度和频率分量已知，不作为盲定位或正式听测结果。
 
@@ -83,7 +83,7 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`make_beamforming_figures.py`、`make_reference_figures.py`、`make_delay_figures.py`、`make_css_figures.py`、`make_tracking_figures.py`、`make_channel_figures.py`、`make_selection_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
 | `site/` | 22 个网页：16 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
-| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、739 个三级书签，共 906 个 |
+| `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、740 个三级书签，共 907 个 |
 
 ## 章节导览
 
@@ -104,7 +104,7 @@ English version: [README_EN.md](README_EN.md)
 | 专题Ⅰ | `chapters/14_acoustic-imaging.md` | CSM、球面扫描、PSF、DAMAS/CLEAN-SC/简化CMF、校准与区域量；18道逐步代码题 | 较难 |
 | 扩展专题Ⅱ | `chapters/15_distributed-enhancement.md` | 节点特定MWF、任务相关压缩、DANSE条件、树拓扑、GEVD、时钟与缺口；25题与17个独立音频 | 较难 |
 | 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～14 代码题、复现说明 | 查阅 |
+| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～15 代码题、复现说明 | 查阅 |
 
 ## 快速开始
 

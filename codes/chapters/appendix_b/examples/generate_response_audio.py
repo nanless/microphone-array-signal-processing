@@ -18,6 +18,7 @@ import numpy as np
 from codes.chapters.ch00.core.audio_samples import pcm16_bytes
 from codes.chapters.appendix_b.core.response_audio import (
     SAMPLE_RATE, SAMPLES, STEMS, GAIN, build_fixture, analytic_results, analyze_fixture, analyze_pcm,
+    validate_fixed_fixture, validate_fixed_reports,
 )
 
 from codes.chapters.ch00.io_contracts import (
@@ -52,16 +53,24 @@ def _same_metadata(actual, expected, path='manifest'):
 def expected_assets():
     """Pure full replay, with source hashes from the actual four dependencies."""
     fixture = build_fixture()
+    validate_fixed_fixture(fixture)
+    if (type(SAMPLE_RATE) is not int or SAMPLE_RATE != 16000 or
+            type(SAMPLES) is not int or SAMPLES != 32002 or type(GAIN) is not float or GAIN != 1.0):
+        raise ValueError('response encoding constants differ from the fixed typed contract')
     buffers = {}
     for name, signal in fixture['signals'].items():
         if np.max(np.abs(signal*GAIN)) > 32767/32768:
             raise ValueError('fixture would clip PCM at common gain 1')
         buffers[name+'.wav'] = pcm16_bytes(signal*GAIN, SAMPLE_RATE)
+    analytic = analytic_results()
+    floating = analyze_fixture(fixture)
+    pcm = analyze_pcm(buffers)
+    validate_fixed_reports(buffers, analytic, floating, pcm)
     metadata = {
         'schema_version': 1, 'sample_rate_hz': SAMPLE_RATE, 'common_export_gain': GAIN,
         'origin': 'mathematical known RIR same-DRR contrast; not real room, speech or a recording',
-        'parameters': fixture['parameters'], 'analytic': analytic_results(), 'floating_point': analyze_fixture(fixture),
-        'pcm_analysis': analyze_pcm(buffers),
+        'parameters': fixture['parameters'], 'analytic': analytic, 'floating_point': floating,
+        'pcm_analysis': pcm,
         'quantization': 'signed little-endian PCM16; nearest-even; no dither; decoded amplitude=int16/32768',
         'source_sha256': {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in SOURCE_PATHS},
         'environment': {'python': platform.python_version(), 'numpy': np.__version__, 'platform': platform.platform()},

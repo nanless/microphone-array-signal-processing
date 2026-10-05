@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "created_utc": "2026-10-04T22:55:32.638128+00:00",
+  "created_utc": "2026-10-05T02:19:37.904533+00:00",
   "harness_sha256": "2a2e83f9eb275fc64c7d2f6feb9c73c8ec313e2026c3fdc5b01fa17472374713",
   "source_config_sha256": "e0aa596788df2d6b2ef2b65bd74f9ebba5144ceecb5f7d7a61983c33fc7a8f22",
   "actual_dependencies": {
     "codes/chapters/ch11/examples/audit_meeting_scoring_interfaces.py": "2a2e83f9eb275fc64c7d2f6feb9c73c8ec313e2026c3fdc5b01fa17472374713",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4",
     "codes/chapters/ch10/examples/run_industrial_interfaces.py": "6501c7bdb2e5cd529dd9436cbc99ffd31ec1398fced8d0dc98c62a8524c3111c"

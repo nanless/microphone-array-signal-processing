@@ -337,7 +337,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 本书通过获取工具取得作者[固定提交 `e3373b73358a96af6f64fdbe25327def8d6bd973`](https://github.com/yluo42/TAC/tree/e3373b73358a96af6f64fdbe25327def8d6bd973 "citation")的 `README.md`、`FaSNet.py`、`utility/__init__.py`、`utility/models.py` 四个文件，独立保存在被忽略的上游工作树。README明确声明CC-BY-NC-SA-3.0-US，源代码未随本教程再分发；没有取得音频、数据、权重或另一 `iFaSNet.py` 扩展。NumPy/PyTorch是原模块的依赖，但这一审计只使用标准库解析Python语法，不导入两模块或Torch。
 
-[只读合同工具](../../appendix_b/examples/audit_tac_contracts.py)核对origin、完整HEAD、四文件SHA与Git blob、README许可、锁表摘要及前后洁净状态，再执行十项静态AST检查。它不编译或执行原 `forward`，也没有把本书的独立NumPy夹具作为网络运行证据。
+[只读合同工具](../../appendix_b/examples/audit_tac_contracts.py)核对origin、完整HEAD、四文件SHA与Git blob、README许可、当前锁表及获取状态摘要、完整选集与所用文件的独立身份、四项直接执行源的前后摘要及前后洁净状态，再执行十项静态AST检查。它不编译或执行原 `forward`，也没有把本书的独立NumPy夹具作为网络运行证据。
 
 | 核查对象 | 固定源中实际结构 | 证据所能支持的范围 |
 |---|---|---|
@@ -349,10 +349,12 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ```bash
 .venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts
-.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts --report codes/chapters/appendix_b/reports/tac_contracts.json
+.venv/bin/python -B -m codes.chapters.appendix_b.examples.audit_tac_contracts --report codes/chapters/appendix_b/reports/tac_contracts_current.json
 ```
 
-默认只输出JSON；仅显式 `--report` 原子保存[当前独立报告](../../appendix_b/reports/tac_contracts.json)。报告状态是 `passed_static_contracts`，保存十项结构定位与方法片段摘要，原运行调用计数为零；工具拒绝重复JSON字段、非有限数字、词法 `..`、符号链接、非普通目标和上游缓存内报告。报告不替代分离性能、权重/数据授权或设备验收。
+默认只输出JSON；仅显式 `--report` 原子保存[当前独立报告](../../appendix_b/reports/tac_contracts_current.json)。报告状态是 `passed_static_contracts`，保存十项结构定位与方法片段摘要，原运行调用计数为零；仓内只允许此指定当前报告；仓外普通报告仍可显式保存。工具拒绝旧报告、仓内源码、锁表、状态和快照等其他目标，并核对重复JSON字段、非有限数字、词法 `..`、符号链接、非普通目标和上游缓存。写前及替换前的有限核验不保证消除并发竞态。报告不替代分离性能、权重/数据授权或设备验收。
+
+[历史报告](../../appendix_b/reports/tac_contracts.json)保留2026-10-01实际运行时的100项目锁表与原工具身份；旧锁表原字节已登记在[来源快照](../source_snapshots/SOURCES.55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0.json)。当前报告绑定115项目锁表及其获取状态，完整选集核对与十项静态结构证据分别记录。原历史报告不换摘要、不升级成神经运行；共享核后续变化也不追溯改写先前报告的真实依赖身份。
 
 附录B的房间仿真、分数延迟和通道聚合数学例仍按各自的输入、脚本、PCM与统计窗口解释。对照时，[E13-12](../../../../chapters/13_appendix-guide.md#e13-12)复算共同尺度不变的DRR与极端数值边界，[E13-13](../../../../chapters/13_appendix-guide.md#e13-13)条件化时间原点与跨度后外推T20，[E13-14](../../../../chapters/13_appendix-guide.md#e13-14)按同源PCM与稳定评分窗比较同DRR的两条短RIR。这些独立练习不能由静态来源报告统一登记成原神经系统已运行。
 

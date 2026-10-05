@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "created_utc": "2026-10-04T22:55:33.175634+00:00",
+  "created_utc": "2026-10-05T02:19:48.188042+00:00",
   "status": "audit_completed_with_original_differences",
   "source_identity_before": {
     "project": "acoular",
@@ -611,19 +611,19 @@
   "after_clean": true,
   "direct_sources": {
     "codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py": "c0a3c499bf0b1fc557c3bb5525a98c2c83be883380d02ec316fde0558aba891b",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "actual_dependencies_before": {
     "codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py": "c0a3c499bf0b1fc557c3bb5525a98c2c83be883380d02ec316fde0558aba891b",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
   "actual_dependencies_after": {
     "codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py": "c0a3c499bf0b1fc557c3bb5525a98c2c83be883380d02ec316fde0558aba891b",
-    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch04/core/upstream_contracts.py": "8669f007ee16a15433598b8f451f226cceb3163bdbc2bf690709504874743167",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
     "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
   },
