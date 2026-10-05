@@ -79,7 +79,7 @@
 | 图50数值报告 | `scripts/make_figures.py::fig_stft_convolution` → `codes/chapters/ch02/reports/figure50_stft_convolution.json` | 六点完整卷积、四点帧内乘法与八点去圆折叠控制，保留合成分母 | 随图真实重生；八点控制仅取原四点窗支持，不能称完整滤波器组算法 |
 | 图13统计生成物 | `scripts/make_figures.py` → `codes/chapters/ch04/reports/figure13_gcc_reverb.json` | 9 条件各 150 次的逐次事件、峰对比度和计数 | 与图片同次计算生成；保留共享随机性、失败和区间口径，不手改结果 |
 | 源码研究文档 | `codes/chapters/ch00/research/*.md` | 逐算法源码入口、实现差异、工业配置与复现实验 | 与正文和覆盖表互链；区分建议实验和已执行结果 |
-| 项目说明源文件 | `README.md`、`README_EN.md`、`scripts/README.md` | 项目入口、英文说明、构建说明 | 直接修改；中英文共有信息要同步 |
+| 项目说明源文件 | `README.md`、`README_EN.md`、`scripts/README.md`、`codes/chapters/README.md`、`codes/chapters/ch00/{research,upstream}/README.md`、`codes/chapters/ch02/real_audio/README.md`、`scripts/vendor/mathjax-3.2.2/README.md` | 八份本书维护的源README：入口、英文、构建、代码、研究、获取、数据与公式资源 | 按真实内容修改；中英文共有信息同步，派生站点README由构建更新，上游忽略缓存原README保留身份 |
 | 图 21 数值报告 | `scripts/make_figures.py::fig_wpe` → `codes/chapters/ch07/reports/figure21_wpe.json` | 同一信号的参数、帧选择、能量分母与谱域误差 | 随图重生；不将谱图显示频带当成指标统计频带 |
 | 图64选型报告与图 | `scripts/make_figures.py::fig_selection_scenarios` → `codes/chapters/ch11/reports/figure64_selection_scenarios.json` | 两场景实际PCM误差与解析控制、共同权重及最坏值 | 随独立音频清单真实生成；保留整数NMSE分母，不平均dB替代线性误差；不是设备排名 |
 | 第11章原评分与时间核合同 | `codes/chapters/ch11/examples/audit_meeting_scoring_interfaces.py`、`audit_meeting_kernel_contracts.py` → `reports/meeting_scoring_interfaces_current.json`、`meeting_kernel_contracts_current.json` | 固定原接口限定调用、两个原C++核13例（旧9例与4点时间控制分栏） | 核官方origin、固定blob、全部实际源码/许可与真实编译依赖闭包；32导入原模块与50预查原文件分开，完整选集不匹配及缺扩展保留。历史两报告字节不改；默认只读stdout，显式输出仅仓内指定current或仓外普通路径；不称完整评分器或ASR |
@@ -90,10 +90,11 @@
 | 已知坏麦源与图 | `codes/chapters/ch10/core/channel_selection.py`、`core/channel_audio.py`、`examples/generate_channel_audio.py`；`scripts/make_channel_figures.py` → 六WAV、独立清单和图78报告 | 已知第0路失效，观测、响应与协方差双轴同选；复用第5章唯一MVDR | 8真实音频源、9真实绘图源；16kHz/32000点/共同增益1，27200点窗解析/浮点/PCM整数分开；严格7普通成员、完整只读重放，不是盲检测、随机噪声或工业性能 |
 | 当前第10章原接口报告 | 四个工业/采样/延迟入口 → `industrial_contracts_current.json`、`industrial_upstream_interfaces_current.json`、`industrial_interfaces_current.json`、`stk_delay_current.json` | 固定原源码限定调用与当前完整选集状态分栏 | 默认stdout，显式报告路径写前核普通父链/成员且拒绝旧历史路径；原origin/提交/blob/许可、编译依赖和调用前后身份实核。四旧报告不改写；不称运行模型或ARM性能 |
 | 绘图源文件 | `scripts/make_figures.py`、`scripts/make_aec_figures.py`、`scripts/make_css_figures.py`、`scripts/make_beamforming_figures.py`、`scripts/make_reference_figures.py`、`scripts/make_delay_figures.py`、`scripts/make_tracking_figures.py`、`scripts/make_channel_figures.py`、`scripts/make_selection_figures.py` | 生成全部插图 | 图有问题时修改对应真实入口，不手工修 PNG |
-| 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/build_markdown_helpers.py`、`scripts/inline_layout.js`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json`、`scripts/chapter_identity.py`、`scripts/chapter_numbering.json` | 生成站点、合订 HTML 和 PDF，共用Markdown数学/代码边界处理及有限行内排版保护，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚；共享脚本变化须进入两种产物的源摘要 |
-| PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定版本的 MathJax 脚本、按需扩展和字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
+| 构建源文件 | `scripts/build_site.py`、`scripts/build_pdf.py`、`scripts/build_markdown_helpers.py`、`scripts/inline_layout.js`、`scripts/pdf_math.js`、`scripts/heading_aliases.py`、`scripts/legacy_sequential_anchors.json`、`scripts/chapter_identity.py`、`scripts/chapter_numbering.json` | 生成站点、合订 HTML 和 PDF，共用Markdown数学/代码边界处理及有限行内排版保护，并保护已发布深链的原语义 | 页面结构或渲染有问题时修改这里；标题改号后逐项校验历史语义锚；共享脚本变化须进入两种产物的源摘要 |
+| PDF 公式第三方资源 | `scripts/vendor/mathjax-3.2.2/` | 固定MathJax3.2.2 SVG、SRE4.0.6英文规则与许可；保留历史CHTML字体 | 保留上游许可及来源摘要；更新版本时同步更新构建核验与渲染抽查，不手改压缩脚本或字体 |
 | 插图生成物 | `figures/fig*.png` | 正文插图 | 由绘图脚本生成，不直接编辑 |
 | 站点生成物 | `site/*.html`、`site/research/*.html`、`site/real_audio/`、`site/room_audio/`、`site/gss_audio/`、`site/moving_audio/`、`site/tracking_audio/`、`site/noise_audio/`、`site/channel_audio/`、`site/scenario_audio/`、`site/weighted_audio/`、`site/response_audio/`、`site/binaural_audio/`、`site/spectral_audio/`、`site/stft_audio/`、`site/sweep_audio/`、`site/geometry_audio/`、`site/baseline_audio/`、`site/focus_audio/`、`site/reflection_audio/`、`site/derivative_audio/`、`site/phase_audio/`、`site/apa_audio/`、`site/reference_audio/`、`site/delay_audio/`、`site/css_audio/`、`site/mint_audio/`、`site/mask_audio/`、`site/imaging_audio/`、`site/distributed_audio/` | 16 篇当前教程、4 个旧路径兼容页面、6 篇研究手册页面与真实录音、独立合成实验的媒体副本 | 由 `build_site.py` 生成，不直接编辑 |
+| 本次验收证据 | `reviews/2026-10-05-*.json`、`reviews/2026-10-05-human-listening-register.csv` | 发布音频技术检查、未执行真人计划/登记、可选测试与公式/浏览器验收的日期快照 | 实际结果与未执行条件分开；这些是注明日期的证据，不自动宣称未来修改后的资产已验收 |
 | 合订生成物 | `dist/combined.html`、`dist/microphone-array-tutorial.pdf` | 合订 HTML 和 PDF | 由 `build_pdf.py` 生成，不直接编辑 |
 
 `chapters/` 当前包含 16 篇 Markdown，研究手册另有 6 篇网页源文件，项目当前有 80 张编号图和附录 B 房间题的一张补充结果图。文件数量、图号、章节名称或构建入口发生变化时，要同步
@@ -153,7 +154,7 @@
 ```
 
 只改文字时不必重画图片。改了绘图脚本，要生成并检查相关图片；改了正文、导航或构建脚本，要重新
-生成受影响的 HTML 和 PDF。PDF 公式依赖仓库内 MathJax 资源，无需联网；站点公式目前仍需联网。
+生成受影响的 HTML 和 PDF。PDF公式依赖本地MathJax3.2.2 SVG与SRE4.0.6英文规则，逐式绑定源身份、MCID和真实绘制；不据此宣称人工辅助技术或PDF/UA完整合规。无需联网；站点公式目前仍需联网。
 若本机缺少 Chrome、依赖、必要的联网条件或权限，应记录未完成的验证及原因，
 不能声称已经验收。
 

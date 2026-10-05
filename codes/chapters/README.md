@@ -1,6 +1,6 @@
 # 按章查找教学实验
 
-这里是全书教学代码与资产的唯一目录。每章的 `core/` 放算法数值核，`examples/` 放对应实验或外部接口探针；同一个数值核只归一个章节，其他章节直接导入。导读 `ch00/` 保存跨章练习、主音频总清单、全书索引和上游获取工具。
+这里是全书教学代码与资产的统一检索入口。每章的 `core/` 放算法数值核，`examples/` 放对应实验或外部接口探针；同一个数值核只归一个章节，其他章节直接导入。导读 `ch00/` 保存跨章练习、主音频总清单、全书索引和上游获取工具。
 
 例如第 4 章 Capon 与第 5 章 MVDR/LCMV 共用的协方差验证和相对对角加载，只在首次用到的 [`ch04/core/covariance.py`](ch04/core/covariance.py) 实现，第 5 章直接导入。
 
@@ -9,12 +9,12 @@
 | [ch00](ch00/) | `ch00.cross_chapter.*` | 全书索引、跨章练习、主音频清单与上游来源 |
 | [ch01](ch01/) | `ch01.chapter01_experiments` | E01-04～10；有限记录、残余延迟、球头、混合功率、ILD/WNG与频率相关响应；数学输入及实际PCM读回 |
 | [ch02](ch02/) | `ch02.chapter02_experiments` | E02-09～20；传播、频谱、协方差、采样、已知激励辨识与STFT一致性，不是设备测量 |
-| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | E03-07～18 与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
+| [ch03](ch03/) | `ch03.chapter03_experiments`、`ch03.coarray_covariance_exercise`、`ch03.examples.self_calibration_demo` | 单章入口E03-08～18，协同阵入口E03-07，与单独的受外部相位锚约束标定示例；几何、模糊、校准和虚拟滞后统计，不是全盲设备标定 |
 | [ch04](ch04/) | `ch04.chapter04_experiments`、`ch04.doa_resolution_trials` | E04-08、E04-12～25；包括非酉聚焦噪声、AIC/MDL、相关误差GLS、双频酉秩与解析root-MUSIC；分辨率试验保留分类计数与统计分母 |
-| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | E05-01～24练习；同输入波束、独立导数约束与逐频相位PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验八源/实际PCM，`ch05.examples.generate_phase_audio --check`核五源及三PCM；当前原方法审计与历史报告分开 |
+| [ch05](ch05/) | `ch05.chapter05_experiments`、`ch05.beamformer_common_input_demo` | 单章入口E05-08～24，E05-01～07由跨章入口提供；同输入波束、独立导数约束与逐频相位PCM限于所声明条件；`ch05.examples.generate_derivative_audio --check`只读核验八源/实际PCM，`ch05.examples.generate_phase_audio --check`核五源及三PCM；当前原方法审计与历史报告分开 |
 | [ch06](ch06/) | `ch06.chapter06_experiments`、`ch06.aec_algorithm_minicases`、`ch06.aec_partitioned_demo`、`ch06.aec_affine_projection_demo`、`ch06.examples.generate_apa_audio`、`ch06.examples.generate_reference_audio` | E06-22～42及AEC算法缩例；已知增益/历史尾声六PCM严格只读核验与冻结预测，APA训练/留出另计；原方法current报告与历史报告分开，外部库/录音有独立依赖 |
-| [ch07](ch07/) | `ch07.chapter07_experiments`、`ch07.wpe_temporal_contract`、`ch07.examples.mint_teaching_demo`、`ch07.examples.generate_delay_audio`、`ch07.examples.audit_upstream_wpe_contracts` | E07-01～24；在线WPE时间/排列、设计矩阵求解、已知到达与历史PCM控制及逆滤波噪声权衡；`mint_teaching_demo --check`只读核验，NeMo仅固定源码静态检查 |
-| [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo`、`ch08.examples.mask_representation_demo`、`ch08.examples.generate_css_audio`、`ch08.examples.audit_upstream_separation_contracts` | E08-01～32及固定密度下活动标注误差；不是官方 GPU 整链 |
+| [ch07](ch07/) | `ch07.chapter07_experiments`、`ch07.wpe_temporal_contract`、`ch07.examples.mint_teaching_demo`、`ch07.examples.generate_delay_audio`、`ch07.examples.audit_upstream_wpe_contracts` | 单章入口E07-08～24，E07-01～07由跨章入口提供；在线WPE时间/排列、设计矩阵求解、已知到达与历史PCM控制及逆滤波噪声权衡；`mint_teaching_demo --check`只读核验，NeMo仅固定源码静态检查 |
+| [ch08](ch08/) | `ch08.chapter08_experiments`、`ch08.gss_activity_error_demo`、`ch08.examples.mask_representation_demo`、`ch08.examples.generate_css_audio`、`ch08.examples.audit_upstream_separation_contracts` | 单章入口E08-12～32，E08-01～11由跨章入口提供；另有固定密度下活动标注误差；不是官方 GPU 整链 |
 | [ch09](ch09/) | `ch09.chapter09_experiments`、`ch09.tracking_crossing_dropout_demo` | E09-10～26；轨迹交叉、缺测、模式密度、双时钟生命周期与球面方向的限定例 |
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～34；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～27；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
@@ -30,7 +30,7 @@
 .venv/bin/python -m codes.chapters.appendix_b.appendix_b_experiments
 ```
 
-第一次运行可先按[导读的动手复现](../../chapters/00_overview.md#sec-u-6d43c0086f)准备环境，再运行三组跨章基线。
+所有命令从仓库根目录运行，使用根目录主虚拟环境。第一次运行可先按[导读的动手复现](../../chapters/00_overview.md#8-动手复现)准备环境，再运行三组跨章基线。
 它们只打印计算结果，不生成或改写音频。读输出时先找输入与对应约束：`GCC-PHAT tau12 (samples): 3.0`
 表示第一个输入相对第二个晚 3 点，在 16 kHz 下是 187.5 μs；`DSB target response` 和
 `MVDR target response` 应接近 1；STFT 重建误差接近浮点舍入。极高的匹配无噪声 AEC ERLE 是算术
@@ -38,7 +38,7 @@
 
 旧的 `codes.examples.*` 和 `codes.array_tutorial.*` 导入路径已经退出仓内接口。运行时使用上表中的章节模块；修改题目时改唯一真实源文件，再核对全书 360 个稳定练习 ID、对应章节和覆盖表。
 
-第4章E04-24用同源直达与反射说明高相干和秩一不足以确认直达方向；E04-25逐行解人工Q2帧CTF首比，区分整路径比与真实STFT近似。四份[独立PCM控制](ch04/reflection_audio/MANIFEST.json)由`codes.chapters.ch04.examples.generate_reflection_audio`生成，附加`--check`严格只读重放；原源当前报告与历史报告分开保存，详见[研究58/59](ch00/research/01_spatial_and_tracking.md#sec-u-1ca23edba5)。
+第4章E04-24用同源直达与反射说明高相干和秩一不足以确认直达方向；E04-25逐行解人工Q2帧CTF首比，区分整路径比与真实STFT近似。四份[独立PCM控制](ch04/reflection_audio/MANIFEST.json)由`codes.chapters.ch04.examples.generate_reflection_audio`生成，附加`--check`严格只读重放；原源当前报告与历史报告分开保存，详见[研究58/59](ch00/research/01_spatial_and_tracking.md#58-直达路径证据dpd筛选与dp-rtf不是同一计算)。
 
 第3章E03-18从四已知方向反求三维基线及固定相对通道时延；同俯仰反例检查的是增广矩阵秩。先运行`.venv/bin/python -m codes.chapters.ch03.examples.generate_baseline_audio --check`只读核对六份[独立音频](ch03/baseline_audio/MANIFEST.json)，首次生成去掉`--check`。500Hz单音、2400:29600稳定窗和已知总时差小于1ms是相位反推前提；实际PCM训练拟合与第五方向的留出预测分别记录。原协同阵工具默认stdout，新[当前合同报告](ch03/reports/upstream_coarray_contracts.json)保留完整选集不匹配及限定原方法成功两个状态，不能覆盖旧历史报告。
 
@@ -51,6 +51,50 @@
 `ch02_05_baselines.py`、`ch06_09_baselines.py`、三个 `exercises_*` 及空间模型、增强步骤、工程边界、时间状态等跨章练习集中在 [`ch00/cross_chapter/`](ch00/cross_chapter/)；其稳定 ID 由[练习目录](ch00/research/05_exercises_and_audio.md)逐题映射。后续拆分时须保持一个 ID 只有一个真实实现，并同步目录测试，不能复制一份后让两个实现各自漂移。
 
 第 6 章[同输入 AEC 接口脚本](ch06/examples/aec_same_input_truth.py)默认只运行两份已记录摘要的历史二进制；另行构建时须用 `--build-manifest` 提交两份二进制的实际 SHA-256、源码提交与构建配置，脚本重新测固定延迟并评分。历史数值和新运行分开记录，具体字段与证据边界见[AEC 研究记录](ch00/research/02_aec_wpe_separation.md#aec)。
+
+<a id="audio-inventory"></a>
+
+## 完整音频目录与运行方式
+
+发布源共267个WAV：主清单109个、以下27套独立合成154个、DEMAND真实摘录及派生4个。网站另有267份同内容副本；忽略的上游缓存中音频不计入发布资产。文件数不是独立实验次数，也不是算法数。
+
+主清单由 `codes.chapters.ch00.examples.generate_audio_samples` 生成，27组分章存放；其唯一定义见 [MANIFEST.json](ch00/audio/MANIFEST.json) 和 [`code_layout.py`](../../scripts/code_layout.py)。以下模块统一加前缀 `codes.chapters.`，从仓库根目录运行。
+
+| 独立目录与清单 | WAV数 | 生成/实验模块 | 模型与解释边界 |
+|---|---:|---|---|
+| [ch01/binaural_audio](ch01/binaural_audio/MANIFEST.json) | 5 | `ch01.examples.generate_binaural_cues` | 双耳时间差/声级差；人工声像，非实测HRTF |
+| [ch01/spectral_audio](ch01/spectral_audio/MANIFEST.json) | 4 | `ch01.examples.generate_spectral_cues` | 已知两抽头FIR与两源谱；非盲方向估计 |
+| [ch02/stft_audio](ch02/stft_audio/MANIFEST.json) | 3 | `ch02.examples.generate_stft_convolution` | 完整卷积与逐帧近似；完整尾部单列 |
+| [ch02/sweep_audio](ch02/sweep_audio/MANIFEST.json) | 4 | `ch02.examples.generate_sweep_audio` | 已知数字扫频辨识；完整IR与真值支持分开 |
+| [ch03/geometry_audio](ch03/geometry_audio/MANIFEST.json) | 3 | `ch03.examples.generate_geometry_audio` | 双频六麦几何控制；稳定窗相位，不用试听定方向 |
+| [ch03/baseline_audio](ch03/baseline_audio/MANIFEST.json) | 6 | `ch03.examples.generate_baseline_audio` | 已知方向/主值范围标定；训练与留出分开 |
+| [ch04/reflection_audio](ch04/reflection_audio/MANIFEST.json) | 4 | `ch04.examples.generate_reflection_audio` | 同源相干反射假峰；不运行盲DP-RTF |
+| [ch04/focus_audio](ch04/focus_audio/MANIFEST.json) | 4 | `ch04.examples.generate_focus_audio` | 已知酉聚焦分量；不是完整CSSM |
+| [ch05/derivative_audio](ch05/derivative_audio/MANIFEST.json) | 4 | `ch05.examples.generate_derivative_audio` | 三麦约束/导数约束；目标损伤与噪声代价分开 |
+| [ch05/phase_audio](ch05/phase_audio/MANIFEST.json) | 3 | `ch05.examples.generate_phase_audio` | 已知逐频相位；等功率不保证参考误差相同 |
+| [ch06/apa_audio](ch06/apa_audio/MANIFEST.json) | 6 | `ch06.examples.generate_apa_audio` | 训练后冻结NLMS/APA；留出窗与13点尾分开 |
+| [ch06/reference_audio](ch06/reference_audio/MANIFEST.json) | 6 | `ch06.examples.generate_reference_audio` | 已知播放增益/尾声；正确残差可全零 |
+| [ch07/delay_audio](ch07/delay_audio/MANIFEST.json) | 6 | `ch07.examples.generate_delay_audio` | 已知到达与单实回归；误消控制可全零 |
+| [ch07/mint_audio](ch07/mint_audio/MANIFEST.json) | 6 | `ch07.examples.mint_teaching_demo` | 已知稀疏路径逆与噪声权衡；非一般MINT整链 |
+| [ch08/mask_audio](ch08/mask_audio/MANIFEST.json) | 6 | `ch08.examples.mask_representation_demo` | 已知实/复掩码表示；未从录音估计掩码 |
+| [ch08/css_audio](ch08/css_audio/MANIFEST.json) | 4 | `ch08.examples.generate_css_audio` | 既定槽位极性/增益；重叠拟合，不是盲CSS |
+| [ch08/gss_audio](ch08/gss_audio/MANIFEST.json) | 5 | `ch08.examples.gss_teaching_demo` | 受控GSS教学链；另有STATE.npz，不是GPU整链 |
+| [ch09/moving_audio](ch09/moving_audio/MANIFEST.json) | 3 | `ch09.examples.moving_source_audio` | 自由场连续移动与轨迹真值；非实录 |
+| [ch09/tracking_audio](ch09/tracking_audio/MANIFEST.json) | 2 | `ch09.examples.chapter09_tracking_audio` | 实际PCM→GCC→门控/KF；两种时刻分开 |
+| [ch10/noise_audio](ch10/noise_audio/MANIFEST.json) | 6 | `ch10.examples.generate_noise_mismatch` | 固定/污染/已知方差；不运行盲自适应估计 |
+| [ch10/channel_audio](ch10/channel_audio/MANIFEST.json) | 6 | `ch10.examples.generate_channel_audio` | 已知第0麦失效；全零坏麦是模型输入 |
+| [ch11/scenario_audio](ch11/scenario_audio/MANIFEST.json) | 8 | `ch11.examples.generate_selection_audio` | 两场景3/9抽头；权重/逐场景最坏分开 |
+| [ch12/imaging_audio](ch12/imaging_audio/MANIFEST.json) | 5 | `ch12.examples.generate_imaging_audio` | 指定快拍相位与CSM；音频混合不能证明源量反演 |
+| [ch13/distributed_audio](ch13/distributed_audio/MANIFEST.json) | 17 | `ch13.examples.generate_distributed_audio` | 已知统计/速率/缺口；非盲DANSE或实网络 |
+| [appendix_a/weighted_audio](appendix_a/weighted_audio/MANIFEST.json) | 5 | `appendix_a.examples.generate_weighted_audio` | 已知噪声权重；纯音正交不等于随机独立 |
+| [appendix_b/response_audio](appendix_b/response_audio/MANIFEST.json) | 5 | `appendix_b.examples.generate_response_audio` | 同RIR DRR两短FIR；源加权反射功率另命名 |
+| [appendix_b/room_audio](appendix_b/room_audio/MANIFEST.json) | 18 | `appendix_b.examples.room_srp_exercise` | 固定PRA六位置白噪声仿真；隔离依赖、非真实房间 |
+
+前26项在主环境运行，附加 `--check` 时只读核现有资产；生成模式会重建所属清单和音频。房间项不同：`room_srp_exercise --check`只核固定输入，现有18WAV的完整只读检查用 `codes.chapters.appendix_b.examples.check_room_assets`；`--replay`才在固定PRA环境实际重跑。真正生成用 `room_srp_exercise --run`，输出到不存在的新目录。顺序、完整命令和隔离环境见[构建说明](../../scripts/README.md#audio-regeneration)。
+
+真实数据另用 `codes.chapters.ch02.examples.prepare_real_recordings --check`，不联网或重写。来源、固定归档、四份处理和独立许可见 [DEMAND说明](ch02/real_audio/README.md)。
+
+比较组共用明确导出增益。评分先固定参考、已知对齐与半开采样窗，再分别阅读解析、浮点分量和实际PCM整数结果；不同组参数不能混用。多声道播放可能下混，不能以耳听代替逐通道相位或CSM检查。已知零残差和坏麦全零是实验控制；技术核验与真人听测分别记录。
 
 ## 全书代码、实验资产与复现边界
 
@@ -72,7 +116,7 @@
 
 外部代码由[固定 Git 来源清单](ch00/SOURCES.lock.json)和[独立归档清单](ch00/ARCHIVE_SOURCES.lock.json)管理，来源、许可证与用途见[第三方记录](ch00/THIRD_PARTY.md)。截至 2026-10-05，115 个 Git 项目中有 98 个本地工作区；按完整32条排除规则核验，[状态报告](ch00/SOURCE_STATUS.json)分别记录75项通过、22项旧稀疏规则不匹配、17项仅索引和1项本地修改失败。22个工作区仍只有20条排除规则，保留原样，不自动修复；AEC Challenge 缓存中有本地修改的真实录音，核验没有把它当成通过。取得源码、构建依赖、实际运行和复现论文性能是不同层级；固定版诊断的执行条件与失败记录见[复现手册](ch00/research/04_source_reproduction.md)。
 
-本轮补取的WASN同步源码与LibriCSS评测工具分别保存在独立忽略目录，固定提交、许可与选集见[复现入口](ch00/research/04_source_reproduction.md#overview-source-entrypoints)。它们仍未安装、运行设备或执行官方评分；LibriCSS原评分包装与脚本的接口限制保留。
+已取得的WASN同步源码与LibriCSS评测工具分别保存在独立忽略目录，固定提交、许可与选集见[复现入口](ch00/research/04_source_reproduction.md#overview-source-entrypoints)。它们仍未安装、运行设备或执行官方评分；LibriCSS原评分包装与脚本的接口限制保留。
 
 上游获取工具放在[源码工具目录](ch00/upstream/README.md)。下载源码留在 Git 忽略的独立工作区，不随本书推送；已有工作区及修改必须保留。HARKTOOL5 与 Vo RFS 的归档摘要和选择范围单独记录，不混入 115 个 Git 项目数。本仓库根目录目前没有明确的 `LICENSE` 或 `COPYING`，源码可见不等于已经获得复制、修改或再分发许可；第三方项目的许可证也不自动覆盖本书、模型或数据。
 
@@ -93,7 +137,7 @@
 
 第四章 `ch04.chapter04_experiments` 的 E04-19～23 分别复算非酉聚焦噪声、AIC/MDL、相关误差GLS、双频酉聚焦秩和root-MUSIC解析多项式。`ch04.examples.generate_focus_audio` 生成四份独立合成WAV，加 `--check` 只读核对真实PCM、六个源摘要和评分分母。`ch04.examples.audit_upstream_doa` 对固定PRA/doatools原方法作限定模型复算；上游完整包、方法提取、辅助函数和兼容适配的结论分别阅读，不把局部诊断作为整链评测。
 
-第八章新增 E08-24～29 分别复算白化与独立性、联合合同对角化的边界、FastMNMF雅可比项、加权混合一致性、已知掩码表示及CSS增益/极性。`ch08.examples.mask_representation_demo --check`只读检查六实际PCM与五真实源；`ch08.examples.gss_teaching_demo --check`严格核验七普通资产和状态。上游分离合同报告分别记录原包、原函数提取、静态检查与导入失败，不能合称完整论文复现。
+第八章 E08-24～29 分别复算白化与独立性、联合合同对角化的边界、FastMNMF雅可比项、加权混合一致性、已知掩码表示及CSS增益/极性。`ch08.examples.mask_representation_demo --check`只读检查六实际PCM与五真实源；`ch08.examples.gss_teaching_demo --check`严格核验七普通资产和状态。上游分离合同报告分别记录原包、原函数提取、静态检查与导入失败，不能合称完整论文复现。
 
 E08-30沿用第2章唯一STFT核，逐共享样本核对两个一致性次序；E08-31区分PCA投掉弱目标与给定目标行的OverIVA背景约束；E08-32按同钟观测重叠拟合真实标量，分开主窗与后窗的解析、浮点和实际PCM整数误差。`ch08.examples.generate_css_audio --check`严格只读重放四WAV与独立清单，不代表盲CSS或身份追踪。作者OverIVA四MIT原文件与MeCo十六个许可明确的部分原文件已在受管理源码目录取得，固定身份与未运行边界见[分离研究手册](ch00/research/02_aec_wpe_separation.md)。
 
@@ -113,4 +157,15 @@ E08-30沿用第2章唯一STFT核，逐共享样本核对两个一致性次序；
 
 E10-34的[通道选集核](ch10/core/channel_selection.py)同时处理观测轴、目标响应与协方差双轴，复用第5章唯一MVDR；[六WAV独立清单](ch10/channel_audio/MANIFEST.json)使用确定性正交音与固定实权重。[生成入口](ch10/examples/generate_channel_audio.py)的`--check`完整只读重放。图78和手册分开目标损伤、噪声与真实PCM总误差，不把失效后的两项解析NMSE相同写成PCM严格相同。
 
-扩展专题Ⅰ新增E12-17/18，分别检查完整CSM Gram目标与扫描目标、不同传播列的集体不可辨识性。图80保存全部151×101局部网格的真实计算。作者DAMAS原模块的[限定入口](ch12/examples/audit_damas_author_contracts.py)完整执行固定Python原模块的9个小控制；8项数值吻合、零CSM保留原NameError。21个GPL文本已取得，但MATLAB、MEX、数据和大规模实验未运行。当前报告与旧报告分开。
+扩展专题ⅠE12-17/18，分别检查完整CSM Gram目标与扫描目标、不同传播列的集体不可辨识性。图80保存全部151×101局部网格的真实计算。作者DAMAS原模块的[限定入口](ch12/examples/audit_damas_author_contracts.py)完整执行固定Python原模块的9个小控制；8项数值吻合、零CSM保留原NameError。21个GPL文本已取得，但MATLAB、MEX、数据和大规模实验未运行。当前报告与旧报告分开。
+
+
+## 音频技术检查与真人听辨记录
+
+[逐文件技术报告](../../reviews/2026-10-05-audio-technical-audit.json)记录267个发布源的实际PCM格式、帧数、声道、峰值、RMS、直流、静音、相邻跳变与谱诊断，并独立复核51个整数评分窗。满刻度端点样本为零不能证明没有削波：主清单工程削波控制在较低固定阈值产生平台，属于题设故障。
+
+[听辨计划](../../reviews/2026-10-05-human-listening-plan.json)覆盖55组、267文件与396声道路由；[登记表](../../reviews/2026-10-05-human-listening-register.csv)当前全部 `not_run`，真实已听文件数为0。使用登记表副本记录实际听者、设备、时间、文件摘要、听完的采样区间、声道路由和观察，不预填通过。
+
+先保持组内共同播放增益、关闭自动响度处理，完整听起音、稳态、切换和尾部；多声道逐路记录，不用未说明的下混代替。比较轮次可按计划固定随机顺序遮蔽文件身份，记录后再揭示。已知静音残差、坏麦零路、缺口、增益切换和相位差须与异常分别判断。发现可疑问题后复听并回查实际PCM/模型，再修改生成源。
+
+这是项目音频质量核查计划，不宣称符合MUSHRA或其他标准主观评价流程。数学纯音/噪声不填写自然语音可懂度成绩；DEMAND没有干净目标真值，不以听感或数字功率下降给出SNR提升。

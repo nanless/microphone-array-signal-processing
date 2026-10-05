@@ -1,0 +1,506 @@
+{
+  "schema": "masp-publication-closeout-v1",
+  "date": "2026-10-05",
+  "baseline_commit": "e257a015cb315f7af2c702e8c60e79d06f578c8f",
+  "scope": "All eight maintained source READMEs and one generated website README; remaining technical publication checks. Cached upstream original READMEs retain their identity.",
+  "release": {
+    "PDF_SHA256": "36d3ddb920e017c3135525df076017429a8e319cea54bedb251df8581fa4682c",
+    "PDF_bytes": 69462354,
+    "pages": 940,
+    "SourceDigest": "595906c8e634",
+    "HTML_SHA256": "9a00b631a66c5d2e6a5d96bf851ed566e8f38070d3ac1d11169ad41342474056"
+  },
+  "README_review": {
+    "source_count": 8,
+    "sources": {
+      "README.md": {
+        "sha256": "d0fa0a779e9840120b71dc4efe6b462c39a189b96b50caa76938b94c66e91cf1",
+        "lines": 127,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "README_EN.md": {
+        "sha256": "0be7a80c1056d27875024abb7af3c0f12ff6517db87a68214384b3da4aec96fd",
+        "lines": 127,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "codes/chapters/README.md": {
+        "sha256": "e35ac720bb87ae2c144f47b3da7678519ed3b20aeab995f7822cff420f1eb4b6",
+        "lines": 171,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "codes/chapters/ch00/research/README.md": {
+        "sha256": "ed30d9fc1bfcd5d6cb9d9e6feacd0452b5bd54cd930a0e6b3de2847444ffe465",
+        "lines": 85,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "codes/chapters/ch00/upstream/README.md": {
+        "sha256": "4dfa0948cf37005e56f3630935b0570fff651c1a5e2f656948e51bfdb77f6b8f",
+        "lines": 132,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "codes/chapters/ch02/real_audio/README.md": {
+        "sha256": "1e89135828d296053ac6f0ae4186d09071bfbab3c2d7593fcd38228d0a48127a",
+        "lines": 151,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "scripts/README.md": {
+        "sha256": "d47b219df51fcf02917ee64576f777c27981724db66710c761bb11c6b1a2a6fa",
+        "lines": 354,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      },
+      "scripts/vendor/mathjax-3.2.2/README.md": {
+        "sha256": "b4b4a5bacfbd25b8200404e9630a11342ac644d4b97dd338dfc643c46a039d28",
+        "lines": 38,
+        "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+      }
+    },
+    "independent_local_links_checked": 226,
+    "local_link_errors": [],
+    "command_source_check": {
+      "counts": {
+        "README.md": {
+          "links": 20,
+          "lines": 127
+        },
+        "README_EN.md": {
+          "links": 20,
+          "lines": 127
+        },
+        "scripts/README.md": {
+          "links": 26,
+          "lines": 354
+        },
+        "codes/chapters/README.md": {
+          "links": 102,
+          "lines": 171
+        },
+        "codes/chapters/ch00/research/README.md": {
+          "links": 36,
+          "lines": 85
+        },
+        "codes/chapters/ch00/upstream/README.md": {
+          "links": 11,
+          "lines": 132
+        },
+        "codes/chapters/ch02/real_audio/README.md": {
+          "links": 11,
+          "lines": 151
+        },
+        "scripts/vendor/mathjax-3.2.2/README.md": {
+          "links": 6,
+          "lines": 38
+        }
+      },
+      "commands_checked": 136,
+      "unique_command_sources": 74,
+      "errors": []
+    },
+    "six_actual_quickstart_runs": [
+      {
+        "module": "codes.chapters.ch00.cross_chapter.ch02_05_baselines",
+        "exit": 0,
+        "elapsed_s": 0.053917750001346576
+      },
+      {
+        "module": "codes.chapters.ch00.cross_chapter.ch06_09_baselines",
+        "exit": 0,
+        "elapsed_s": 0.14590404099908483
+      },
+      {
+        "module": "codes.chapters.ch10.examples.ch10_engineering_baselines",
+        "exit": 0,
+        "elapsed_s": 0.046722250001039356
+      },
+      {
+        "module": "codes.chapters.ch04.chapter04_experiments",
+        "exit": 0,
+        "elapsed_s": 0.2551787920001516
+      },
+      {
+        "module": "codes.chapters.ch12.chapter12_exercises",
+        "exit": 0,
+        "elapsed_s": 0.08576712499962014
+      },
+      {
+        "module": "codes.chapters.ch13.chapter13_exercises",
+        "exit": 0,
+        "elapsed_s": 1.9646419580003567
+      }
+    ],
+    "generated_README_projection": {
+      "source_SHA256": "1e89135828d296053ac6f0ae4186d09071bfbab3c2d7593fcd38228d0a48127a",
+      "generated_SHA256": "962588eafc4098b2385066e7ba443945789c1a470f02047844096849b0477db9",
+      "actual_rewrites": 2,
+      "all_other_text_exactly_preserved": true,
+      "method": "Independent exact expected transformation of the two known source code links to published GitHub URLs; no producer import.",
+      "prior_probe_failure": "First unpublished collector incorrectly required raw source/site README byte equality; actual diff consists only of the two required website code-link rewrites. No website or source file changed to satisfy that mistaken probe."
+    }
+  },
+  "test_runs": {
+    "main_full_run": {
+      "tests": 2624,
+      "seconds": 1353.25,
+      "actual_exit": 0,
+      "skipped": 10,
+      "scope": "Earlier complete run. Limited PDF code changes during execution are recorded in ledger; no claim that all final inputs were frozen throughout."
+    },
+    "final_PDF_contracts": {
+      "tests": 44,
+      "seconds": 0.07,
+      "actual_exit": 0,
+      "skipped": 0,
+      "scope": "Final source/math/structure/layout and Formula quality contracts. Overlaps prior tests; counts are not additive."
+    },
+    "optional_original_methods": {
+      "methods": 15,
+      "actual_exit": 0,
+      "skipped": 0,
+      "report": "2026-10-05-optional-test-audit.json",
+      "scope": "Separate isolated run of original methods. An original portability CLI failure remains a failure; expected-failure tests do not prove algorithm correctness."
+    }
+  },
+  "actual_builds": {
+    "site": {
+      "actual_exit": 0,
+      "HTML_files": 26,
+      "current_tutorials": 16,
+      "historical_compatibility": 4,
+      "research_pages": 6
+    },
+    "PDF": {
+      "actual_exit": 0,
+      "formulas": 13652,
+      "verified_layout_spaces": 103,
+      "outlines": [
+        16,
+        151,
+        740
+      ]
+    },
+    "nine_figure_scripts": {
+      "runs": [
+        {
+          "script": "make_figures",
+          "exit_code": 0,
+          "seconds": 17.397833824157715,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_figures-regenerate.log"
+        },
+        {
+          "script": "make_aec_figures",
+          "exit_code": 0,
+          "seconds": 4.130129337310791,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_aec_figures-regenerate.log"
+        },
+        {
+          "script": "make_beamforming_figures",
+          "exit_code": 0,
+          "seconds": 0.4698009490966797,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_beamforming_figures-regenerate.log"
+        },
+        {
+          "script": "make_reference_figures",
+          "exit_code": 0,
+          "seconds": 2.127898931503296,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_reference_figures-regenerate.log"
+        },
+        {
+          "script": "make_delay_figures",
+          "exit_code": 0,
+          "seconds": 0.6543600559234619,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_delay_figures-regenerate.log"
+        },
+        {
+          "script": "make_css_figures",
+          "exit_code": 0,
+          "seconds": 0.6105928421020508,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_css_figures-regenerate.log"
+        },
+        {
+          "script": "make_tracking_figures",
+          "exit_code": 0,
+          "seconds": 0.7925810813903809,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_tracking_figures-regenerate.log"
+        },
+        {
+          "script": "make_channel_figures",
+          "exit_code": 0,
+          "seconds": 0.8536159992218018,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_channel_figures-regenerate.log"
+        },
+        {
+          "script": "make_selection_figures",
+          "exit_code": 0,
+          "seconds": 0.6048266887664795,
+          "log": "/private/tmp/masp-acceptance-tail-root/make_selection_figures-regenerate.log"
+        }
+      ],
+      "all_80_rgba_unchanged": true,
+      "changed_rgba": []
+    },
+    "publication_quality": {
+      "actual_exit": 0,
+      "result": "QUALITY CHECK PASSED",
+      "notices": "Paragraph signals require judgement; PDF tags are not complete UA/AT validation."
+    }
+  },
+  "PDF_machine_checks": {
+    "strict_actual_exit": 0,
+    "unmarked_text": 0,
+    "unmarked_path_or_image": 0,
+    "ParentTree_MCID_checks": 58321,
+    "named_destinations": 1730,
+    "historical_alias_pairs": 648,
+    "tables": 280,
+    "lists": 303,
+    "list_items": 1567,
+    "official_UA1_actual_exit": 1,
+    "passed_rules": 105,
+    "failed_rules": 1,
+    "passed_checks": 4381808,
+    "failed_checks": 1,
+    "remaining_failure": "Missing UA identification declaration; no declaration added without completed human accessibility review.",
+    "complete_UA_compliance_claimed": false,
+    "report": "2026-10-05-pdf-machine-audit.json"
+  },
+  "finite_final_visual_review": {
+    "ROOT_actual_view": {
+      "pdf_sha256": "36d3ddb920e017c3135525df076017429a8e319cea54bedb251df8581fa4682c",
+      "pages": {
+        "cover": 1,
+        "toc": 2,
+        "ending": 940,
+        "doa-table": 264,
+        "beamforming-wide": 342,
+        "appendix-b-wide": 920
+      },
+      "method": "Actual final PDF rendered at 150dpi; all six PNGs displayed individually with tools.view_image(detail=original).",
+      "viewed_pages": [
+        1,
+        2,
+        264,
+        342,
+        920,
+        940
+      ],
+      "findings": "Cover metadata fits two complete lines; TOC, GLS matrix/table, beamforming long expression, appendix fractional-delay equations/table and final text are visible with no observed collision, crop or garbled CJK.",
+      "limits": "Six ROOT pages only; separate multiagent review records additional actual view and pixel equality. No all-940-page visual, human listening or assistive technology claim.",
+      "PNG_SHA256": {
+        "beamforming-wide.png": "50630f41551a11f0c9b91fa36aaacf28304c41f38ad53a2dfdbc8d84f4b12a97",
+        "doa-table.png": "70e012af0c7b164b602a56c53be38d5038ec71069c7121c70db4d7056fd50983",
+        "appendix-b-wide.png": "840f4a17d6e5023323d15ca8e6c72f2b4294d33e280925a81cc9030041a81c79",
+        "ending.png": "c623f22fda53430dac348983b2c20e452562c926b4bfa73b7cf77720e84a5eae",
+        "toc.png": "395215b04654fef4c39bddba355a03a8b25d7a2a280fd9229af786d7c1b4ac5e",
+        "cover.png": "29fc097bb2b40065015df90bc67af8c0db74235f4f84a509c95b004f31721a8c"
+      }
+    },
+    "independent_report": "2026-10-05-pdf-visual-audit.json",
+    "unique_direct_final_view_pages": [
+      1,
+      2,
+      264,
+      295,
+      342,
+      343,
+      612,
+      780,
+      781,
+      782,
+      877,
+      920,
+      927,
+      940
+    ],
+    "unique_direct_final_view_count": 14,
+    "independent_exact_RGBA_inheritance_pages": [
+      16,
+      52,
+      76,
+      139,
+      189,
+      274,
+      294,
+      296,
+      350,
+      471,
+      528,
+      598,
+      662,
+      732,
+      774,
+      814,
+      851,
+      894
+    ],
+    "full_940_page_visual_claimed": false
+  },
+  "protection": {
+    "baseline_commit": "e257a015cb315f7af2c702e8c60e79d06f578c8f",
+    "counts": {
+      "wav": {
+        "checked": 534,
+        "changed": []
+      },
+      "figures": {
+        "checked": 80,
+        "changed": []
+      },
+      "chapters": {
+        "checked": 16,
+        "changed": []
+      },
+      "other_codes": {
+        "checked": 659,
+        "changed": []
+      }
+    },
+    "freeze_files_checked": 67,
+    "freeze_drift": [],
+    "scope": "Byte preservation; no claim that regeneration preserved mtime."
+  },
+  "frozen_source_hashes": {
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/README.md": "b4b4a5bacfbd25b8200404e9630a11342ac644d4b97dd338dfc643c46a039d28",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/SRE-LICENSE": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/a11y/sre.js": "a41dc487037b75d6dae75677e36fe2f03d1d2684f232d96f0422a11b35051660",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js": "d6771fee0772db2657796c8d0e20e1878bb3237f6d3ed1e828e1834a4ff743ca",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_AMS-Regular.woff": "3de784d07b9fa8f104c10928a878ee879cf3305cae5195cba663c9c2bb0195eb",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Bold.woff": "af04542b29eaac04550a140c5f1760a649783989426f2540855bf4157819367d",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Regular.woff": "26683bf201fb258a2237d9754616de9d4ecf4cc1cd39dd1902476df7d75f1d16",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Fraktur-Bold.woff": "721921bab0d001ebff0206c24cb5de6ca136467bf1843a7aa32030ba061d1e92",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Fraktur-Regular.woff": "870673df72e70f87c91a5a317d558c2c3b54392264ad79bbadc6d424ae8765fe",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Main-Bold.woff": "88b98cad3688915e50da55553ff6ad185e0dce134b47f176e91b100f8a9b175c",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Main-Italic.woff": "355254db9ca10a09a3b5f0929d74eb4670f44fbe864c07526a06213e0a0caf6c",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff": "1cb1c39ea642f26a4dfed230b4aea1c3c218689421f6e9c0a7c1811693c4fa07",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Math-BoldItalic.woff": "8ea8dbb1b02e6f730f55b4cb5d413b785b9f5c39807d0a0fa7da206a0824a457",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff": "a009bea404f7a500ded48f8b9ad9cf16e12504b3195dd9e25975289b8256b0f0",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Math-Regular.woff": "c01d3321e89b403c4b811aa153c4e618eda3421f92d8a072a02c8d190782a191",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_SansSerif-Bold.woff": "32792104b5ef69eded905b6d1598ed05d8087684d38e7a94d52e3c38ba16f47e",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_SansSerif-Italic.woff": "fc6ddf5df402b263cfb158aed8e89972542c34b719cd87b1db30461985f7bd5b",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_SansSerif-Regular.woff": "b418136e3b384baaadecb70bd3c48a8da9825210130b2897db808c44efc883cb",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Script-Regular.woff": "af96f67d7accf5fd2a4a682d0b9f8b339f8ea6fe34c310c1694c8ba7f6ddc96f",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Size1-Regular.woff": "c49810b53ecc0d87d8028762c518924197dd9d3f905b08f99ea241301085b9cb",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Size2-Regular.woff": "30e889b58cbc51adfbb038ab1a96dc4025aa3542a3cff7712fc55ece510675e2",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Size3-Regular.woff": "5cda41563a095bd70c78e2dda13d0f8cb922c71c90fffd0a0044c65173a66e83",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Size4-Regular.woff": "3bc6ecaae7ecf6f8d7f8ea07bddbaca8601e2cb6e89d6aef58e78d9f6d8a398f",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Typewriter-Regular.woff": "c56da8d69f1a0208b8e0703656c3264b6dd748bd452524c82b0385b60f6a68c1",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Vector-Bold.woff": "36e0d72d8a7afc696a3e7a5c7369807634640de9b02257bca447bdf126221a27",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Vector-Regular.woff": "72bc573386dd1d48c5bbd286302ca9e3400c5eb0f298e7cfbf945b9d08fc688f",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Zero.woff": "481e39042508ae313a60618af1e37146ab93e9324c98e4c78b8f17fe55d41e0b",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json": "83311887b069476a6a4d0c6afe7f8e55075c85b44b029588739c0d835fc912b8",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json": "19d9b309dc0d25d2bde2d3130bd3772b6d7c3f8316ebbd85306bef55ac89b2a7",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/tex-mml-chtml.js": "300480069078b5892d2363a2b65e2dfbbf30fe5c80f83edbfecf4610fd093862",
+    "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/tex-svg.js": "d4295dc33744836935c1399feece5159577b34c5c8ffb9f1c6324cd82e03a882",
+    "AGENTS.md": "64aefb930f5789033c2add945e45b73edac2710886bd73a3a1021bd65e8d38e9",
+    "README.md": "d0fa0a779e9840120b71dc4efe6b462c39a189b96b50caa76938b94c66e91cf1",
+    "README_EN.md": "0be7a80c1056d27875024abb7af3c0f12ff6517db87a68214384b3da4aec96fd",
+    "chapters/00_overview.md": "6a5e161e107f3f9118d8c5b6a0fa7090061af78514fc5649b3c60d38065d048a",
+    "chapters/01_problem-definition.md": "a76b43d0ed4de6ce679b777bcdad2a1ca6345a77fdf418fe45ab4ff83f09bbe4",
+    "chapters/02_basics-signal-model.md": "f9a439bd5e3321e593c7ef524bd8c4ee8d10e975abcaea2a6c06304b6994cd68",
+    "chapters/03_array-geometry.md": "1c655608cb7017520e0fd1c57728d5fa87d53909a670dd169507c1cdd88d11dc",
+    "chapters/04_doa-estimation.md": "13c4bf3e954191006cf3c969b0037e1c91cffe9e245483e59b3f32c51fe171dd",
+    "chapters/05_beamforming.md": "069c1a91a00958c1c337ea20a3ad151024f8daf612c5d43391af68d3c3378702",
+    "chapters/06_aec.md": "d44bb8154ca829dec7601dee380bfe47d13adae33be8d2b373627f544716a083",
+    "chapters/07_wpe-dereverberation.md": "6e4f36c4622496fee7d3fec45a9154ac1fc807f2c2018df4259443435ce1bae8",
+    "chapters/08_speech-separation.md": "e0ceb196eba583cdb6c8e99f4542367149c35a891556f561de66b0aaaf862937",
+    "chapters/09_source-tracking.md": "38c0be10eb31c03e8c7c561bea34af31f10478b74a57b5b09cb7faee7f5036b0",
+    "chapters/10_engineering-practice.md": "5e07c94e028a8a5481be4727abec14d7729aa4928a85f30e36e64ba3daa0e84b",
+    "chapters/11_selection-guide.md": "9bbdef44030076d459ceff894d2e3aa730a577e44d4b1515ed7d1cdccc6e831e",
+    "chapters/12_acoustic-imaging.md": "0f98c4991ebdbcd27902c954d77b8a065282632143614363b3b76109e80c3681",
+    "chapters/13_distributed-enhancement.md": "08fa8cba8c829163c8568f27038e5e8e1fc2097e523671a762534ae16ac4ecfe",
+    "chapters/14_appendix-symbols-math.md": "3aa49a223e00f3efd29c8ef3921089439315e334287bef011188e205fe51fa06",
+    "chapters/15_appendix-guide.md": "920f26237bd837855dc9e6cccec751e95f6dea19bd2bd2c68344a65c5792770e",
+    "codes/chapters/README.md": "e35ac720bb87ae2c144f47b3da7678519ed3b20aeab995f7822cff420f1eb4b6",
+    "codes/chapters/ch00/research/README.md": "ed30d9fc1bfcd5d6cb9d9e6feacd0452b5bd54cd930a0e6b3de2847444ffe465",
+    "codes/chapters/ch00/upstream/README.md": "4dfa0948cf37005e56f3630935b0570fff651c1a5e2f656948e51bfdb77f6b8f",
+    "codes/chapters/ch02/real_audio/README.md": "1e89135828d296053ac6f0ae4186d09071bfbab3c2d7593fcd38228d0a48127a",
+    "scripts/README.md": "d47b219df51fcf02917ee64576f777c27981724db66710c761bb11c6b1a2a6fa",
+    "scripts/build_markdown_helpers.py": "1370f4af7e0fa434d0264ac76549649b853b4d2f8f012643aa99874e685983bb",
+    "scripts/build_pdf.py": "59ee3300ae88645891cddeaab27e42ea5867b3611188ef3858a78618c25d3467",
+    "scripts/heading_aliases.py": "9cfbf431228624567e57e1c4acafaa3f51cdd359a6289fe833588e5f37f6e6f3",
+    "scripts/inline_layout.js": "8b992cb8574bd2037c266dd474f362a16024721653bb04eadfcbb904992fe869",
+    "scripts/legacy_sequential_anchors.json": "a9b73e0a211c04b1763ac75c83df518fa91111b01fd2617d38d9f621900b3dda",
+    "scripts/pdf_math.js": "00e75634e085756e15d76653df278d1a1018a934dad364ce093c80f38c1e3e9f",
+    "scripts/quality_check.py": "2cb19c1fe0397c497539c3f62ae4c6a6bca4859db4188b41b3a51f4b5302d4ad",
+    "tests/test_build_pdf_semantics.py": "c6f89dfc680dc4b180d3308359bb7c91e7eeae09fbb333bf09c9edea7b6a6249",
+    "tests/test_pdf_layout_spaces.py": "ca6b5536a376bc2a168bb97a161513eea72cc210e503d16ea5d6941a10373a95",
+    "tests/test_pdf_math_contracts.py": "21314eac14c3ae6c8ddb89dcaa5c2a79be60ad7ab2336be2742107cb9b1e07f1",
+    "tests/test_quality_pdf_formula_text.py": "1750f0bffa8e9038d4dd73234bf158eea2b8802f57f58bdb96f4356f21ae37cf"
+  },
+  "dated_report_identities": {
+    "2026-10-05-audio-technical-audit.json": {
+      "bytes": 782677,
+      "SHA256": "18471cb34720dbcf18eeba90a156abd774351a901caeca431b925861ff74abdd"
+    },
+    "2026-10-05-human-listening-plan.json": {
+      "bytes": 196934,
+      "SHA256": "320fbc9de43922fac21c1810f608a51f6bb4ed642156fc5dbd2c4dd8bf18a693"
+    },
+    "2026-10-05-human-listening-register.csv": {
+      "bytes": 49057,
+      "SHA256": "11ce2547f0308750c5d83f5adc7fadb94fbbf4be2eb8a2715ffd4b09ba0d0420"
+    },
+    "2026-10-05-optional-test-audit.json": {
+      "bytes": 14516,
+      "SHA256": "8f29b792cef1b320d6c205dc1d5f70f600418e761f0442b7597091f716967725"
+    },
+    "2026-10-05-pdf-browser-controls-calibrated.json": {
+      "bytes": 180812,
+      "SHA256": "f221d6795098c1c9823105716fb46d941b6d31397f5c9098b5b974df0719acfa"
+    },
+    "2026-10-05-pdf-browser-controls.json": {
+      "bytes": 115883,
+      "SHA256": "2c2cf3ff4199f21fd69fae382433117e9e7f93240a0e17796fe31c80d949d00b"
+    },
+    "2026-10-05-pdf-formula-audit.json": {
+      "bytes": 5748888,
+      "SHA256": "a7b61a659fc6d1a71d5d03c57efa4838924f3f71221cdbf686eebdda7ce398cb"
+    },
+    "2026-10-05-pdf-machine-audit.json": {
+      "bytes": 11470,
+      "SHA256": "94a6353ef3402e050a5fd319ab8da4266ea10018d69cb59e7337b69278c3d20e"
+    },
+    "2026-10-05-pdf-visual-audit.json": {
+      "bytes": 25465,
+      "SHA256": "c585cf2bc71d7bd96390b199a403fbf8bcb0d231adc03d057df1189ad6e76511"
+    },
+    "2026-10-05-readme-audit.json": {
+      "bytes": 73028,
+      "SHA256": "ab30c67a34bcc29e204f06f3d106fef1b787f954bae1703a3a86165871bec58a"
+    }
+  },
+  "scratch_log_identities": {
+    "pdf-svg-build-ranges-final.log": {
+      "SHA256": "d71373f3f040f6de6ec8eb78348314c2c5be09cba5bcaa1a40b6ac18e1ae81a7",
+      "scratch_path": "/private/tmp/masp-acceptance-tail-root/pdf-svg-build-ranges-final.log"
+    },
+    "quality-release-final.log": {
+      "SHA256": "b78b3052bb874507302801b9989ad58f818782cb98428fed43f472236bae3ae2",
+      "scratch_path": "/private/tmp/masp-acceptance-tail-root/quality-release-final.log"
+    },
+    "all-tests-final.log": {
+      "SHA256": "7a461e49e6e7d017108ad5547ff179a7ee1457212be33c637f579b0bf4301383",
+      "scratch_path": "/private/tmp/masp-acceptance-tail-root/all-tests-final.log"
+    },
+    "pdf-contracts-ranges-final.log": {
+      "SHA256": "43fa5517fd059a83382bdb270d3907d28fa4e105294b8d09f73b8ff5e4ff1f32",
+      "scratch_path": "/private/tmp/masp-acceptance-tail-root/pdf-contracts-ranges-final.log"
+    },
+    "site-build.log": {
+      "SHA256": "3ea8e05f894689f5720694a53535b84dd81d964bed08489d51f2dd8dbba43f03",
+      "scratch_path": "/private/tmp/masp-acceptance-tail-root/site-build.log"
+    },
+    "readme-links-release.log": {
+      "SHA256": "fd1ceffae67a5ee1744067e8ea77b7ed452c33535bfb05eef3cafcdd4dc24b5a",
+      "scratch_path": "/private/tmp/masp-acceptance-tail-root/readme-links-release.log"
+    }
+  },
+  "human_validation": {
+    "published_audio_files_technically_checked": 267,
+    "human_listening_files": 0,
+    "listening_register": "2026-10-05-human-listening-register.csv",
+    "screen_reader_AT_executed": false,
+    "full_spoken_math_meaning_checked": false,
+    "full_table_header_meaning_checked": false
+  },
+  "limits": "Machine checks, pixel equality, finite actual viewing, and human audio/AT validation are distinct. Skipped main tests, expected failures, historical reports and unperformed human checks are not upgraded to successful execution."
+}

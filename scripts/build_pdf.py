@@ -20,8 +20,8 @@
     .venv/bin/python scripts/build_pdf.py --no-bookmarks  # 跳过书签（调排版时省时间）
     CHROME_BIN=/path/to/chrome .venv/bin/python scripts/build_pdf.py  # 非 macOS
 
-依赖：markdown、pypdf（根 README 依赖行）；Chrome（macOS 默认路径，余者走环境变量
-或 which 回退）。PDF 公式使用仓库内固定版本 MathJax 3.2.2 与 WOFF 字体，构建不联网。
+依赖：markdown、pypdf、fontTools（已随主依赖 matplotlib 安装）；Chrome（macOS 默认路径，余者走环境变量
+或 which 回退）。PDF 公式使用本地 MathJax 3.2.2 SVG 与 SRE 4.0.6 英文结构说明，构建不联网。
 
 已知边界（诚实写在前面）：
   - PDF 书签与合订本 TOC 包含篇/节/子节三级；第 1～15 章（含附录）的源 h4 作为第三级。
@@ -36,6 +36,7 @@
 import argparse
 import datetime
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -66,15 +67,24 @@ ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
 OUT = ROOT / "dist"
 MATHJAX_DIR = ROOT / "scripts" / "vendor" / "mathjax-3.2.2"
-MATHJAX_SCRIPT = MATHJAX_DIR / "tex-mml-chtml.js"
+MATHJAX_SCRIPT = MATHJAX_DIR / "tex-svg.js"
+PDF_MATH_SCRIPT = ROOT / "scripts" / "pdf_math.js"
 MATHJAX_FONT_DIR = MATHJAX_DIR / "output" / "chtml" / "fonts" / "woff-v2"
-MATHJAX_SCRIPT_SHA256 = "300480069078b5892d2363a2b65e2dfbbf30fe5c80f83edbfecf4610fd093862"
+MATHJAX_METRICS_FONT = MATHJAX_FONT_DIR / "MathJax_Math-Regular.woff"
+MATHJAX_METRICS_FONT_SHA256 = "c01d3321e89b403c4b811aa153c4e618eda3421f92d8a072a02c8d190782a191"
+MATHJAX_SCRIPT_SHA256 = "d4295dc33744836935c1399feece5159577b34c5c8ffb9f1c6324cd82e03a882"
+MATHJAX_SPEECH_ASSETS = {
+    "a11y/sre.js": "a41dc487037b75d6dae75677e36fe2f03d1d2684f232d96f0422a11b35051660",
+    "sre/mathmaps/base.json": "83311887b069476a6a4d0c6afe7f8e55075c85b44b029588739c0d835fc912b8",
+    "sre/mathmaps/en.json": "19d9b309dc0d25d2bde2d3130bd3772b6d7c3f8316ebbd85306bef55ac89b2a7",
+    "SRE-LICENSE": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+}
 MATHJAX_BOLDSYMBOL = MATHJAX_DIR / "input" / "tex" / "extensions" / "boldsymbol.js"
 MATHJAX_BOLDSYMBOL_SHA256 = "d6771fee0772db2657796c8d0e20e1878bb3237f6d3ed1e828e1834a4ff743ca"
 
 
 def check_mathjax_assets():
-    """Require the exact local script and complete CHTML font family."""
+    """Require fixed SVG/speech resources; preserve the legacy CHTML resources."""
 
     if not MATHJAX_SCRIPT.is_file():
         raise SystemExit(f"缺少本地 MathJax：{MATHJAX_SCRIPT}")
@@ -83,9 +93,15 @@ def check_mathjax_assets():
     if (not MATHJAX_BOLDSYMBOL.is_file() or
             hashlib.sha256(MATHJAX_BOLDSYMBOL.read_bytes()).hexdigest() != MATHJAX_BOLDSYMBOL_SHA256):
         raise SystemExit("本地 MathJax boldsymbol 扩展缺失或摘要不符；不能打印 PDF")
+    for relative, expected in MATHJAX_SPEECH_ASSETS.items():
+        path = MATHJAX_DIR / relative
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise SystemExit(f"本地公式朗读资源缺失或摘要不符：{relative}")
     fonts = sorted(MATHJAX_FONT_DIR.glob("MathJax_*.woff"))
     if len(fonts) != 23 or any(path.stat().st_size == 0 for path in fonts):
         raise SystemExit("本地 MathJax WOFF 字体不完整；不能打印 PDF")
+    if hashlib.sha256(MATHJAX_METRICS_FONT.read_bytes()).hexdigest() != MATHJAX_METRICS_FONT_SHA256:
+        raise SystemExit("本地 SVG 单位度量字体摘要不符；不能打印 PDF")
     if not (MATHJAX_DIR / "LICENSE").is_file():
         raise SystemExit("本地 MathJax 许可文本缺失；不能打印 PDF")
 
@@ -133,6 +149,10 @@ PDF_THIRD_LEVEL_CHAPTER_IDS = {
 
 CSS = """
 @page{size:A4;margin:16mm 15mm 18mm}
+/* SVG ex dimensions and pre-typesetting width measurements must use the
+   same .442em x-height as the fixed TeX font; CJK remains the body font. */
+@font-face{font-family:"MASP TeX Metrics";src:url("../scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2/MathJax_Math-Regular.woff") format("woff");font-weight:normal;font-style:normal}
+span[data-pdf-math-id],mjx-container[jax="SVG"]{font-family:"MASP TeX Metrics";font-weight:normal;font-style:normal;font-synthesis:none}
 /* Match the A4 content width before printing; the print snapshot must not
    receive thousands of late DOM changes from a different screen layout. */
 body{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;color:#1a1a2e;max-width:180mm;margin:0 auto;padding:0}
@@ -163,7 +183,7 @@ h3{font-size:16.5px}h4{font-size:15px}
 .toc .sec{font-size:12.5px;color:#333;padding-left:18px}
 .toc .subsec{font-size:11.5px;color:#555;padding-left:18px}
 .anchor-alias{display:none}
-.pdf-anchor-references{position:absolute;top:0;left:0;font-size:1px;line-height:1px;color:transparent;pointer-events:none}
+.pdf-anchor-references{position:absolute;top:-10000px;left:-10000px;font-size:1px;line-height:1px;color:transparent;pointer-events:none}
 .pdf-anchor-references a{color:transparent}
 .tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
 .tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
@@ -173,6 +193,8 @@ h3{font-size:16.5px}h4{font-size:15px}
 .book-ending{break-inside:avoid;page-break-inside:avoid}
 /* MathJax 的 serif 中文回退在部分 macOS 字体中会生成部首码位的 ToUnicode。 */
 mjx-mtext>mjx-utext{font-family:MJXZERO,"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif!important}
+/* SVG fallback text must use the same tested CJK font as ordinary prose. */
+mjx-container[jax="SVG"] svg text{font-family:"STHeiti","Hiragino Sans GB","Microsoft YaHei",sans-serif!important}
 body mjx-assistive-mml{width:1px!important;max-width:1px!important;min-width:0!important;height:1px!important;overflow:hidden!important}
 @media print{
 body{max-width:none;margin:0;padding:0}
@@ -183,7 +205,8 @@ tr{break-inside:avoid}
 td,th{word-break:break-word;overflow-wrap:anywhere}
 /* MathJax 的行内长式与展示式均需留在 A4 正文宽度内。 */
 mjx-container{font-size:100%!important;max-width:100%}
-h1,h2,h3,h4{break-after:avoid}
+h1,h2,h3,h4{break-after:avoid;break-inside:avoid;page-break-inside:avoid}
+.pdf-imaging-hand-example{break-inside:avoid;page-break-inside:avoid}
 .chap p.tutorial-short-lead{break-after:avoid;page-break-after:avoid}
 .chap p.tutorial-anchor-only{margin:0;break-after:avoid;page-break-after:avoid}
 /* 第2章的图注和短引导句随其解释对象排版，避免只剩一行或孤立图注。 */
@@ -274,7 +297,7 @@ def source_digest():
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in MATHJAX_DIR.rglob("*") if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
-    paths += [Path(__file__), ROOT / "scripts" / "make_figures.py",
+    paths += [Path(__file__), PDF_MATH_SCRIPT, ROOT / "scripts" / "make_figures.py",
               ROOT / "scripts" / "make_aec_figures.py",
               ROOT / "scripts" / "make_beamforming_figures.py",
               ROOT / "scripts" / "make_reference_figures.py",
@@ -412,6 +435,265 @@ def resolve_build_date(explicit=None):
     return datetime.date.today().isoformat()
 
 
+def label_pdf_math_sources(page):
+    """Bind each rendered HTML math occurrence to its exact authored TeX bytes.
+
+    Code, attributes and escaped dollars use the shared parser boundaries. TOC
+    repetitions have separate identities; the chapter source is never mutated.
+    Temporary spans are removed before measuring the print layout.
+    """
+    from html import escape
+    head, body = page.split('<body>', 1)
+    protected, repo = shield_math(body)
+    sources = []
+    def restore(value, index):
+        if index in repo.literal:
+            return value
+        identity = f'{len(sources) + 1:06d}'
+        digest = hashlib.sha256(value.encode('utf-8')).hexdigest()
+        sources.append({'id': identity, 'sha256': digest, 'tex': value})
+        return (f'<span data-pdf-math-id="{identity}" data-pdf-math-sha="{digest}">'
+                + value.replace('<', r'\lt ') + '</span>')
+    body = repo.substitute(protected, restore)
+    data = json.dumps(sources, ensure_ascii=False).replace('<', '\\u003c')
+    return head + '<body><script type="application/json" id="pdf-math-sources">' + data + '</script>' + body
+
+
+def pdf_math_sources(html):
+    match = re.search(r'<script type="application/json" id="pdf-math-sources">(.*?)</script>', html, re.S)
+    if match is None:
+        raise SystemExit('合订HTML缺少公式源身份清单')
+    sources = json.loads(match[1])
+    if (not isinstance(sources, list) or
+            [item.get('id') for item in sources] != [f'{i+1:06d}' for i in range(len(sources))]):
+        raise SystemExit('合订HTML公式身份清单不连续或无效')
+    for item in sources:
+        if hashlib.sha256(item['tex'].encode('utf-8')).hexdigest() != item['sha256']:
+            raise SystemExit('合订HTML公式源摘要不符')
+    return sources
+
+
+def verified_layout_space_font(font):
+    """Prove CID 0003 is a Unicode space with no embedded TrueType outline.
+
+    Only the fixed Chrome Identity-H / CIDFontType2 / bfchar form is handled.
+    A font name, an apparently blank screenshot or a Unicode label alone does
+    not prove that text has no ink. Unsupported font contracts remain content.
+    """
+    from io import BytesIO
+    from fontTools.ttLib import TTFont, TTLibError
+    try:
+        font = font.get_object()
+        if font.get('/Subtype') != '/Type0' or font.get('/Encoding') != '/Identity-H':
+            return False
+        descendants = font['/DescendantFonts']
+        if len(descendants) != 1:
+            return False
+        descendant = descendants[0].get_object()
+        if (descendant.get('/Subtype') != '/CIDFontType2'
+                or descendant.get('/CIDToGIDMap') != '/Identity'):
+            return False
+        cmap = font['/ToUnicode'].get_data()
+        # Chrome also emits ranges for other glyphs in the same font. They
+        # cannot override this CID: validate the supported three-hex form and
+        # reject overlapping, malformed or unsupported range descriptions.
+        ranges = re.findall(rb'(\d+)\s+beginbfrange(.*?)endbfrange', cmap, re.S)
+        if cmap.count(b'beginbfrange') != len(ranges):
+            return False
+        for count, block in ranges:
+            rows = [line.strip() for line in block.splitlines() if line.strip()]
+            if len(rows) != int(count):
+                return False
+            for row in rows:
+                bounds = re.fullmatch(
+                    rb'<([0-9a-fA-F]{4})>\s*<([0-9a-fA-F]{4})>\s*<[0-9a-fA-F]{4}>', row)
+                if bounds is None:
+                    return False
+                lower, upper = (int(value, 16) for value in bounds.groups())
+                if lower > upper or lower <= 3 <= upper:
+                    return False
+        mappings = [value.upper()
+                    for block in re.findall(rb'\d+\s+beginbfchar(.*?)endbfchar', cmap, re.S)
+                    for key, value in re.findall(rb'<([0-9a-fA-F]+)>\s*<([0-9a-fA-F]+)>', block)
+                    if key.upper() == b'0003']
+        if mappings != [b'0020']:
+            return False
+        data = descendant['/FontDescriptor']['/FontFile2'].get_data()
+        with TTFont(BytesIO(data)) as embedded:
+            glyph = embedded.getGlyphOrder()[3]
+            return ('glyf' in embedded and embedded['glyf'][glyph].numberOfContours == 0
+                    and embedded['hmtx'][glyph][0] > 0)
+    except (KeyError, IndexError, ValueError, TypeError, OSError, TTLibError):
+        return False
+
+
+def keep_imaging_hand_example(page):
+    """Keep the actual two-grid inputs, calculation and conclusion together."""
+    from html.parser import HTMLParser
+    positions, ignored = [], []
+    lines = page.splitlines(keepends=True)
+    offsets, total = [], 0
+    for line in lines:
+        offsets.append(total)
+        total += len(line)
+    class Headers(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            if tag in ('script', 'style', 'pre', 'code'):
+                ignored.append(tag)
+            if not ignored and tag == 'h3' and dict(attrs).get('id') == 'ch-14-sec-u-3179856767':
+                line, column = self.getpos()
+                positions.append(offsets[line - 1] + column)
+        def handle_endtag(self, tag):
+            if ignored and tag == ignored[-1]: ignored.pop()
+    Headers().feed(page)
+    if len(positions) != 1:
+        raise ValueError('成像手算标题缺失或重复，须重新核定有限分页组')
+    pattern = (r'(<h3 id="ch-14-sec-u-3179856767">两个格点的完整手算</h3>.*?)'
+               r'(?=<p><img\b[^>]*src="\.\./figures/fig67_imaging_psf\.png")')
+    start = positions[0]
+    match = re.match(pattern, page[start:], re.S)
+    if match is None or any(match.group(1).count(r'\tag{' + number + '}') != 1
+                            for number in ('12-10', '12-11')):
+        raise ValueError('成像手算的源结构变化，须重新核定有限分页组')
+    return (page[:start] + '<div class="pdf-imaging-hand-example">' + match.group(1)
+            + '</div>\n' + page[start + match.end():])
+
+
+def tag_pdf_formulas(writer, sources):
+    """Retag only source-labelled SVG paint, preserving its MCID and ParentTree.
+
+    No positional matching and no artifact replacement. Every authored occurrence
+    must have exactly one Figure connected to actual paint on its own page.
+    """
+    from pypdf.generic import (ContentStream, DecodedStreamObject, DictionaryObject,
+                              NameObject, TextStringObject)
+    expected = {item['id']: item for item in sources}
+    found = {}
+    by_page = {}
+    def visit(value):
+        node = value.get_object() if hasattr(value, 'get_object') else value
+        if isinstance(node, list):
+            for child in node: visit(child)
+            return
+        if not isinstance(node, dict): return
+        alt = str(node.get('/Alt', ''))
+        if alt.startswith('MASP-MATH:'):
+            match = re.fullmatch(r'MASP-MATH:(\d{6}):([0-9a-f]{64}):(.+)', alt, re.S)
+            if match is None or node.get('/S') != '/Figure':
+                raise SystemExit('PDF公式源标记无效或角色不符')
+            identity, digest, speech = match.groups()
+            if (identity not in expected or identity in found or
+                    digest != expected[identity]['sha256'] or not speech.strip()):
+                raise SystemExit(f'PDF公式缺失、重复或源摘要不符：{identity}')
+            mcid = node.get('/K')
+            page = node.get('/Pg')
+            if isinstance(mcid, bool) or not isinstance(mcid, int) or page is None:
+                raise SystemExit(f'PDF公式超出已核单MCID合同：{identity}')
+            key = page.get_object().indirect_reference.idnum
+            slots = by_page.setdefault(key, {})
+            if int(mcid) in slots:
+                raise SystemExit('同一PDF页面公式MCID重复')
+            slots[int(mcid)] = (identity, speech)
+            found[identity] = node
+        if '/K' in node: visit(node['/K'])
+    tree = writer.root_object.get('/StructTreeRoot')
+    if tree is None: raise SystemExit('PDF公式缺少结构树')
+    visit(tree)
+    if set(found) != set(expected):
+        missing = sorted(set(expected) - set(found))
+        raise SystemExit(f'PDF公式语义未完整就绪：{len(found)}/{len(expected)}；缺少{missing[:8]}')
+    page_ids = {page.indirect_reference.idnum for page in writer.pages}
+    if set(by_page) - page_ids:
+        raise SystemExit('PDF公式指向本书之外的页面')
+    def parent_entry(number_tree, key):
+        node = number_tree.get_object()
+        numbers = node.get('/Nums', [])
+        for i in range(0, len(numbers), 2):
+            if int(numbers[i]) == key: return numbers[i+1].get_object()
+        for child in node.get('/Kids', []):
+            result = parent_entry(child, key)
+            if result is not None: return result
+        return None
+    font_proofs, layout_spaces = {}, 0
+    for page in writer.pages:
+        slots = by_page.get(page.indirect_reference.idnum, {})
+        if slots and '/StructParents' not in page:
+            raise SystemExit('PDF公式页面缺少真实父树索引')
+        parents = (parent_entry(tree.get_object()['/ParentTree'], int(page['/StructParents']))
+                   if slots else None)
+        for mcid, (identity, _) in slots.items():
+            if (not isinstance(parents, list) or mcid < 0 or mcid >= len(parents)
+                    or parents[mcid].get_object().indirect_reference != found[identity].indirect_reference):
+                raise SystemExit('PDF公式MCID与真实父树不一致')
+        content = ContentStream(page.get_contents(), writer)
+        stack, entries, paints = [], {}, {}
+        font, font_stack, corrected, page_spaces = None, [], [], 0
+        for operands, operation in content.operations:
+            if operation == b'q': font_stack.append(font)
+            elif operation == b'Q':
+                if not font_stack: raise SystemExit('PDF图形状态栈不平衡')
+                font = font_stack.pop()
+            elif operation == b'Tf': font = operands[0]
+            if operation == b'BDC':
+                props = operands[-1]
+                mcid = props.get('/MCID') if isinstance(props, dict) else None
+                stack.append(mcid)
+                if mcid in slots:
+                    entries[mcid] = entries.get(mcid, 0) + 1
+                    operands[0] = NameObject('/Formula')
+                    props[NameObject('/ActualText')] = TextStringObject(slots[mcid][1])
+            elif operation == b'BMC': stack.append(None)
+            elif operation == b'EMC':
+                if not stack: raise SystemExit('PDF公式内容流标记栈不平衡')
+                stack.pop()
+            elif operation in (b'f', b'f*', b'S', b's', b'B', b'B*', b'b', b'b*', b'Do', b'Tj', b'TJ'):
+                for mcid in stack:
+                    if mcid in slots: paints[mcid] = paints.get(mcid, 0) + 1
+            # These are layout separators left outside any semantic mark by
+            # Chrome. Preserve the original Tj and its advance. Never classify
+            # visible letters, paths, images or unknown fonts as decoration.
+            if (operation == b'Tj' and not stack and len(operands) == 1
+                    and getattr(operands[0], '_original_bytes', None) == b'\x00\x03'):
+                resource = page.get('/Resources', {}).get('/Font', {}).get(font)
+                if resource is not None:
+                    resolved = resource.get_object()
+                    reference = getattr(resolved, 'indirect_reference', None)
+                    key = ('indirect', reference.idnum) if reference else ('direct', id(resolved))
+                    if key not in font_proofs:
+                        font_proofs[key] = verified_layout_space_font(resource)
+                    if font_proofs[key]:
+                        corrected.extend([
+                            ([NameObject('/Artifact'), DictionaryObject({NameObject('/Type'): NameObject('/Layout')})], b'BDC'),
+                            (operands, operation), ([], b'EMC')])
+                        page_spaces += 1
+                        continue
+            corrected.append((operands, operation))
+        if stack or any(entries.get(mcid) != 1 or not paints.get(mcid) for mcid in slots):
+            raise SystemExit('PDF公式结构没有唯一真实可见绘制内容')
+        if font_stack: raise SystemExit('PDF图形状态栈未闭合')
+        if not slots and not page_spaces:
+            continue
+        content.operations = corrected
+        layout_spaces += page_spaces
+        # Keep serialized bytes, not millions of decoded path operands, in
+        # the full-book writer. The only edited operations are the same MCID's
+        # BDC role/ActualText; no geometry or paint operation is rewritten.
+        serialized = DecodedStreamObject()
+        serialized.set_data(content.get_data())
+        page[NameObject('/Contents')] = writer._add_object(serialized.flate_encode())
+        for mcid, (identity, speech) in slots.items():
+            node = found[identity]
+            node[NameObject('/T')] = TextStringObject('pdf-math-' + identity)
+            node[NameObject('/S')] = NameObject('/Formula')
+            node[NameObject('/Alt')] = TextStringObject(speech)
+            node[NameObject('/ActualText')] = TextStringObject(speech)
+            node[NameObject('/Lang')] = TextStringObject('en')
+    writer.compress_identical_objects(remove_duplicates=False, remove_unreferenced=True)
+    print(f'公式语义：{len(found)}/{len(expected)} 个源身份、真实SVG绘制与英文结构说明')
+    print(f'已核无轮廓排版空格：{layout_spaces}（仅原Tj加Layout标记，保留位移）')
+    return len(found)
+
+
 def build_html(build_date=None):
     check_mathjax_assets()
     """按阅读顺序合并所有教程源为单页 HTML。返回 (page, outline)，outline 为
@@ -529,7 +811,7 @@ def build_html(build_date=None):
     date_s = resolve_build_date(build_date)
     cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
-             f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
+             f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()}<br>'
              f'共 {len(CHAPTERS)} 篇：导读、13 章正文（含两篇扩展专题）、2 篇附录</div></div>')
     # Chrome emits named destinations for referenced anchors. A transparent,
     # out-of-flow reference strip makes every real heading addressable without
@@ -543,10 +825,12 @@ def build_html(build_date=None):
     page = ("<!DOCTYPE html><html lang=\"zh-CN\" data-tutorial-print-layout=\"a4\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
             "<script>\n" + build_site.INLINE_LAYOUT_PATH.read_text(encoding="utf-8") +
-            "\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}, chtml: {fontURL: '../scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2'}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};\n</script>"
-            "<script defer src=\"../scripts/vendor/mathjax-3.2.2/tex-mml-chtml.js\"></script>"
+            "\n</script><script>" + PDF_MATH_SCRIPT.read_text(encoding="utf-8") + "</script>"
+            '<script defer src="../scripts/vendor/mathjax-3.2.2/tex-svg.js"></script>'
             "</head><body>" + references + cover + "\n".join(toc) + "\n".join(body_parts)
             + '</body></html>')
+    page = keep_imaging_hand_example(page)
+    page = label_pdf_math_sources(page)
     n_secs = sum(len(s) for _, _, s in outline)
     n_subsecs = sum(len(subsecs) for _, _, secs in outline
                     for _title, _sid, subsecs in secs)
@@ -695,6 +979,128 @@ def validate_pdf_named_aliases(reader, aliases):
             raise SystemExit(f"PDF 历史目标偏离当前主题定位：{alias}")
 
 
+def normalize_pdf_semantics(writer, outline, aliases=None):
+    """Preserve Chrome content while supplying genuine list and link semantics.
+
+    This repairs a bounded set of export omissions, not PDF/UA certification.
+    Visible mathematical content is never relabelled as an artifact.
+    """
+    from pypdf.generic import (ArrayObject, DictionaryObject, NameObject,
+                              TextStringObject)
+    from xml.sax.saxutils import escape
+
+    tree = writer.root_object.get("/StructTreeRoot")
+    if tree is None:
+        raise SystemExit("PDF 缺少结构树，不能补充列表和链接语义")
+    tree = tree.get_object()
+    role_map = tree.get("/RoleMap", DictionaryObject())
+    role_map = role_map.get_object()
+    for role in ("/Strong", "/Em"):
+        if role in role_map and role_map[role] != "/Span":
+            raise SystemExit(f"PDF 已有角色映射冲突：{role}")
+        role_map[NameObject(role)] = NameObject("/Span")
+    tree[NameObject("/RoleMap")] = role_map
+
+    def visit(value):
+        node = value.get_object() if hasattr(value, "get_object") else value
+        if isinstance(node, list):
+            for child in node:
+                visit(child)
+            return
+        if not isinstance(node, dict):
+            return
+        if node.get("/S") == "/LI":
+            children = node.get("/K", [])
+            children = children if isinstance(children, list) else [children]
+            resolved = [item.get_object() if hasattr(item, "get_object") else item
+                        for item in children]
+            types = [item.get("/S") if isinstance(item, dict) else None
+                     for item in resolved]
+            if any(kind not in ("/Lbl", "/LBody") for kind in types):
+                # Current Chrome represents every body item by its existing
+                # StructElem. Keep those objects and all MCID/ParentTree links.
+                if (any(kind is None for kind in types)
+                        or "/LBody" in types
+                        or types.count("/Lbl") > 1
+                        or ("/Lbl" in types and types[0] != "/Lbl")):
+                    raise SystemExit("PDF 列表结构超出已核Chrome合同，拒绝猜测MCID归属")
+                body_children = [item for item, kind in zip(children, types)
+                                 if kind != "/Lbl"]
+                body = DictionaryObject({
+                    NameObject("/Type"): NameObject("/StructElem"),
+                    NameObject("/S"): NameObject("/LBody"),
+                    NameObject("/P"): node.indirect_reference,
+                    NameObject("/K"): ArrayObject(body_children),
+                })
+                if "/Pg" in node:
+                    body[NameObject("/Pg")] = node.raw_get("/Pg")
+                body_ref = writer._add_object(body)
+                for item in body_children:
+                    item.get_object()[NameObject("/P")] = body_ref
+                labels = [item for item, kind in zip(children, types) if kind == "/Lbl"]
+                node[NameObject("/K")] = ArrayObject(labels + [body_ref])
+        if "/K" in node:
+            visit(node["/K"])
+
+    visit(tree.get("/K", []))
+    # Chrome catalog /Dests uses PDF NameObject keys ("/ch-0"), whereas a
+    # /Names tree can expose plain strings ("ch-0"). The same leading slash
+    # is already removed from the annotation's /Dest below.
+    real_targets = {str(key).removeprefix("/") for key in writer.named_destinations}
+    titles = {}
+    for chapter_title, chapter_id, sections in outline:
+        titles[chapter_id] = chapter_title
+        for title, identity, subsections in sections:
+            titles[identity] = title
+            titles.update({sub_id: sub_title for sub_title, sub_id in subsections})
+    for alias, target in (aliases or {}).items():
+        if target in titles:
+            titles[alias] = titles[target]
+    for page in writer.pages:
+        page[NameObject("/Tabs")] = NameObject("/S")
+        for reference in page.get("/Annots", []):
+            annotation = reference.get_object()
+            if (annotation.get("/Subtype") != "/Link"
+                    or "/StructParent" not in annotation
+                    or annotation.get("/Contents")):
+                continue
+            action = annotation.get("/A", {})
+            if action.get("/S") == "/URI" and action.get("/URI"):
+                description = "打开外部链接：" + str(action["/URI"])
+            else:
+                target = str(annotation.get("/Dest", "")).removeprefix("/")
+                if target not in real_targets:
+                    raise SystemExit(f"PDF 内部链接目标不存在：{target}")
+                if target in titles:
+                    description = "跳转到：" + titles[target]
+                else:
+                    exercise = re.search(r"E\d{2}-\d{2}$", (aliases or {}).get(target, target), re.I)
+                    if exercise is None:
+                        raise SystemExit(f"PDF 内部链接没有可核说明：{target}")
+                    description = "查看练习：" + exercise.group().upper()
+            annotation[NameObject("/Contents")] = TextStringObject(description)
+
+    # Tagged structures and their standard roles require a modern PDF header.
+    # Metadata describes this document; it deliberately makes no pdfuaid claim.
+    writer.pdf_header = "%PDF-1.7"
+    writer.xmp_metadata = (
+        '<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF '
+        'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+        '<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" '
+        'xmlns:xmp="http://ns.adobe.com/xap/1.0/" '
+        'xmp:CreatorTool="scripts/build_pdf.py">'
+        '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">'
+        + escape(str(writer.metadata.get("/Title", "麦克风阵列信号处理教程")))
+        + '</rdf:li></rdf:Alt></dc:title>'
+        '<dc:language><rdf:Bag><rdf:li>zh-CN</rdf:li></rdf:Bag></dc:language>'
+        '</rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>'
+    ).encode("utf-8")
+    metadata = writer.root_object["/Metadata"]
+    metadata[NameObject("/Type")] = NameObject("/Metadata")
+    metadata[NameObject("/Subtype")] = NameObject("/XML")
+
+
 def add_bookmarks(pdf_path, outline, aliases=None):
     """按 outline 写三级大纲（篇 + 节 + 指定子节），校验后原子替换 PDF。"""
     try:
@@ -715,6 +1121,7 @@ def add_bookmarks(pdf_path, outline, aliases=None):
     writer._root_object.update({NameObject("/Lang"): TextStringObject("zh-CN")})
     if aliases is not None:
         add_pdf_named_aliases(reader, writer, aliases)
+    normalize_pdf_semantics(writer, outline, aliases)
     n_ch, n_sec, n_subsec = 0, 0, 0
 
     def add_heading(title, heading_id, parent=None):
@@ -894,7 +1301,11 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
         print(log_text)
         print("generated", tmp_pdf, tmp_pdf.stat().st_size // 1024 // 1024, "MB")
         try:
-            from pypdf import PdfReader
+            from pypdf import PdfReader, PdfWriter
+            writer = PdfWriter(clone_from=PdfReader(str(tmp_pdf)))
+            tag_pdf_formulas(writer, pdf_math_sources(combined.read_text(encoding="utf-8")))
+            with tmp_pdf.open("wb") as stream:
+                writer.write(stream)
             reader = PdfReader(str(tmp_pdf))
             validate_pdf_structure_tags(reader)
             npages = len(reader.pages)
@@ -918,11 +1329,13 @@ def print_pdf(combined, pdf, timeout_min_pages=100):
                           if "不提前舍入时，上例的精确分数" in page_text), None)
         if math_page is None:
             raise SystemExit("PDF 数学字形探针的正文边界缺失；不能验收公式")
-        fonts = reader.pages[math_page]["/Resources"].get("/Font", {})
-        type3_glyph_counts = [len(font.get_object().get("/CharProcs", {}))
-                              for font in fonts.values()
-                              if font.get_object().get("/Subtype") == "/Type3"]
-        validate_pdf_math_example("\n".join(page_texts), type3_glyph_counts)
+        # SVG formulas carry real paint and source identities, so they do not
+        # require Type3 WOFF subsets. The complete source/MCID check above
+        # replaces that export-specific probe; retain its authored body bounds.
+        all_text = "\n".join(page_texts)
+        start = all_text.find("不提前舍入时，上例的精确分数")
+        if start < 0 or all_text.find("分区块频域卡尔曼滤波", start) < 0:
+            raise SystemExit("PDF 数学字形探针的正文边界缺失；不能验收公式")
         validate_pdf_text_codepoints("\n".join(page_texts))
         validate_pdf_body_scale(reader)
         os.replace(tmp_pdf, pdf)

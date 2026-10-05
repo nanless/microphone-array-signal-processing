@@ -1,0 +1,268 @@
+{
+  "schema": "masp-independent-pdf-accessibility-machine-review-v1",
+  "reviewed_UTC": "2026-10-05T15:36:31.360468+00:00",
+  "review_kind": "Full readonly machine structure and explicit official PDF/UA-1 validation; not full human accessibility certification",
+  "permissions": {
+    "sandbox": "danger-full-access",
+    "approval": "never",
+    "sandbox_permissions_used": false
+  },
+  "inputs": {
+    "PDF": {
+      "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/dist/microphone-array-tutorial.pdf",
+      "SHA256": "36d3ddb920e017c3135525df076017429a8e319cea54bedb251df8581fa4682c",
+      "bytes": 69462354,
+      "pages": 940,
+      "SourceDigest": "595906c8e634"
+    },
+    "final_HTML": {
+      "path": "dist/combined.html",
+      "SHA256": "9a00b631a66c5d2e6a5d96bf851ed566e8f38070d3ac1d11169ad41342474056",
+      "bytes": 6116447
+    },
+    "independent_source_expectation": {
+      "SHA256": "6ae5683c7a152ec32cc4f79852c0797eae8aa7d88330e42f10d7180b2bf1cb4f",
+      "math": 13652,
+      "historical_alias_pairs": 648,
+      "tables": 280,
+      "lists": 303,
+      "list_items": 1567,
+      "method": "Parse final literal HTML topology and semantic alias adjacency. Match every source TeX ID/byte/SHA to previously actual fixed-engine DOM MathML/SRE speech before reusing that speech. Never learn expected math/table/alias values from candidate PDF.",
+      "source_provenance": {
+        "html": "/private/tmp/masp-stage4-media/pdfua-candidate-003/frozen-final-source.html",
+        "html_SHA256": "9a00b631a66c5d2e6a5d96bf851ed566e8f38070d3ac1d11169ad41342474056",
+        "math_source_JSON": "/private/tmp/masp-stage4-media/pdfua-candidate-003/frozen-final-math-sources.json",
+        "math_source_JSON_SHA256": "4f73bcad4cf02b0d1c8e7086dafac99466b9f8f0b2bec9b3e74a26dac47f0632",
+        "actual_DOM_JSON": "/private/tmp/masp-stage4-media/pdfua-candidate-tools/frozen-DOM-speech.json",
+        "actual_DOM_JSON_SHA256": "d2e99033efe5fa6902fbefd21d4ecd30f0be20cdada94c913d59a1107387828c"
+      }
+    },
+    "unchanged_after_full_audits": true
+  },
+  "tools": {
+    "source_scripts": [
+      {
+        "path": "/private/tmp/masp-stage4-media/pdfua-candidate-tools/audit_candidate.py",
+        "SHA256": "06bfcab2cacb037a1ed0df651965b757eea1668b8868bb49d2a454f767ca9183"
+      },
+      {
+        "path": "/private/tmp/masp-stage4-media/pdfua-candidate-002/prepare_source_expectations-wrapper.py",
+        "SHA256": "80ddd0c715e88a5468c110379608d1afa9dd11071fb1c74dec4f185e0dbb2fce"
+      },
+      {
+        "path": "/private/tmp/masp-stage4-media/pdfua-candidate-tools/run_verapdf.py",
+        "SHA256": "62bf6fe33b512f87081ef60931dd439e2e3b968c8016adf29369cab5b2b6a3cb"
+      }
+    ],
+    "Python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "packages": {
+      "pypdf": "6.19.0",
+      "fonttools": "4.65.0"
+    },
+    "official_validator": {
+      "name": "veraPDF Greenfield",
+      "version": "1.30.2",
+      "profile": "ua1 explicitly, not automatic PDF/A profile",
+      "JAR_SHA256": "889075253fb9df4db5482efb8f8208fb3b4f2e00f5f7e1b1e31edf6fb4b69bb6",
+      "JRE": "Eclipse Temurin 21.0.12.1+1 aarch64 macOS",
+      "java_binary_SHA256": "9be1d0a740ff6502df1a762145e62860f5de4b7e17658d9cb9498da3acf9d16c",
+      "JRE_archive_SHA256": "dec50fc6f9fcd4fe3ae8cabf5a5fa68f6afc48841f7698e468e9aa5d54beed84",
+      "validator_official_ZIP_SHA256": "6cc6341cb1af644044054b81f00a6590a7918abb18f762243de115258bcad838",
+      "signature_boundary": "Official HTTPS archives fixed by SHA; installer signature downloaded but not GPG-authenticated."
+    }
+  },
+  "strict_structure_result": {
+    "actual_exit": 0,
+    "complete": true,
+    "full_summary": {
+      "pdf": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/dist/microphone-array-tutorial.pdf",
+      "sha256": "36d3ddb920e017c3135525df076017429a8e319cea54bedb251df8581fa4682c",
+      "source_digest": "595906c8e634",
+      "pages": 940,
+      "named_count": 1730,
+      "alias_pairs_checked": 648,
+      "Formula_count": 13652,
+      "ParentTree_MCID_checks": 58321,
+      "role_counts": {
+        "ROOT": 1,
+        "/Document": 1,
+        "/H1": 18,
+        "/NonStruct": 53217,
+        "/L": 303,
+        "/LI": 1567,
+        "/Lbl": 1567,
+        "/LBody": 1567,
+        "/Link": 2382,
+        "/Formula": 13652,
+        "/P": 5888,
+        "/H2": 151,
+        "/Table": 280,
+        "/TR": 1762,
+        "/TH": 1070,
+        "/TD": 5388,
+        "/Code": 1124,
+        "/H3": 758,
+        "/Figure": 82,
+        "/Strong": 1915,
+        "/BlockQuote": 34,
+        "/Em": 72
+      },
+      "all_paint_operations": {
+        "marked_text": 163268,
+        "marked_paint": 279740,
+        "ActualText_BDC": 13656,
+        "artifact_text": 103
+      },
+      "tables": 280,
+      "lists": 303,
+      "list_items": 1567,
+      "annotations": 3086,
+      "errors": [],
+      "readonly_input_unchanged": true,
+      "expectation_SHA256": "6ae5683c7a152ec32cc4f79852c0797eae8aa7d88330e42f10d7180b2bf1cb4f",
+      "limits": [
+        "Unmarked paint needs inspection to distinguish content from decoration; this tool never auto-marks Artifact.",
+        "Formula actual paint association is mechanically checked, not spoken semantics or AT proof.",
+        "Source-to-PDF math completeness and table completeness require supplied independent expectations.",
+        "UA verdict comes from explicit veraPDF and required human/AT checks, not this JSON."
+      ]
+    },
+    "font_checks": {
+      "fonts": 20,
+      "subtypes": {
+        "/Type0": 19,
+        "/Type3": 1
+      },
+      "ToUnicode_all": true
+    },
+    "extracted_special_characters": {},
+    "annotation_checks": {
+      "total": 3086,
+      "nonempty_Contents": 3086,
+      "StructParent_present": 3086,
+      "OBJR_parent_present": 3086
+    },
+    "independent_catalog_and_outlines": {
+      "PDF_SHA256": "36d3ddb920e017c3135525df076017429a8e319cea54bedb251df8581fa4682c",
+      "Metadata": {
+        "/Title": "麦克风阵列信号处理教程",
+        "/Creator": "scripts/build_pdf.py",
+        "/Producer": "Skia/PDF m154",
+        "/CreationDate": "D:20261005151920+00'00'",
+        "/ModDate": "D:20261005151920+00'00'",
+        "/Subject": "从阵列摆位到工程选型",
+        "/SourceDigest": "595906c8e634"
+      },
+      "CatalogLang": "zh-CN",
+      "MarkInfo": {
+        "/Type": "/MarkInfo",
+        "/Marked": "True"
+      },
+      "RoleMap": {
+        "/Strong": "/Span",
+        "/Em": "/Span"
+      },
+      "outline_depth_counts": {
+        "0": 16,
+        "1": 151,
+        "2": 740
+      },
+      "named_destinations": 1730,
+      "XMP_present": true,
+      "XMP_SHA256": "294d30ed5edd0788976611693bc5aeb9fefbc681621cc070fa35f6d60e14eba6",
+      "UA_identification_declared": false
+    }
+  },
+  "PDF_UA_1_result": {
+    "actual_exit": 1,
+    "job_end_status": "normal",
+    "profile": "PDF/UA-1 validation profile",
+    "passed_rules": 105,
+    "failed_rules": 1,
+    "passed_checks": 4381808,
+    "failed_checks": 1,
+    "remaining_failures": [
+      {
+        "specification": "ISO 14289-1:2014",
+        "clause": "5",
+        "testNumber": "1",
+        "status": "failed",
+        "failedChecks": "1",
+        "tags": "metadata",
+        "description": "The PDF/UA version and conformance level of a file shall be specified using the PDF/UA Identification extension schema"
+      }
+    ],
+    "XML_SHA256": "5661568fd977bb908d73a8bb75a9583c39aed73211fec8f1da1b86eedacd64c1",
+    "stderr_SHA256": "d4fc2946ab499686bcc0a43eff40244b8c7487242ca79c213c930fb592bfae5c",
+    "interpretation": "All automated non-identification rules pass; the explicit PDF/UA-1 profile still reports NONCOMPLIANT because identification is absent. This report does not authorize adding a conformance declaration.",
+    "official_command": [
+      "/private/tmp/masp-stage4-media/pdfua-readonly/tools/jre/jdk-21.0.12.1+1-jre/Contents/Home/bin/java",
+      "-Xmx4g",
+      "-Duser.home=/private/tmp/masp-stage4-media/pdfua-readonly/tools/config",
+      "-jar",
+      "/private/tmp/masp-stage4-media/pdfua-readonly/tools/verapdf/bin/cli-1.30.2.jar",
+      "-f",
+      "ua1",
+      "--format",
+      "xml",
+      "--maxfailuresdisplayed",
+      "5000",
+      "/Users/francis7999/code/github_repos/microphone-array-signal-processing/dist/microphone-array-tutorial.pdf"
+    ]
+  },
+  "earlier_failures_preserved": {
+    "original_CHTML_baseline": {
+      "PDF_SHA256": "c0a749be1c4cd86e39add2c298f81b0c4ebf083ce22d4af8d396e35c6e3ba3b9",
+      "pages": 890,
+      "vera_failed_rules": 8,
+      "vera_failed_checks": 143590,
+      "report_path": "/private/tmp/masp-stage4-media/pdfua-readonly/readonly-final.json"
+    },
+    "candidate001": {
+      "PDF_SHA256": "3e917f8ea7287ff28921d2a767070a320dfad3ab3020440e4d06b1ac7d85e909",
+      "report_SHA256": "590e78c3f0fd9130882112958026f69e36d777390eeceb88e99a7bd96d24fa67",
+      "strict_remaining_unmarked_spaces": 103,
+      "vera_failed_checks": 104
+    },
+    "candidate002": {
+      "PDF_SHA256": "01b12d3ca7c2d125443f1ccda7b213220d742780a881b04f20891877cc9575ba",
+      "report_SHA256": "a8ba3a89ec601d18ea7784244110948a316d2789a31be3e3b2eb0c1e5857b68b",
+      "strict_remaining_unmarked_spaces": 103,
+      "vera_failed_checks": 104,
+      "cause": "Production font guard rejected legitimate unrelated CMap bfranges, leaving verified no-outline U+0020 Tj unmarked."
+    },
+    "temporary_probe_corrections": [
+      "Direct MCR/OBJR identity collisions in initial tool were corrected, with old false positive versus new two-MCID positive independently demonstrated.",
+      "Source parser accepts only exact pdf-imaging-hand-example wrapper first-child actual h3; three negative controls reject unrelated wrapper/intervening content/missing target ID.",
+      "pypdf original-byte regeneration adding FEFF and JSON BooleanObject serialization failures were temporary probe issues, not PDF source defects."
+    ]
+  },
+  "content_repair_scope": {
+    "artifact_text_operations": 103,
+    "only_verified_no_outline_spaces_marked": true,
+    "basis": "Earlier exact 103 font CID0003 mappings were independently proven U+0020, Identity glyph3 space with zero contours. Candidate003 strict full scan now has zero unmarked text/path/image operations. No visible math/path/image classified as Artifact by this review.",
+    "final_PDF_each_artifact_independently_rechecked": {
+      "count": 103,
+      "proof_SHA256": "e59b06376159a024d5c6375626de5c5537fc30efc7d7407de7c140ad29b33488",
+      "all_singleCID0003_U0020_zeroContours": true
+    }
+  },
+  "human_validation_not_completed": {
+    "complete_940_page_visual_review": false,
+    "screen_reader_AT_workflow": false,
+    "full_spoken_math_meaning_and_usability": false,
+    "full_semantic_reading_order": false,
+    "table_header_association_meaning": false,
+    "all_figure_alternative_text_adequacy": false,
+    "all_link_description_usefulness": false,
+    "keyboard_user_task_usability": false
+  },
+  "conformance_statement": {
+    "complete_PDF_UA_compliant": false,
+    "UA_identification_added_by_role": false,
+    "human_AT_pass_claimed": false,
+    "machine_content_rules_passed": true
+  },
+  "formal_repository_writes_by_role": 0,
+  "archival_instruction": "ROOT may copy this self-contained summary and listed tool/result identities into reviews; original candidate001/002 failures should remain separately identifiable."
+}

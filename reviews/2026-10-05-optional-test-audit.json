@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "permissions": {
+    "sandbox": "danger-full-access",
+    "approval": "never",
+    "sandbox_permissions_used": false
+  },
+  "repo_head_at_execution": "e257a015cb315f7af2c702e8c60e79d06f578c8f",
+  "AGENTS": {
+    "line_count": 940,
+    "sha256": "d1e34b73a95efd9b3ec1f06cf9d9db854401893bf1f7f349fa8d5d17935f27df",
+    "complete_read": true
+  },
+  "baseline": {
+    "skip_records": [
+      {
+        "id": "test_codes_ch04_upstream_doa.OriginalExecutionTests.test_current_fixed_original_methods",
+        "reason": "fixed cache and isolated SciPy/PRA environment required; no installation"
+      },
+      {
+        "id": "test_codes_ch05_upstream_beamformers.OriginalExecutionTests.test_default_cli_does_not_rewrite_saved_report",
+        "reason": "Optional SciPy and locked source cache required; no installation attempted"
+      },
+      {
+        "id": "test_codes_ch05_upstream_beamformers.OriginalExecutionTests.test_real_original_methods_without_report_write",
+        "reason": "Optional SciPy and locked source cache required; no installation attempted"
+      },
+      {
+        "id": "test_codes_damas_author_contracts.AuthorOriginalCalls.test_independent_gram_products_and_two_different_objectives",
+        "reason": "original author calls need existing SciPy/Matplotlib/fixed checkout; no substitutes or installation"
+      },
+      {
+        "id": "test_codes_damas_author_contracts.AuthorOriginalCalls.test_real_one_module_identity_and_complete_selection_are_distinct",
+        "reason": "original author calls need existing SciPy/Matplotlib/fixed checkout; no substitutes or installation"
+      },
+      {
+        "id": "test_codes_damas_author_contracts.AuthorOriginalCalls.test_single_rank_one_cleansc_is_not_a_complete_pipeline",
+        "reason": "original author calls need existing SciPy/Matplotlib/fixed checkout; no substitutes or installation"
+      },
+      {
+        "id": "test_codes_damas_author_contracts.AuthorOriginalCalls.test_zero_original_exception_and_nonunique_duplicate_not_repaired",
+        "reason": "original author calls need existing SciPy/Matplotlib/fixed checkout; no substitutes or installation"
+      },
+      {
+        "id": "setUpClass (test_codes_room_assets.ActualRoomAssetsTests)",
+        "reason": "actual PRA/SciPy asset generation is optional"
+      },
+      {
+        "id": "test_codes_room_srp_exercise.RoomSrpExerciseTest.test_actual_room_direct_component_and_audio_export_when_dependency_available",
+        "reason": "pyroomacoustics 0.10.0 and scipy are optional"
+      },
+      {
+        "id": "test_codes_smpphat_reference.SMPPHATReferenceTests.test_optional_local_c_rerun",
+        "reason": "set SMPPHAT_FFTW_PREFIX to rerun the locked C implementation offline"
+      }
+    ],
+    "skipped_count": 10,
+    "testsRun": 9,
+    "note": "setUpClass skip does not increment testsRun, and protects six methods."
+  },
+  "actual_isolated": {
+    "testsRun": 15,
+    "passed": [
+      "test_codes_ch04_upstream_doa.OriginalExecutionTests.test_current_fixed_original_methods",
+      "test_codes_ch05_upstream_beamformers.OriginalExecutionTests.test_default_cli_does_not_rewrite_saved_report",
+      "test_codes_ch05_upstream_beamformers.OriginalExecutionTests.test_real_original_methods_without_report_write",
+      "test_codes_damas_author_contracts.AuthorOriginalCalls.test_independent_gram_products_and_two_different_objectives",
+      "test_codes_damas_author_contracts.AuthorOriginalCalls.test_real_one_module_identity_and_complete_selection_are_distinct",
+      "test_codes_damas_author_contracts.AuthorOriginalCalls.test_single_rank_one_cleansc_is_not_a_complete_pipeline",
+      "test_codes_damas_author_contracts.AuthorOriginalCalls.test_zero_original_exception_and_nonunique_duplicate_not_repaired",
+      "test_codes_room_assets.ActualRoomAssetsTests.test_actual_21_members_and_both_read_only_modes",
+      "test_codes_room_assets.ActualRoomAssetsTests.test_malformed_row_shape_and_huge_numeric_fields_raise_valueerror",
+      "test_codes_room_assets.ActualRoomAssetsTests.test_missing_extra_directory_symlink_and_parent_are_rejected",
+      "test_codes_room_assets.ActualRoomAssetsTests.test_source_metadata_types_and_actual_wav_digest_reject",
+      "test_codes_room_assets.ActualRoomAssetsTests.test_strict_json_and_valid_format_zero_excitation_reject",
+      "test_codes_room_assets.ActualRoomAssetsTests.test_valid_hex_but_wrong_pra_identity_cannot_be_self_bound",
+      "test_codes_room_srp_exercise.RoomSrpExerciseTest.test_actual_room_direct_component_and_audio_export_when_dependency_available",
+      "test_codes_smpphat_reference.SMPPHATReferenceTests.test_optional_local_c_rerun"
+    ],
+    "skipped": [],
+    "errors": [],
+    "failures": [],
+    "total_elapsed_seconds_including_loading": 15.450875958000324,
+    "unittest_elapsed_seconds": 15.385,
+    "environment": {
+      "python": "/private/tmp/masp-appb-pra-venv/bin/python",
+      "python_version": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+      "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+      "packages": {
+        "numpy": {
+          "version": "2.5.3",
+          "location": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages"
+        },
+        "scipy": {
+          "version": "1.18.1",
+          "location": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages"
+        },
+        "matplotlib": {
+          "version": "3.11.2",
+          "location": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages"
+        },
+        "pyroomacoustics": {
+          "version": "0.10.0",
+          "location": "/private/tmp/masp-appb-pra-venv/lib/python3.13/site-packages"
+        }
+      }
+    }
+  },
+  "fftw": {
+    "prefix": "/private/tmp/masp-stage4-skips/fftw/fftw-prefix-verified",
+    "provenance": {
+      "source": "checksum_verified_official_archive",
+      "version": "3.3.10",
+      "archive_url": "https://fftw.org/pub/fftw/fftw-3.3.10.tar.gz",
+      "archive_sha256": "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467",
+      "header_sha256": "0dd1b988b681d5797aaf10c2c57c107f7dca510695e4b94b3855eb52550d282c",
+      "library_sha256": "7765553e9bf83a7a15939654f7ad0f39bc4b0b85b759bf54579a59ab516e51e0"
+    }
+  },
+  "original_failure_retained": {
+    "cli_exit_code": 2,
+    "numerical_status": "failed_portability",
+    "regular_diamond_srp_smp_max_abs": 76.55668610000001,
+    "perturbed_srp_smp_max_abs": 0.0,
+    "intended_signed_lookup_failed_both_cases": true,
+    "diagnosis_verified_both_cases": true,
+    "old_report_not_modified": true
+  },
+  "protection": {
+    "files": 792,
+    "all_sha_mtime_equal": true,
+    "changed_files": [],
+    "caches": [
+      "pyroomacoustics",
+      "doatools",
+      "pb_bss",
+      "damas-author",
+      "smpphat"
+    ],
+    "all_head_origin_status_ignored_equal": true,
+    "changed_caches": []
+  },
+  "sources": {
+    "AGENTS.md": "d1e34b73a95efd9b3ec1f06cf9d9db854401893bf1f7f349fa8d5d17935f27df",
+    "requirements.txt": "9e9d519db26dd13f8fec96fab9f77c8cae4dd26d5127ee7c3b82911e884f36ae",
+    "codes/chapters/ch04/examples/reproduce_smpphat_reference.py": "e6955e757401f5f34cba04208c15d4c2a15354745c9f2cb6acf1bea37e3b97b6",
+    "codes/chapters/ch04/examples/reproduce_smpphat_harness.c": "4d5eed9509c5a69771c69b3c1ff006c00f37ecf739acdb2ac6bb26e03e463d0c",
+    "tests/test_codes_ch04_upstream_doa.py": "c382888ba17a0295f80dc3eaa54f2a8e501858eb6e5d376e0976ea817966a6e6",
+    "tests/test_codes_ch05_upstream_beamformers.py": "96eaf35e0a564dbc7c9dd3b378972ce5e0b711c82d7d1f5c53f5bef832d62d99",
+    "tests/test_codes_damas_author_contracts.py": "5927f7000aca0b3148ceb4296fc8144bb30cd221468f2f1788505596aba333ea",
+    "tests/test_codes_room_assets.py": "a534e6dc97c84b72abd74ed4183398d7ed09a4c2afffd097c6dbc733857517b7",
+    "tests/test_codes_room_srp_exercise.py": "af8f6cfe3b9b647fd57be9d64af6b55d3822c7aa521d89827b2478f386fc102b",
+    "tests/test_codes_smpphat_reference.py": "5e827d199c4f6510790ac61fbf75ccff19c04eb187faf8c596b43d7666c1d7bc"
+  },
+  "evidence": {
+    "main-baseline.json": {
+      "path": "/private/tmp/masp-stage4-skips/main-baseline.json",
+      "sha256": "d0312e058b26ac4291b4c603c94e895461745b792794d70fce09880cf71c566f"
+    },
+    "main-baseline.log": {
+      "path": "/private/tmp/masp-stage4-skips/main-baseline.log",
+      "sha256": "9a68cfae1a7554b56e2a97fbb0b7e7f37c515955318fa5164c7c2b3e887bd62b"
+    },
+    "isolated-actual.json": {
+      "path": "/private/tmp/masp-stage4-skips/isolated-actual.json",
+      "sha256": "62d02ea4c580791c2121475b06dd4b14487419fd2d168c7ed371d1942138569d"
+    },
+    "isolated-actual.log": {
+      "path": "/private/tmp/masp-stage4-skips/isolated-actual.log",
+      "sha256": "c805b87150dc664ba6db960efd5a88ac013e875c1da6a1df37b10152f5e6ee8d"
+    },
+    "isolated-environment.json": {
+      "path": "/private/tmp/masp-stage4-skips/isolated-environment.json",
+      "sha256": "c49adfd8e1348e9c8bb41ad7fffb290624a6286254ee7c5eb4bf50c7799754c2"
+    },
+    "fftw-provenance.json": {
+      "path": "/private/tmp/masp-stage4-skips/fftw-provenance.json",
+      "sha256": "21ee29e15df43730cac27245033f1f1a1226cafb51dceaf13c89c95b9e2784be"
+    },
+    "fftw-build.log": {
+      "path": "/private/tmp/masp-stage4-skips/fftw-build.log",
+      "sha256": "0b3050039309ef9caeab84d4a1b7c01b5511c7f6f6e3b41d37088b39353a29e5"
+    },
+    "smp-diagnosis.json": {
+      "path": "/private/tmp/masp-stage4-skips/smp-diagnosis.json",
+      "sha256": "4ba5ebad526abca511c927b6e21c77b51fe5bd5116bc3b6143a59baecdb8a5ba"
+    },
+    "smp-diagnosis.log": {
+      "path": "/private/tmp/masp-stage4-skips/smp-diagnosis.log",
+      "sha256": "a208c0ac293c4131fc7ef7fe3f0e9f31aacbc43a0956d49d93292be46dec7552"
+    },
+    "smp-diagnosis-summary.json": {
+      "path": "/private/tmp/masp-stage4-skips/smp-diagnosis-summary.json",
+      "sha256": "370891f52aa6608cbf36d11d5a81caf89283c830e1c8bbc8341328ba87e2960f"
+    },
+    "protected-before.json": {
+      "path": "/private/tmp/masp-stage4-skips/protected-before.json",
+      "sha256": "0805ce3a39c2e82088a18af8c624d33c740cf7182df1a88c20c9fdb0913a40c2"
+    },
+    "protected-final.json": {
+      "path": "/private/tmp/masp-stage4-skips/protected-final.json",
+      "sha256": "0805ce3a39c2e82088a18af8c624d33c740cf7182df1a88c20c9fdb0913a40c2"
+    },
+    "run_selected.py": {
+      "path": "/private/tmp/masp-stage4-skips/run_selected.py",
+      "sha256": "eb6deffc7c64781fddb849d7e747240e404f7e9ab78008932b6426a1951cd91f"
+    },
+    "build_fftw.py": {
+      "path": "/private/tmp/masp-stage4-skips/build_fftw.py",
+      "sha256": "fe51aa5bff8595b3d785f627dd56bb2cc868377a8a960f68b63d10c9b74621f4"
+    },
+    "protect.py": {
+      "path": "/private/tmp/masp-stage4-skips/protect.py",
+      "sha256": "d033075899820d722f9b1df185ec7125a1d0549ec0dd9dbf59c6c56150890de1"
+    }
+  },
+  "readme_recommendations": [
+    {
+      "file": "README.md",
+      "original_line": 185,
+      "issue": "Path C old13.3/13.6 must be15.3/15.6."
+    },
+    {
+      "file": "README_EN.md",
+      "original_line": 186,
+      "issue": "Same stale appendix section references."
+    },
+    {
+      "file": "codes/chapters/ch00/research/README.md",
+      "original_line": 10,
+      "issue": "22 content pages excludes4legacy pages. Actual site26HTML."
+    },
+    {
+      "file": "README.md / README_EN.md / scripts/README.md",
+      "issue": "Generation block only subset; link complete27 independent asset entrypoints or enumerate complete pipeline before80plots. Existing assets checks do not prove clean regeneration."
+    },
+    {
+      "file": "scripts/README.md",
+      "original_line": 242,
+      "issue": "12 extracted functions31cases is oldreport scope. Current13AST33cases; name/link current upstream_beamformers_current.json separately from historical31."
+    },
+    {
+      "file": "README.md / README_EN.md / scripts/README.md",
+      "issue": "Distinguish optional SciPy/PRA/native dependency tests and mandatory base tests;10skip records expand15 methods; absence not algorithm failure. Existing isolated env is local evidence, not a guaranteed portable path."
+    },
+    {
+      "file": "README.md / README_EN.md / scripts/README.md",
+      "issue": "Official PDF release explicitly fixed cover date; default allowed for preview. Fixed date alone not wholePDF bit reproducibility."
+    }
+  ],
+  "reproducible_test_recipe": {
+    "dependency_versions": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "matplotlib": "3.11.2",
+      "pyroomacoustics": "0.10.0"
+    },
+    "condition": "fixed caches per lock; isolated env executable; checksum verified compiled float FFTW prefix; original skip decorators retained",
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tests SMPPHAT_FFTW_PREFIX=/path/to/verified/fftw-prefix /path/to/isolated/bin/python -m unittest test_codes_ch04_upstream_doa.OriginalExecutionTests test_codes_ch05_upstream_beamformers.OriginalExecutionTests test_codes_damas_author_contracts.AuthorOriginalCalls test_codes_room_assets.ActualRoomAssetsTests test_codes_room_srp_exercise.RoomSrpExerciseTest.test_actual_room_direct_component_and_audio_export_when_dependency_available test_codes_smpphat_reference.SMPPHATReferenceTests.test_optional_local_c_rerun -v",
+    "fftw_build_runner": "python -B -m codes.chapters.ch04.examples.reproduce_smpphat_reference --download-fftw --work-dir /private/tmp/new-fftw-work --output /private/tmp/new-smpphat-diagnosis.json",
+    "fftw_build_note": "Downloads/compiles only pinned official archive. Original native diagnosis legitimately returns2; do not use allow-known-portability-failure to claim numeric success."
+  },
+  "scope_limits": [
+    "Not a second whole suite run.",
+    "Main .venv still lacks SciPy/PRA; original10skips remain its honest result. All their15methods actually executed isolated.",
+    "No repository/source/test/skipdecorator/upstream cache/official report modifications. ROOT independently edits README concurrently.",
+    "No audio human listening or PDF/UA audit in this role.",
+    "Native tests are bounded harness calls, not entire C package or paper benchmark.",
+    "FFTW build/archive evidence separate from run supplied-prefix identity, linked exactheader/staticlibrarySHA.",
+    "No claimed full Python dependency closure.",
+    "Cached ignored status equality was independently recorded forfive selected caches."
+  ],
+  "self_script_failure_retained": "summary first used wrong name key; actualschema case fixed in warehouse only."
+}

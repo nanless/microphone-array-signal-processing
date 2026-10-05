@@ -2,3 +2,9 @@
 *.png binary
 *.wav binary
 *.npz binary
+
+# Preserve fixed upstream rule bytes, including their original blank lines.
+scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json whitespace=-blank-at-eol,-blank-at-eof
+scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json whitespace=-blank-at-eol,-blank-at-eof
+# The CSV snapshot uses the standard csv.writer CRLF record terminator.
+reviews/2026-10-05-human-listening-register.csv whitespace=cr-at-eol

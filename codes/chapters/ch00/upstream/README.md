@@ -114,4 +114,19 @@ Vo RFS 追踪源码归档单独取得和核验：
 .venv/bin/python -B codes/chapters/ch00/upstream/fetch_upstreams.py --project damas-author
 ```
 
-固定作者提交`61987952e2237e6b088a169ee891dd96576f2565`的21个GPLv3文本已取得，共74510字节。完整许可和源通知保留在独立忽略工作树；三份MAT数据、预编译MEX不在选集。本轮未运行MATLAB/MEX或作者论文实验。原矩阵产品、CSM与扫描NNLS目标以及Python原边界见[源码复现研究§13](../research/04_source_reproduction.md#imaging-author-source)。
+固定作者提交`61987952e2237e6b088a169ee891dd96576f2565`的21个GPLv3文本已取得，共74510字节。完整许可和源通知保留在独立忽略工作树；三份MAT数据、预编译MEX不在选集。已登记的限定实验未运行MATLAB/MEX或作者论文大实验。原矩阵产品、CSM与扫描NNLS目标以及Python原边界见[源码复现研究§13](../research/04_source_reproduction.md#imaging-author-source)。
+
+
+## 当前入口与结果怎样对应
+
+主锁表登记115个Git项目，归档来源单独管理；当前完整选集政策为32条排除规则。项目计数、已取得工作区、选集核验通过数和已运行方法数分别读取锁表、状态报告及所属章方法报告，不以下载数量替代算法覆盖。
+
+```bash
+.venv/bin/python codes/chapters/ch00/upstream/fetch_archives.py --verify --report tmp/archive-verification.json
+```
+
+上述命令只核默认本地忽略缓存并写新的有限JSON报告；自定义缓存须加同一 `--destination`，缺失或不一致如实失败。普通核查可使用 `tmp/` 新报告，不覆盖历史方法结果。若要更新全书当前 `SOURCE_STATUS.json` 或 `ARCHIVE_SOURCE_STATUS.json`，用对应工具实际核验生成，不能手工修改状态。
+
+下载失败、完整选集不匹配、所用原文件身份核验、方法执行失败和未执行是不同结果。限定调用可在独立核所用固定源码与直接依赖后记录，但不能把整选集失败改成通过。共享缓存的修改和原字节码保留；隔离依赖/补丁放仓外并另记，不能把补丁行为写成原版本行为。
+
+按当前学习顺序，成像原实现对应第12章 `codes.chapters.ch12.examples`，分布式原接口对应第13章 `codes.chapters.ch13.examples`；附录A/B仍使用 `appendix_a`/`appendix_b` 模块名。精确入口与运行条件见[按章目录](../../README.md)和[构建说明](../../../../scripts/README.md#optional-verification)。本目录工具与所有README命令均从仓库根目录执行。

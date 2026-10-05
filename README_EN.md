@@ -1,52 +1,14 @@
 # An Accessible Guide to Microphone Array Signal Processing
 
-A beginner-friendly Chinese tutorial on microphone array signal processing at graduate-entry level. It starts with “why use an array of microphones” and covers DOA estimation, beamforming, acoustic echo cancellation (AEC), dereverberation (WPE), speech separation, source tracking, engineering practice, and system selection.
+A Chinese tutorial for beginners and graduate-entry readers, covering array signal models, geometry, direction-of-arrival estimation (DOA), beamforming, acoustic echo cancellation (AEC), weighted prediction error dereverberation (WPE), separation, tracking, engineering and system selection. Chapters 12 and 13 extend the discussion to acoustic imaging and distributed enhancement; Chapters 14 and 15 are Appendices A and B. The English README documents the project; the chapters and research handbook are in Chinese.
 
-The tutorial provides derivations, reproducible numerical examples, validity limits, 80 script-generated numbered figures plus one supplementary room-exercise figure, and chapter-owned teaching code. It has 360 executable exercises and 109 [main-manifest synthetic WAVs](codes/chapters/ch00/audio/MANIFEST.json) in 27 groups. The [exercise and audio handbook](codes/chapters/ch00/research/05_exercises_and_audio.md) gives inputs, answers, listening conditions, and code entry points. These sounds are mathematical samples, not natural speech or formal listening tests; two Chapter 6 AEC audio groups also use parameters that do not exactly match exercises E06-07–20.
+The book connects definitions, derivations, worked calculations, executable examples and failure boundaries. It contains **360 executable exercises**, **80 numbered figures** and **one supplementary room-exercise figure**. Start with the [guide](chapters/00_overview.md), find implementations in the [chapter code map](codes/chapters/README.md), and use the [exercise handbook](codes/chapters/ch00/research/05_exercises_and_audio.md) for individual inputs, answers and experiment conditions.
 
-Chapter 4 provides [four independent known-unitary focusing WAVs](codes/chapters/ch04/focus_audio/MANIFEST.json). Steady-window phasors and actual PCM demonstrate multifrequency covariance rank for coherent sources; directions and tagged components are known, so this is not blind localization or a formal listening test.
+Audio has three separate inventories: **109 mathematical synthetic WAVs in 27 main-manifest groups**, **154 synthetic WAVs in 27 independently managed sets**, and **four DEMAND excerpt/derived WAVs**. The [complete audio inventory](codes/chapters/README.md#audio-inventory) identifies each manifest and generating entry point. These 267 source WAVs have 267 website copies; copies are not additional experiments. Known targets, masks, paths, covariance or clock rates are stated truth controls, not evidence of blind estimation, natural speech quality or device performance. The [DEMAND documentation](codes/chapters/ch02/real_audio/README.md) records separate data licensing and measurement limits.
 
-Chapter 5 provides [four independent derivative-constraint WAVs](codes/chapters/ch05/derivative_audio/MANIFEST.json). The same two-tone target and observation noise compare single-constraint and zero-derivative weights. Target distortion, noise cost and actual PCM reference error are reported separately, with a shared causal reference and no fitted gain or time alignment. These are synthetic examples, not speech or device recordings.
-
-Chapter 6 provides [six independent colored-reference APA WAVs](codes/chapters/ch06/apa_audio/MANIFEST.json). NLMS and two APA orders share one reference and path, train before a frozen holdout, and retain all 13 nonzero tail samples. Float component truth and actual PCM total power use separate measurements. Higher order has larger noisy holdout error in this fixed example; it is not a speech-quality or device ranking.
-
-Chapter 6 also provides [six known playback-gain and echo-tail WAVs](codes/chapters/ch06/reference_audio/MANIFEST.json) for E06-40–42 and Figure 74. A frozen known path compares early reference, gain applied after prediction, and late reference. All 100 ms of tail are retained; analytic, float and actual PCM integer powers use separate windows. A current-frame `near_only` activity label does not establish near-end speech.
-
-Chapter 7 adds [six known arrival and history WAVs](codes/chapters/ch07/delay_audio/MANIFEST.json) for E07-22–24 and Figure 75. The controls trace source-time indices and compare one real regressor with prescribed delays; they do not run blind alignment or full STFT-WPE. A separate calculation distinguishes late-reverberant power decay from amplitude decay.
-
-Chapter 7 adds [six independent known-path inverse WAVs](codes/chapters/ch07/mint_audio/MANIFEST.json). One four-tone source and shared post-path noise compare exact inversion with a constrained regularizer. The complete 512-sample tail is retained; theoretical noise gain and actual 27,200-sample PCM reference error are separate. This is not blind WPE, a measured room or a general MINT implementation.
-
-Chapter 8 adds [six known-mask representation WAVs](codes/chapters/ch08/mask_audio/MANIFEST.json). Two tones compare bounded real, unbounded real and complex masks. A common envelope follows the full-record known-bin operation; analytic and actual 27,200-sample PCM errors are separate. No mask is estimated from a recording.
-
-Chapter 10 adds [six noise-estimation mismatch WAVs](codes/chapters/ch10/noise_audio/MANIFEST.json). Shared target and changing noise compare a clean-prefix fixed estimate, a target-contaminated estimate and an offline known-variance control. Float target distortion, residual noise and their cross term are separate from actual PCM total error; the control uses extra truth, not blind adaptive estimation.
-
-Chapter 11 adds [eight two-scenario selection WAVs](codes/chapters/ch11/scenario_audio/MANIFEST.json). Single- and two-tone targets share a 3500 Hz interferer and compare 3/9-tap FIR filters with a complete eight-sample tail. Actual integer PCM errors distinguish fixed scene weights, worst weights within an interval and worst individual scenes; they are not device rankings.
-
-Chapter 11 adds [scoring-event and physical-candidate exercises](chapters/11_selection-guide.md#e11-26). Valid empty output, missing output and scoring failures retain separate events and denominators. Figure 79 compares one known three-microphone model after WNG and complex-response constraints; missing measured device latency leaves full selection undetermined. Current original-interface and native-kernel reports preserve execution limits and failures; historical reports remain intact.
-
-Appendix A adds [five known-noise-weight WAVs](codes/chapters/appendix_a/weighted_audio/MANIFEST.json). The same two-channel synthetic input compares equal, correct variance and reversed weights over 28800 samples. Analytic, floating-component and actual integer PCM errors remain separate; covariance estimation, random independence and speech quality are not tested.
-
-Chapter 3 also provides [three independent geometry WAVs](codes/chapters/ch03/geometry_audio/MANIFEST.json): a 32 kHz two-tone source and six-channel observations from two directions. Phase evidence uses the stated steady window and actual PCM, rather than playback or the transient envelope.
-
-Ten other independently catalogued synthetic sets provide [five binaural time/level cue WAVs](codes/chapters/ch01/binaural_audio/MANIFEST.json), [four known-FIR/source-spectrum controls](codes/chapters/ch01/spectral_audio/MANIFEST.json), [three finite-window STFT convolution WAVs](codes/chapters/ch02/stft_audio/MANIFEST.json), [four known-excitation system-identification WAVs](codes/chapters/ch02/sweep_audio/MANIFEST.json), [six known-direction baseline/time source, training and held-out WAVs](codes/chapters/ch03/baseline_audio/MANIFEST.json), [five GSS WAVs and intermediate state](codes/chapters/ch08/gss_audio/MANIFEST.json), [three moving-source WAVs and trajectory truth](codes/chapters/ch09/moving_audio/MANIFEST.json), [two observation-to-tracking WAVs and frame records](codes/chapters/ch09/tracking_audio/MANIFEST.json), [four coherent-reflection controls](codes/chapters/ch04/reflection_audio/MANIFEST.json), and [18 Appendix B white-noise room WAVs](codes/chapters/appendix_b/room_audio/MANIFEST.json) with a chart and [numerical report](codes/chapters/appendix_b/room_audio/RESULTS.json). None belongs to the main 109. A real synchronized DEMAND excerpt and three derivatives have separate [data and license documentation](codes/chapters/ch02/real_audio/README.md).
-
-Use the [chapter code map](codes/chapters/README.md) to find teaching implementations, experiments, and reports, each with its stated scope. Chapter 6's [SpeexDSP interface probe on a real paired recording](codes/chapters/ch00/research/02_aec_wpe_separation.md#aec) uses local cached material only; it does not redistribute the recording or measure clean-component ERLE. The [source research handbook](codes/chapters/ch00/research/README.md) details algorithms, industrial configurations, original sources and licenses, executed experiments, and unverified boundaries.
+The [source research handbook](codes/chapters/ch00/research/README.md) connects algorithms to fixed source versions, industrial interfaces and actual experiments. Source acquisition, static inspection, method execution and complete-system validation are reported separately. External caches are Git-ignored; their README files and source are preserved as upstream evidence. Browser playback and PCM measurements do not substitute for a recorded human listening test; a tagged PDF does not by itself establish PDF/UA conformance.
 
 中文版：[README.md](README.md)
-
-Appendix B adds [five equal-RIR-DRR response WAVs](codes/chapters/appendix_b/response_audio/MANIFEST.json). Two known short FIRs have equal reflection energy but different responses to the same 2/4 kHz tones. A complete two-sample tail, common gain 1 and 28800-sample analytic, floating and integer PCM scores remain separate; these are not recorded rooms or speech listening tests.
-
-Extension II adds [17 distributed-enhancement WAVs](codes/chapters/ch13/distributed_audio/MANIFEST.json), comparing local, centralized and compressed outputs, known-rate clock correction and two missing-packet policies. Analytic, float and actual integer PCM scores are separate. These known instantaneous mixtures do not run blind DANSE or network hardware.
-
-Extension I adds [five imaging snapshot WAVs](codes/chapters/ch12/imaging_audio/MANIFEST.json): shared source and export gain 1, a complete four-sample propagation tail, and separate analytic, float and actual PCM CSMs. Balanced snapshot phase codes cancel the declared cross term; this is not evidence of random independence or industrial mapping performance.
-
-Extension I adds [E12-17/18](chapters/12_acoustic-imaging.md#e12-17), deriving the full-CSM Gram relation and demonstrating collective ambiguity despite distinct propagation columns. Figure 80 compares two objectives on the same valid CSM. Nine original author-module controls retain eight numerical matches and one original exception; source acquisition does not claim a full industrial experiment.
-
-Chapter 8 adds [four fixed-slot polarity/gain WAVs](codes/chapters/ch08/css_audio/MANIFEST.json), E08-30–32 and Figure 76. The calculations distinguish consistency order, PCA target loss and overlap gain fitting; the audio does not run a blind CSS separator.
-
-Chapter 9 adds E09-24–26 and Figure 77: complete IMM mode densities through missing observations, a one-slot lifecycle driven by existing PCM, and known-pose rotation with a static vMF update. The examples reuse the five independent WAVs; local track IDs do not establish speaker identity. See the [exercise handbook](codes/chapters/ch00/research/05_exercises_and_audio.md#tracking-model-lifecycle-sphere-exercises).
-
-Chapter 10 adds E10-34, six independent known-channel-failure WAVs and Figure 78. It rebuilds the selected observations, target response and covariance together, distinguishes target preservation from total PCM error, and separates cumulative RTF from frame service RTF. Four current industrial-interface reports preserve the historical reports. See the [reproducible experiment](codes/chapters/ch00/research/05_exercises_and_audio.md#known-channel-failure-exercise).
 
 ## Layout
 
@@ -65,11 +27,13 @@ Chapter 10 adds E10-34, six independent known-channel-failure WAVs and Figure 78
 | `codes/chapters/ch02/stft_audio/`, `codes/chapters/ch03/geometry_audio/` | Two further independent synthetic sets, three WAVs each; complete convolution and steady-window multifrequency phase have separate scores, source hashes and PCM manifests |
 | `codes/chapters/ch04/focus_audio/` | Four independent known-unitary focusing WAVs: two mono sources and two four-channel observations, with steady-window multifrequency rank scores |
 | `codes/chapters/ch05/derivative_audio/` | Four independent derivative-constraint WAVs: one mono reference, a three-channel array and two outputs, with eight source hashes and actual PCM reference errors |
+| `codes/chapters/ch05/phase_audio/` | Three known per-frequency phase controls with separate phase, power and integer PCM errors |
 | `codes/chapters/ch06/apa_audio/` | Six colored-reference APA WAVs: training and frozen holdout, a complete 13-sample tail and separate float/PCM scores |
 | `codes/chapters/ch06/reference_audio/` | Six known playback-gain/tail WAVs: frozen path, complete 1600-sample tail and windowed integer scores |
 | `codes/chapters/ch07/delay_audio/` | Six known arrival/history WAVs, one real regressor, common receiver clock and actual integer scores |
 | `codes/chapters/ch07/mint_audio/` | Six known sparse-path inverse WAVs: complete 512-sample tails, common gain and an independent parameter/score manifest |
 | `codes/chapters/appendix_b/response_audio/` | Five known short-FIR equal-DRR contrasts, with four source hashes, full tails, common gain and actual integer PCM scores |
+| `codes/chapters/ch08/css_audio/` | Four fixed-slot polarity/gain controls; overlap fitting and two scoring windows, without blind CSS |
 | `codes/chapters/ch08/mask_audio/`, `codes/chapters/ch10/noise_audio/` | Two independent mathematical synthetic sets with six WAVs each; known-mask representations and fixed noise-estimate mismatch retain separate analytic, floating and actual PCM scores |
 | `codes/chapters/ch11/scenario_audio/`, `codes/chapters/appendix_a/weighted_audio/` | Eight selection-scenario WAVs and five known-noise weighting WAVs, each with its own manifest, common gain, scoring window and integer denominators |
 | `codes/chapters/ch13/distributed_audio/` | 17 independent 16 kHz mathematical WAVs; common gain 1, 28800-sample steady and 800-sample packet scores with frozen source hashes |
@@ -106,87 +70,58 @@ Chapter 10 adds E10-34, six independent known-channel-failure WAVs and Figure 78
 
 ## Quick start
 
+Run from the repository root. Python 3.13 is the recorded validation environment; the exact main dependencies are pinned in [requirements.txt](requirements.txt). Windows uses `.venv\Scripts\python.exe` in place of `.venv/bin/python`.
+
 ```bash
-# 1. Virtualenv and dependencies
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-# Optional room simulation uses pyroomacoustics 0.10.0 in a separate environment; see scripts/README.md
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch02_05_baselines
+.venv/bin/python -m codes.chapters.ch00.cross_chapter.ch06_09_baselines
+.venv/bin/python -m codes.chapters.ch10.examples.ch10_engineering_baselines
+.venv/bin/python -m codes.chapters.ch04.chapter04_experiments
+.venv/bin/python -m codes.chapters.ch12.chapter12_exercises
+.venv/bin/python -m codes.chapters.ch13.chapter13_exercises
+```
 
-# 2. Run the equation-level teaching baselines and their regression tests
-.venv/bin/python codes/chapters/ch00/cross_chapter/ch02_05_baselines.py
-.venv/bin/python codes/chapters/ch00/cross_chapter/ch06_09_baselines.py
-.venv/bin/python codes/chapters/ch10/examples/ch10_engineering_baselines.py
-.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_spatial
-.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_enhancement
-.venv/bin/python -m codes.chapters.ch06.aec_advanced_exercises
-.venv/bin/python -m codes.chapters.ch06.aec_algorithm_minicases
-.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
-.venv/bin/python -m unittest discover -s tests -p 'test_codes*.py' -v
+These examples print their results. The chapter map and exercise handbook list the other chapter and cross-chapter runners; one runner does not execute all 360 exercises. Some exercises read the committed PCM assets and fail if their source or manifest is stale.
 
-# 3. Generate the main and independent audio assets before the 80 figures; Figures 70 and 72 also read the distributed-audio manifest
-.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py
-.venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio
-.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # six known gain/tail WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo
-.venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio  # six known arrival/history WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo
-.venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch
-.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio  # 已知坏麦六独立WAV与清单
-.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 scenario WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 5 known-noise-weight WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 5 equal-DRR response WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio  # 5 snapshot WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio  # 17 independent WAVs; --check is read-only
-.venv/bin/python -m codes.chapters.ch05.examples.generate_phase_audio  # E05-23; --check is read-only
-.venv/bin/python scripts/make_figures.py
-.venv/bin/python scripts/make_aec_figures.py
-.venv/bin/python scripts/make_beamforming_figures.py  # figure 73: checked actual PCM
-.venv/bin/python scripts/make_reference_figures.py  # figure 74: actual PCM gain/tail controls
-.venv/bin/python scripts/make_delay_figures.py  # figure 75: known arrivals and actual PCM history controls
-.venv/bin/python scripts/make_css_figures.py  # figure 76: fixed-slot polarity/gain and actual PCM
-.venv/bin/python scripts/make_tracking_figures.py  # figure 77: actual PCM lifecycle and two clocks
-.venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
-.venv/bin/python scripts/make_selection_figures.py  # Figure 79: shared physical model, acoustic constraints and missing device evidence
-.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
+The repository includes the published audio and figures. To rebuild the website and PDF from these assets:
 
-# 4. Build the multi-page site (outputs site/*.html)
+```bash
 .venv/bin/python scripts/build_site.py
-# Open site/index.html in a browser (double-click works; formulas need internet for MathJax)
-
-# 5. Build the combined PDF (uses bundled MathJax 3.2.2 resources offline;
-#    requires local Google Chrome; set CHROME_BIN on non-macOS)
-.venv/bin/python scripts/build_pdf.py
-# For a reproducible cover date, add --build-date YYYY-MM-DD or set SOURCE_DATE_EPOCH
-
-# 6. Pre-release checks
-.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check
+.venv/bin/python scripts/build_pdf.py --build-date 2026-10-05
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/quality_check.py
 ```
 
-Acquire official reference sources and verify local checkouts (Git required; acquisition needs network access):
+Open `site/index.html` for the tutorial or `site/research/index.html` for the handbook. Website formulas load MathJax over the network. The PDF uses bundled MathJax 3.2.2 offline and requires Google Chrome; set `CHROME_BIN` to the Chrome executable when it is not at the default macOS path. Choose the intended cover date, or use `SOURCE_DATE_EPOCH`; this fixes the cover date, not every binary output byte.
+
+For complete regeneration, follow the [ordered audio and figure commands](scripts/README.md#audio-regeneration). Generate the main set and all 26 independent NumPy-based sets before the nine plotting entry points. The remaining independent room set requires isolated `pyroomacoustics==0.10.0`; DEMAND is prepared separately from its fixed archive. Do not overwrite an individual WAV or modify a generated manifest to bypass verification. Every ordinary generator supports read-only `--check`; room verification uses `check_room_assets`, while actual room simulation has a separate `--run` path.
+
+Optional tests may skip when SciPy, fixed upstream caches, a compiler or FFTW is absent. A successful test command can therefore contain skipped checks. Read the reported reasons and the [optional verification instructions](scripts/README.md#optional-verification); installing main dependencies does not install every upstream system.
+
+## Reference sources and evidence
 
 ```bash
+.venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --list
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --all --report tmp/source-acquisition.json
 .venv/bin/python codes/chapters/ch00/upstream/fetch_upstreams.py --verify --report tmp/source-verification.json
 ```
 
-The tool preserves separate repositories and notices, omits common model/audio assets, and does not install or execute upstream programs. Source verification and experimental reproduction are recorded separately; see the [acquisition guide](codes/chapters/ch00/upstream/README.md).
+Acquisition needs network access and Git. Offline verification preserves mismatched or locally modified caches and reports failures; it does not repair them or execute algorithms. Official non-Git archives use a separate lock and tool. See the [acquisition guide](codes/chapters/ch00/upstream/README.md), [coverage table](codes/chapters/ch00/COVERAGE.md) and [third-party licenses](codes/chapters/ch00/THIRD_PARTY.md).
 
-The official HARKTOOL5 source archive uses separate SHA-256 locks, `fetch_archives.py`, and a verification report. The same guide documents its commands, restricted license, and selected source scope.
-
-External formulas, algorithms, datasets, and standards should link to a DOI, standards body, or official project page whenever possible. Verify the cited title, authors, year, and exact table or section; an accessible URL alone is not sufficient evidence.
-
-`codes/chapters/README.md` explains the boundary between the small teaching implementations and external reference systems. Review code, model, and dataset licenses separately.
+The repository has no root `LICENSE` or `COPYING`; public access does not establish permission to redistribute the book or its teaching code. Upstream code, model weights and datasets have independent terms. DEMAND derivatives retain their documented CC BY-SA 3.0 license.
 
 ## Learning paths
 
-- **Path A (from scratch, self-paced units)**: Guide → 01 → 11.1/11.3 → 02/03 → 04 (GCC+SRP) → 05 (DSB+MVDR) → 06/07/08 → 09 → run the teaching code for the chapters studied and reproduce their corresponding figures.
-- **Path B (deployment)**: 11.1/11.2/11.3 for plan A/B/C → 05/06/07/08 → full Ch 10 → run the Ch. 10 engineering baselines → output latency/sync/calibration budgets.
-- **Path C (research frontier)**: 02 (CRLB) → 03 (sparse arrays) → 04/05 frontier → 06/07/08 → 13.3 eight frontiers + 13.6 exercises.
+- **Foundations**: guide → Chapter 1 → Sections 11.1–11.3 → Chapters 2/3 → GCC/SRP in Chapter 4 → DSB/MVDR in Chapter 5 → Chapters 6–9. Reproduce the relevant examples and explain their assumptions.
+- **Engineering**: define task and acceptance criteria in Chapter 11 → choose modules from Chapters 5–8 → read Chapter 10 → produce latency, synchronization and calibration budgets. Hardware timing and acoustic quality require measurements on the target system.
+- **Research**: information bounds in Chapter 2 → geometry in Chapter 3 → the relevant Chapters 4–9 → [Section 15.3](chapters/15_appendix-guide.md#153-研究前沿速览2024) and [Section 15.6](chapters/15_appendix-guide.md#156-思考与练习). Use Chapter 12 for source-map inversion and Chapter 13 for distributed waveform enhancement; fix dataset, version and scoring protocol before comparing results.
 
-## Conventions
+## Conventions and validation limits
 
-- Core equations that are referenced across sections use MathJax `\tag{chapter-index}` labels and are cited as “see Eq. (5-1)”.
-- Abbreviations spelled out on first use; dB uses 10log (power) / 20log (amplitude).
-- Benchmark numbers always carry conditions and sources; simulation numbers carry implementation notes.
+Core referenced equations use `\tag{chapter-index}` and citations such as Eq. (5-1). Define dimensions, units, conjugation, coordinate axes and delay signs before calculation. Power ratios use 10 log10; amplitude ratios use 20 log10 when the corresponding power is proportional to squared amplitude. Each numerical claim retains its input, reference, alignment, scoring region and source.
+
+The combined PDF uses offline SVG mathematics with fixed English structural descriptions, checking every source identity against its actual MCID. Mathematical meaning and assistive-technology reading order still require human verification. Technical audio checks cover all 267 published sources; the human listening register remains unexecuted. See the [audio acceptance materials](codes/chapters/README.md#音频技术检查与真人听辨记录).
+
+The publication check validates structure, links, source digests and PDF destinations. It does not establish subjective audio quality, correct assistive-technology reading order or full PDF/UA conformance. The [build guide](scripts/README.md) documents the current checks and limitations.

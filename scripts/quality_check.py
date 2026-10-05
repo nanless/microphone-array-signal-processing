@@ -1488,7 +1488,7 @@ def source_digest():
                     if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
-              ("build_pdf.py", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py", "make_selection_figures.py")]
+              ("build_pdf.py", "pdf_math.js", "make_figures.py", "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py", "make_selection_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
     for path in paths:
@@ -1566,6 +1566,89 @@ def pdf_page_is_sparse(extracted_text: str, image_count: int, page_no: int) -> b
     return page_no > 5 and image_count == 0 and 0 < len(visible) < 120
 
 
+def pdf_formula_index(reader):
+    """Index real source-labelled Formula nodes; plain SVG has no text layer."""
+    tree = reader.trailer['/Root'].get('/StructTreeRoot')
+    if tree is None:
+        return {}
+    tree = tree.get_object()
+    pages = {page.indirect_reference.idnum: i for i, page in enumerate(reader.pages)}
+    parent_entries = {}
+    def numbers(value):
+        value = value.get_object()
+        items = value.get('/Nums', [])
+        for i in range(0, len(items), 2):
+            if int(items[i]) in parent_entries:
+                raise ValueError('公式父树索引重复')
+            parent_entries[int(items[i])] = items[i + 1].get_object()
+        for child in value.get('/Kids', []):
+            numbers(child)
+    if '/ParentTree' in tree:
+        numbers(tree['/ParentTree'])
+    index, identities, visited = {}, set(), set()
+    def visit(value):
+        node = value.get_object() if hasattr(value, 'get_object') else value
+        if isinstance(node, list):
+            for child in node: visit(child)
+            return
+        if not isinstance(node, dict): return
+        reference = getattr(node, 'indirect_reference', None)
+        key = ('indirect', reference.idnum) if reference else ('direct', id(node))
+        if key in visited: raise ValueError('公式结构树重复或循环')
+        visited.add(key)
+        if node.get('/S') == '/Formula':
+            identity, speech = str(node.get('/T', '')), str(node.get('/Alt', ''))
+            pg, mcid = node.get('/Pg'), node.get('/K')
+            if (not re.fullmatch(r'pdf-math-\d{6}', identity) or identity in identities
+                    or not speech.strip() or node.get('/ActualText') != speech
+                    or node.get('/Lang') != 'en' or isinstance(mcid, bool)
+                    or not isinstance(mcid, int) or pg is None or reference is None):
+                raise ValueError('公式语义身份、页面或说明无效')
+            page_id = pg.get_object().indirect_reference.idnum
+            if page_id not in pages: raise ValueError('公式不属于当前PDF页面')
+            page_no = pages[page_id]
+            parents = parent_entries.get(int(reader.pages[page_no].get('/StructParents', -1)))
+            if (not isinstance(parents, list) or not 0 <= mcid < len(parents)
+                    or parents[mcid].get_object().indirect_reference != reference):
+                raise ValueError('公式没有真实父树归属')
+            index.setdefault(page_no, []).append((mcid, speech))
+            identities.add(identity)
+        if '/K' in node: visit(node['/K'])
+    visit(tree.get('/K', []))
+    return index
+
+
+def pdf_formula_page_text(reader, page_no, nodes):
+    """Count structural speech only when the same MCID has actual paint.
+
+    This repairs the text-only sparsity heuristic for vector mathematics. It
+    does not measure occupied paper area; sparse-layout review remains needed.
+    """
+    from pypdf.generic import ContentStream
+    expected = dict(nodes)
+    if len(expected) != len(nodes): raise ValueError('公式MCID重复')
+    if not expected: return ''
+    stack, entries, paint = [], {}, set()
+    for operands, operation in ContentStream(reader.pages[page_no].get_contents(), reader).operations:
+        if operation == b'BDC':
+            props = operands[-1]
+            mcid = props.get('/MCID') if isinstance(props, dict) else None
+            stack.append(mcid)
+            if mcid in expected:
+                if operands[0] != '/Formula' or props.get('/ActualText') != expected[mcid]:
+                    raise ValueError('公式内容标记与实际说明不符')
+                entries[mcid] = entries.get(mcid, 0) + 1
+        elif operation == b'BMC': stack.append(None)
+        elif operation == b'EMC':
+            if not stack: raise ValueError('公式内容标记栈不平衡')
+            stack.pop()
+        elif operation in (b'f', b'f*', b'S', b's', b'B', b'B*', b'b', b'b*', b'Do', b'Tj', b'TJ'):
+            paint.update(mcid for mcid in stack if mcid in expected)
+    if stack or any(entries.get(mcid) != 1 or mcid not in paint for mcid in expected):
+        raise ValueError('公式没有唯一真实绘制')
+    return '\n'.join(expected.values())
+
+
 def check_pdf(errors: list[str], notices: list[str]):
     path = DIST / "microphone-array-tutorial.pdf"
     if not path.exists():
@@ -1602,13 +1685,21 @@ def check_pdf(errors: list[str], notices: list[str]):
     height = float(reader.pages[0].mediabox.height)
     if abs(width - 595.28) > 2 or abs(height - 841.89) > 2:
         fail(errors, f"PDF 纸型不是 A4：{width:.1f}×{height:.1f} pt")
-    extracted = []
+    extracted, formula_index = [], None
     for page_no, page in enumerate(reader.pages, 1):
         page_text = page.extract_text() or ""
         extracted.append(page_text)
-        if not page_text.strip() and pdf_page_is_empty(page_text, len(page.images)):
+        assessment_text = page_text
+        image_count = len(page.images)
+        if image_count == 0 and (not page_text.strip() or pdf_page_is_sparse(page_text, 0, page_no)):
+            try:
+                if formula_index is None: formula_index = pdf_formula_index(reader)
+                assessment_text += '\n' + pdf_formula_page_text(reader, page_no - 1, formula_index.get(page_no - 1, []))
+            except (ValueError, KeyError, TypeError, IndexError) as exc:
+                fail(errors, f'PDF 第 {page_no} 页的向量公式正文核验失败：{exc}')
+        if not assessment_text.strip() and pdf_page_is_empty(assessment_text, image_count):
             fail(errors, f"PDF 第 {page_no} 页没有正文或图片；检查章末装饰线与强制分页")
-        if pdf_page_is_sparse(page_text, len(page.images), page_no):
+        if pdf_page_is_sparse(assessment_text, image_count, page_no):
             fail(errors, f"PDF 第 {page_no} 页只有少量正文且无图片；检查孤立转场、末段与强制分页")
         for ref in page.get("/Annots", []):
             obj = ref.get_object()

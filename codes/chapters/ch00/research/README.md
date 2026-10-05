@@ -7,7 +7,7 @@
 [SOURCES.lock.json](../SOURCES.lock.json)，逐算法覆盖状态见 [COVERAGE.md](../COVERAGE.md)。
 同名算法在不同项目中可能采用不同归一化、频谱轴序和输出参考通道，不能直接比较两个函数的数组而不检查约定。
 
-本手册包括本页入口和以下 5 篇专题，共 6 个网页；与 16 个教程页合计为 22 页。
+本手册包括本页入口和以下5篇专题，共6个研究网页；与16个当前教程页合计22个内容页。站点另保留4个同主题旧路径兼容页，实际生成26个HTML文件。兼容页不算新章节或独立研究内容。
 
 锁表登记 115 个 Git 上游项目，其中 98 个已有本地工作区。截至 2026-10-05，按完整稀疏选集政策离线核验75项通过，22个已取得的工作区仍使用旧排除规则，报告为选集不匹配并保留原样；AEC Challenge 的真实录音文件有本地变动，仍保留失败。另17项只保留来源索引。选集不匹配不等于源码未取得，也不代表算法运行失败。`kaldialign`作为MeetEval编译依赖仅已取得源码，未构建或执行。TAC作者的四文件选集已在独立忽略目录取得；其README声明的非商业许可、静态结构审计与未运行原网络的边界见[附录B源码合同](04_source_reproduction.md#tac-contracts)。
 
@@ -68,8 +68,18 @@
 
 第4章另有 [doatools ESPRIT 固定接口对照](../../ch04/reports/doatools_esprit_reference.json)和[图13的逐次统计](../../ch04/reports/figure13_gcc_reverb.json)。默认加权的原版偏差、取消加权与独立参考分开记录；完整数字、适用范围与源码入口见空间篇第14节。
 
-扩展专题Ⅰ新增[声学成像正文](../../../../chapters/12_acoustic-imaging.md)、[逐层源码合同](01_spatial_and_tracking.md#imaging-contract-audit)和[18题及五WAV实验](05_exercises_and_audio.md#sec-47-1)。输出是参考声压贡献及区域量；原算法、教学控制和工业条件分别核对。
+第12章扩展专题Ⅰ提供[声学成像正文](../../../../chapters/12_acoustic-imaging.md)、[逐层源码合同](01_spatial_and_tracking.md#imaging-contract-audit)和[18题及五WAV实验](05_exercises_and_audio.md#471-十八题分别核对什么)。输出是参考声压贡献及区域量；原算法、教学控制和工业条件分别核对。
 
-分布式专题Ⅱ将[节点目标与压缩条件](../../../../chapters/13_distributed-enhancement.md)、[原论文与工业网络](03_industrial_deployment.md#distributed-network-deployment)、[固定源码合同](04_source_reproduction.md#distributed-reproduction)和[25题及17WAV](05_exercises_and_audio.md#sec-48-1)互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。
+分布式专题Ⅱ将[节点目标与压缩条件](../../../../chapters/13_distributed-enhancement.md)、[原论文与工业网络](03_industrial_deployment.md#distributed-network-deployment)、[固定源码合同](04_source_reproduction.md#distributed-reproduction)和[25题及17WAV](05_exercises_and_audio.md#distributed-exercises-audio)互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。
 
 导读推荐的[WASN同步与LibriCSS公开评测源码](04_source_reproduction.md#overview-source-entrypoints)现已按固定提交取得限定选集。代码身份核验、原接口静态观察与未执行的依赖/评分/设备边界分别保留，不能用源码文件数代表工业验收。
+
+
+## 文档、命令与结果的对应关系
+
+- 学习入口与章号：[项目首页](../../../../README.md)和[导读](../../../../chapters/00_overview.md)。第12、13章是专题，第14、15章是附录。
+- 360个稳定代码题与27套独立音频：[代码目录](../../README.md#audio-inventory)和本手册的练习篇；题数、WAV数、算法数分别统计。
+- 从资产到网页/PDF：[构建说明](../../../../scripts/README.md#audio-regeneration)，先核真实生成源与清单，再发布副本。
+- 取得固定源码：[获取说明](../upstream/README.md)；它不会安装或执行上游。当前选集状态与限定原方法结果分别保留。
+
+各专题中的报告是对应固定版本和输入的证据，不自动代表当前全系统可运行。复跑时先确认报告工具、源码与依赖的实际身份；新结果使用允许的当前路径或仓外普通路径，历史报告不换摘要或追改成功。人工听测和辅助技术验收没有实际记录时，保持未执行。

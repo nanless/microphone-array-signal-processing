@@ -1,0 +1,2255 @@
+{
+  "identity": {
+    "helper": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/pdf_math.js",
+    "helperSHA256": "c6359e36a96fd24bd88cb755371f17b8e129c3954a330a4004c2be69683a8354",
+    "labelToolSHA256": "aa4c32b17d54f9d36abf07bf25363e427f36f2bd52a2c7a383adcfd177f98fd6",
+    "modes": [
+      "success",
+      "unknown-macro",
+      "syntax-error",
+      "empty-speech",
+      "missing-base",
+      "missing-en",
+      "non-svg",
+      "duplicate-id",
+      "missing-source",
+      "wrong-source-sha",
+      "wrong-source-tex",
+      "language-mismatch",
+      "wrong-version",
+      "wrong-output",
+      "hash-base",
+      "hash-en",
+      "detached-keepcount",
+      "duplicate-manifest"
+    ],
+    "note": "Original helper byte-identical embedded in fixtures; original SRE/MathJax fixed files served read-only; fixture attacks after original typesetting only; missing map routes HTTP404; empty speech uses original invisible mspace, not stubbed SRE."
+  },
+  "helperBefore": "c6359e36a96fd24bd88cb755371f17b8e129c3954a330a4004c2be69683a8354",
+  "helperAfter": "c6359e36a96fd24bd88cb755371f17b8e129c3954a330a4004c2be69683a8354",
+  "rows": [
+    {
+      "mode": "success",
+      "url": "http://127.0.0.1:8919/formal-closed/success.html",
+      "status": {
+        "ok": true
+      },
+      "manifest": [
+        {
+          "id": "000001",
+          "sha256": "75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c",
+          "tex": "$\\frac{a+b}{c}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "rawSpeech": "StartFraction a plus b Over c EndFraction",
+          "speech": "StartFraction a plus b Over c EndFraction"
+        },
+        {
+          "id": "000002",
+          "sha256": "f9111a1e96c6a77e85a06eb3b90b1975552a971ec2c75fda5547cb050d98eda0",
+          "tex": "$x^{*}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "rawSpeech": "x Superscript asterisk",
+          "speech": "x Superscript asterisk"
+        },
+        {
+          "id": "000003",
+          "sha256": "3fa0085beaa5df9cbc72ce490a356a1b1a31a2f05da6352854b4c7ea1b0c54ef",
+          "tex": "$\\overline{x}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "rawSpeech": "x overbar",
+          "speech": "x overbar"
+        },
+        {
+          "id": "000004",
+          "sha256": "4fb5d073e2fa92387f4ab2b94a79c730bea1bb369e369277aae0cb0b66511b7e",
+          "tex": "$\\boldsymbol R^{\\mathrm H}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "rawSpeech": "bold italic upper R Superscript normal upper H",
+          "speech": "bold italic upper R Superscript normal upper H"
+        },
+        {
+          "id": "000005",
+          "sha256": "94be178232c838d5a0ae8aae2784843bc4ab2f4926a3b0b631fe307118f739b4",
+          "tex": "$$\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}$$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "rawSpeech": "Start 2 By 2 Matrix 1st Row 1st Column a 2nd Column b 2nd Row 1st Column c 2nd Column d EndMatrix",
+          "speech": "Start 2 By 2 Matrix 1st Row 1st Column a 2nd Column b 2nd Row 1st Column c 2nd Column d EndMatrix"
+        },
+        {
+          "id": "000006",
+          "sha256": "4d682bf390acd6323407b825e1a8b3b105bcdd69e5369e1aba963c15fc5bb11b",
+          "tex": "$$a=b\\tag{4-2}$$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "rawSpeech": "StartLayout 1st Row  with Label left parenthesis 4 hyphen 2 right parenthesis EndLabel a equals b EndLayout",
+          "speech": "StartLayout 1st Row with Label left parenthesis 4 hyphen 2 right parenthesis EndLabel a equals b EndLayout"
+        },
+        {
+          "id": "000007",
+          "sha256": "a161299561a22db96edf839eb022f82475b7d59f0207396eaa2f5f124d199222",
+          "tex": "$$\\sum_{m=1}^{M}x_m$$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "rawSpeech": "sigma summation Underscript m equals 1 Overscript upper M Endscripts x Subscript m",
+          "speech": "sigma summation Underscript m equals 1 Overscript upper M Endscripts x Subscript m"
+        },
+        {
+          "id": "000008",
+          "sha256": "96b7ef62848592ef38d8b2d9691bef8dbfb203e5955ed73009dfd7b650607689",
+          "tex": "$&#124;w_i&#124;$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "rawSpeech": "StartAbsoluteValue w Subscript i Baseline EndAbsoluteValue",
+          "speech": "StartAbsoluteValue w Subscript i Baseline EndAbsoluteValue"
+        },
+        {
+          "id": "000009",
+          "sha256": "337ab2ed65d4787cedf8912b365cd43b10e758d83f5562828daceb3af55d6491",
+          "tex": "$x<y$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "rawSpeech": "x less than y",
+          "speech": "x less than y"
+        },
+        {
+          "id": "000010",
+          "sha256": "75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c",
+          "tex": "$\\frac{a+b}{c}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "rawSpeech": "StartFraction a plus b Over c EndFraction",
+          "speech": "StartFraction a plus b Over c EndFraction"
+        }
+      ],
+      "ready": "10",
+      "sourceWrappers": 0,
+      "marked": 10,
+      "layout": true,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [
+        {
+          "ariaLabel": "MASP-MATH:000001:75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c:StartFraction a plus b Over c EndFraction",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000002:f9111a1e96c6a77e85a06eb3b90b1975552a971ec2c75fda5547cb050d98eda0:x Superscript asterisk",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000003:3fa0085beaa5df9cbc72ce490a356a1b1a31a2f05da6352854b4c7ea1b0c54ef:x overbar",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000004:4fb5d073e2fa92387f4ab2b94a79c730bea1bb369e369277aae0cb0b66511b7e:bold italic upper R Superscript normal upper H",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000005:94be178232c838d5a0ae8aae2784843bc4ab2f4926a3b0b631fe307118f739b4:Start 2 By 2 Matrix 1st Row 1st Column a 2nd Column b 2nd Row 1st Column c 2nd Column d EndMatrix",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000006:4d682bf390acd6323407b825e1a8b3b105bcdd69e5369e1aba963c15fc5bb11b:StartLayout 1st Row with Label left parenthesis 4 hyphen 2 right parenthesis EndLabel a equals b EndLayout",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000007:a161299561a22db96edf839eb022f82475b7d59f0207396eaa2f5f124d199222:sigma summation Underscript m equals 1 Overscript upper M Endscripts x Subscript m",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000008:96b7ef62848592ef38d8b2d9691bef8dbfb203e5955ed73009dfd7b650607689:StartAbsoluteValue w Subscript i Baseline EndAbsoluteValue",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000009:337ab2ed65d4787cedf8912b365cd43b10e758d83f5562828daceb3af55d6491:x less than y",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000010:75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c:StartFraction a plus b Over c EndFraction",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        }
+      ],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/success.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true,
+      "pdf": "/private/tmp/masp-stage4-math-speech/formal-closed/success.pdf"
+    },
+    {
+      "mode": "unknown-macro",
+      "url": "http://127.0.0.1:8919/formal-closed/unknown-macro.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unknown or invalid TeX: 000011"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 11,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\unknowncommand{a}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <merror data-mjx-error=\"Undefined control sequence \\unknowncommand\">\n    <mtext>Undefined control sequence \\unknowncommand</mtext>\n  </merror>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/unknown-macro.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "syntax-error",
+      "url": "http://127.0.0.1:8919/formal-closed/syntax-error.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unknown or invalid TeX: 000011"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 11,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <merror data-mjx-error=\"Missing argument for \\frac\">\n    <mtext>Missing argument for \\frac</mtext>\n  </merror>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/syntax-error.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "empty-speech",
+      "url": "http://127.0.0.1:8919/formal-closed/empty-speech.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Missing speech or actual SVG paint: 000011"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 11,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\, ",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mstyle scriptlevel=\"0\">\n    <mspace width=\"0.167em\"></mspace>\n  </mstyle>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/empty-speech.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "missing-base",
+      "url": "http://127.0.0.1:8919/formal-closed/missing-base.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Missing mathematical speech rules: base.json"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/missing-base.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "missing-en",
+      "url": "http://127.0.0.1:8919/formal-closed/missing-en.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Missing mathematical speech rules: en.json"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "pageerror",
+          "text": "Error: Missing mathematical speech rules: en.json"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/missing-en.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "non-svg",
+      "url": "http://127.0.0.1:8919/formal-closed/non-svg.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Missing speech or actual SVG paint: 000001"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/non-svg.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "duplicate-id",
+      "url": "http://127.0.0.1:8919/formal-closed/duplicate-id.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unknown, repeated or mismatched mathematical source"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/duplicate-id.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "missing-source",
+      "url": "http://127.0.0.1:8919/formal-closed/missing-source.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Incomplete live mathematical sources"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 9,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": false
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/missing-source.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "wrong-source-sha",
+      "url": "http://127.0.0.1:8919/formal-closed/wrong-source-sha.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unknown, repeated or mismatched mathematical source"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/wrong-source-sha.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "wrong-source-tex",
+      "url": "http://127.0.0.1:8919/formal-closed/wrong-source-tex.html",
+      "status": {
+        "ok": false,
+        "error": "Error: MathJax source differs from authored TeX: 000001"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/wrong-source-tex.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "language-mismatch",
+      "url": "http://127.0.0.1:8919/formal-closed/language-mismatch.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unexpected speech language or rule domain"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "fr",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (File not found)"
+        },
+        {
+          "type": "error",
+          "text": "Unable to load locale: fr"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/language-mismatch.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/fr.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "wrong-version",
+      "url": "http://127.0.0.1:8919/formal-closed/wrong-version.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unexpected MathJax version or output"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "pageerror",
+          "text": "Error: Unexpected MathJax version or output"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/wrong-version.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "wrong-output",
+      "url": "http://127.0.0.1:8919/formal-closed/wrong-output.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unexpected MathJax version or output"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "pageerror",
+          "text": "Error: Unexpected MathJax version or output"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/wrong-output.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "hash-base",
+      "url": "http://127.0.0.1:8919/formal-closed/hash-base.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Mismatched mathematical speech rules: base.json"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "pageerror",
+          "text": "Error: Mismatched mathematical speech rules: base.json"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/hash-base.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "hash-en",
+      "url": "http://127.0.0.1:8919/formal-closed/hash-en.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Mismatched mathematical speech rules: en.json"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/hash-en.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "detached-keepcount",
+      "url": "http://127.0.0.1:8919/formal-closed/detached-keepcount.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Unbound or detached mathematical content"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": false
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/detached-keepcount.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "duplicate-manifest",
+      "url": "http://127.0.0.1:8919/formal-closed/duplicate-manifest.html",
+      "status": {
+        "ok": false,
+        "error": "Error: Duplicate math source identity"
+      },
+      "manifest": null,
+      "ready": null,
+      "sourceWrappers": 10,
+      "marked": 0,
+      "layout": false,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [],
+      "logs": [
+        {
+          "type": "pageerror",
+          "text": "Error: Duplicate math source identity"
+        }
+      ],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:8919/formal-closed/duplicate-manifest.html",
+          "type": "document"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "http://127.0.0.1:8919/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        }
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "mode": "success-file",
+      "url": "file:///private/tmp/masp-stage4-math-speech/formal-closed/success.html",
+      "status": {
+        "ok": true
+      },
+      "manifest": [
+        {
+          "id": "000001",
+          "sha256": "75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c",
+          "tex": "$\\frac{a+b}{c}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "rawSpeech": "StartFraction a plus b Over c EndFraction",
+          "speech": "StartFraction a plus b Over c EndFraction"
+        },
+        {
+          "id": "000002",
+          "sha256": "f9111a1e96c6a77e85a06eb3b90b1975552a971ec2c75fda5547cb050d98eda0",
+          "tex": "$x^{*}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "rawSpeech": "x Superscript asterisk",
+          "speech": "x Superscript asterisk"
+        },
+        {
+          "id": "000003",
+          "sha256": "3fa0085beaa5df9cbc72ce490a356a1b1a31a2f05da6352854b4c7ea1b0c54ef",
+          "tex": "$\\overline{x}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "rawSpeech": "x overbar",
+          "speech": "x overbar"
+        },
+        {
+          "id": "000004",
+          "sha256": "4fb5d073e2fa92387f4ab2b94a79c730bea1bb369e369277aae0cb0b66511b7e",
+          "tex": "$\\boldsymbol R^{\\mathrm H}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "rawSpeech": "bold italic upper R Superscript normal upper H",
+          "speech": "bold italic upper R Superscript normal upper H"
+        },
+        {
+          "id": "000005",
+          "sha256": "94be178232c838d5a0ae8aae2784843bc4ab2f4926a3b0b631fe307118f739b4",
+          "tex": "$$\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}$$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "rawSpeech": "Start 2 By 2 Matrix 1st Row 1st Column a 2nd Column b 2nd Row 1st Column c 2nd Column d EndMatrix",
+          "speech": "Start 2 By 2 Matrix 1st Row 1st Column a 2nd Column b 2nd Row 1st Column c 2nd Column d EndMatrix"
+        },
+        {
+          "id": "000006",
+          "sha256": "4d682bf390acd6323407b825e1a8b3b105bcdd69e5369e1aba963c15fc5bb11b",
+          "tex": "$$a=b\\tag{4-2}$$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "rawSpeech": "StartLayout 1st Row  with Label left parenthesis 4 hyphen 2 right parenthesis EndLabel a equals b EndLayout",
+          "speech": "StartLayout 1st Row with Label left parenthesis 4 hyphen 2 right parenthesis EndLabel a equals b EndLayout"
+        },
+        {
+          "id": "000007",
+          "sha256": "a161299561a22db96edf839eb022f82475b7d59f0207396eaa2f5f124d199222",
+          "tex": "$$\\sum_{m=1}^{M}x_m$$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "rawSpeech": "sigma summation Underscript m equals 1 Overscript upper M Endscripts x Subscript m",
+          "speech": "sigma summation Underscript m equals 1 Overscript upper M Endscripts x Subscript m"
+        },
+        {
+          "id": "000008",
+          "sha256": "96b7ef62848592ef38d8b2d9691bef8dbfb203e5955ed73009dfd7b650607689",
+          "tex": "$&#124;w_i&#124;$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "rawSpeech": "StartAbsoluteValue w Subscript i Baseline EndAbsoluteValue",
+          "speech": "StartAbsoluteValue w Subscript i Baseline EndAbsoluteValue"
+        },
+        {
+          "id": "000009",
+          "sha256": "337ab2ed65d4787cedf8912b365cd43b10e758d83f5562828daceb3af55d6491",
+          "tex": "$x<y$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "rawSpeech": "x less than y",
+          "speech": "x less than y"
+        },
+        {
+          "id": "000010",
+          "sha256": "75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c",
+          "tex": "$\\frac{a+b}{c}$",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "rawSpeech": "StartFraction a plus b Over c EndFraction",
+          "speech": "StartFraction a plus b Over c EndFraction"
+        }
+      ],
+      "ready": "10",
+      "sourceWrappers": 0,
+      "marked": 10,
+      "layout": true,
+      "actualLanguage": "en",
+      "MathML": [
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x^{*}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi>x</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mo>&#x2217;</mo>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\overline{x}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mover>\n    <mi>x</mi>\n    <mo accent=\"true\">&#x2015;</mo>\n  </mover>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\boldsymbol R^{\\mathrm H}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <msup>\n    <mi mathvariant=\"bold-italic\">R</mi>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mrow data-mjx-texclass=\"ORD\">\n        <mi mathvariant=\"normal\">H</mi>\n      </mrow>\n    </mrow>\n  </msup>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mrow data-mjx-texclass=\"INNER\">\n    <mo data-mjx-texclass=\"OPEN\">[</mo>\n    <mtable columnspacing=\"1em\" rowspacing=\"4pt\">\n      <mtr>\n        <mtd>\n          <mi>a</mi>\n        </mtd>\n        <mtd>\n          <mi>b</mi>\n        </mtd>\n      </mtr>\n      <mtr>\n        <mtd>\n          <mi>c</mi>\n        </mtd>\n        <mtd>\n          <mi>d</mi>\n        </mtd>\n      </mtr>\n    </mtable>\n    <mo data-mjx-texclass=\"CLOSE\">]</mo>\n  </mrow>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "a=b\\tag{4-2}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mtable displaystyle=\"true\">\n    <mlabeledtr>\n      <mtd id=\"mjx-eqn:4-2\">\n        <mtext>(4-2)</mtext>\n      </mtd>\n      <mtd>\n        <mi>a</mi>\n        <mo>=</mo>\n        <mi>b</mi>\n      </mtd>\n    </mlabeledtr>\n  </mtable>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\sum_{m=1}^{M}x_m",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <munderover>\n    <mo data-mjx-texclass=\"OP\">&#x2211;</mo>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>m</mi>\n      <mo>=</mo>\n      <mn>1</mn>\n    </mrow>\n    <mrow data-mjx-texclass=\"ORD\">\n      <mi>M</mi>\n    </mrow>\n  </munderover>\n  <msub>\n    <mi>x</mi>\n    <mi>m</mi>\n  </msub>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "|w_i|",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mo stretchy=\"false\">|</mo>\n  <msub>\n    <mi>w</mi>\n    <mi>i</mi>\n  </msub>\n  <mo stretchy=\"false\">|</mo>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "x\\lt y",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mi>x</mi>\n  <mo>&lt;</mo>\n  <mi>y</mi>\n</math>",
+          "connected": true
+        },
+        {
+          "tex": "\\frac{a+b}{c}",
+          "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">\n  <mfrac>\n    <mrow>\n      <mi>a</mi>\n      <mo>+</mo>\n      <mi>b</mi>\n    </mrow>\n    <mi>c</mi>\n  </mfrac>\n</math>",
+          "connected": true
+        }
+      ],
+      "svgMetadata": [
+        {
+          "ariaLabel": "MASP-MATH:000001:75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c:StartFraction a plus b Over c EndFraction",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000002:f9111a1e96c6a77e85a06eb3b90b1975552a971ec2c75fda5547cb050d98eda0:x Superscript asterisk",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000003:3fa0085beaa5df9cbc72ce490a356a1b1a31a2f05da6352854b4c7ea1b0c54ef:x overbar",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000004:4fb5d073e2fa92387f4ab2b94a79c730bea1bb369e369277aae0cb0b66511b7e:bold italic upper R Superscript normal upper H",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000005:94be178232c838d5a0ae8aae2784843bc4ab2f4926a3b0b631fe307118f739b4:Start 2 By 2 Matrix 1st Row 1st Column a 2nd Column b 2nd Row 1st Column c 2nd Column d EndMatrix",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000006:4d682bf390acd6323407b825e1a8b3b105bcdd69e5369e1aba963c15fc5bb11b:StartLayout 1st Row with Label left parenthesis 4 hyphen 2 right parenthesis EndLabel a equals b EndLayout",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000007:a161299561a22db96edf839eb022f82475b7d59f0207396eaa2f5f124d199222:sigma summation Underscript m equals 1 Overscript upper M Endscripts x Subscript m",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000008:96b7ef62848592ef38d8b2d9691bef8dbfb203e5955ed73009dfd7b650607689:StartAbsoluteValue w Subscript i Baseline EndAbsoluteValue",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000009:337ab2ed65d4787cedf8912b365cd43b10e758d83f5562828daceb3af55d6491:x less than y",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        },
+        {
+          "ariaLabel": "MASP-MATH:000010:75fb260a31f57adda3a378d140acf9af29726ff1316d6333ce77ea21955e756c:StartFraction a plus b Over c EndFraction",
+          "lang": "en",
+          "role": "img",
+          "ariaHidden": null,
+          "parentAriaHidden": null
+        }
+      ],
+      "logs": [],
+      "requests": [
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/formal-closed/success.html",
+          "type": "document"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/tex-svg.js",
+          "type": "script"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/a11y/sre.js",
+          "type": "script"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/input/tex/extensions/boldsymbol.js",
+          "type": "script"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/sre/mathmaps/base.json",
+          "type": "xhr"
+        },
+        {
+          "url": "file:///private/tmp/masp-stage4-math-speech/scripts/vendor/mathjax-3.2.2/sre/mathmaps/en.json",
+          "type": "xhr"
+        }
+      ],
+      "expectedOutcomeMatched": true,
+      "pdf": "/private/tmp/masp-stage4-math-speech/formal-closed/success-file.pdf"
+    }
+  ]
+}

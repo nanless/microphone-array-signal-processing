@@ -6,46 +6,64 @@
 
 运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载。若要报告耗时，应同时记录这些条件、运行次数和统计方式。
 
+<a id="audio-regeneration"></a>
+
+## 完整重生成顺序
+
+已有发布资产可直接核验和构建。需要从生成源重建时，先运行主清单与以下26套独立数学合成生成器，再绘图。第27套房间仿真及DEMAND真实数据按后文独立流程处理，不能用普通生成命令覆盖旧房间或取得未固定录音。
+
 ```bash
-.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py  # 先生成 27 组、109 个合成 WAV 及清单
-.venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues  # 独立双耳线索 5 个 WAV；--check 只核对
-.venv/bin/python -m codes.chapters.ch01.examples.generate_spectral_cues  # 四份人工频率响应 WAV；--check 只读完整回放
-.venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution  # 独立有限窗卷积 3 个 WAV；--check 只核对
-.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio  # 数字扫频辨识四WAV；--check只读完整回放
-.venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo  # 六份已知掩码表示WAV
-.venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 独立 GSS 教学音频与状态
-.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 独立PCM观测与追踪音频
-.venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 独立连续移动双麦音频
-.venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio  # 独立六WAV/浮点与实际PCM留出；图58读取此清单
-.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 六份已知播放增益/尾声WAV；--check严格只读
-.venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo  # 独立六WAV/完整尾与实际PCM评分；图59读取此清单
-.venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio  # six known arrival/history WAVs; --check只读
-.venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch  # 六独立噪声失配WAV
-.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio  # 已知坏麦六独立WAV与清单
-.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 份独立场景 WAV；--check 只核对
-.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 五份独立已知噪声加权WAV；图65读取
-.venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 五份同DRR短FIR对照WAV；图66读取
-.venv/bin/python -m codes.chapters.ch05.examples.generate_phase_audio  # E05-23; --check is read-only
-.venv/bin/python scripts/make_figures.py      # 生成图 1～25、图 33～36、40～72、80 → figures/
-.venv/bin/python scripts/make_aec_figures.py  # 生成图 26～32、37～39（回声消除专题）→ figures/
-.venv/bin/python scripts/make_beamforming_figures.py  # figure 73: checked actual PCM
-.venv/bin/python scripts/make_reference_figures.py  # 图74：实际PCM播放增益与尾声控制
-.venv/bin/python scripts/make_delay_figures.py  # 图75：已知到达时间与实际PCM历史控制
-.venv/bin/python scripts/make_css_figures.py  # figure 76: fixed-slot polarity/gain and actual PCM
-.venv/bin/python scripts/make_tracking_figures.py  # 图77：实际PCM生命周期与两个龄期时钟
-.venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
-.venv/bin/python scripts/make_selection_figures.py  # 图79：同阵列模型的硬筛选与设备证据边界
-.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
-.venv/bin/python scripts/build_site.py        # 16 个教程页 + 4 个旧路径兼容页 + 6 个研究页，共 26 页 → site/
-.venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
-.venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check  # 只核对音频、参数与摘要，不重写文件
-.venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check  # 真实录音及派生文件，离线核对
-.venv/bin/python scripts/quality_check.py      # 发布前检查结构、公式、图片溯源、链接、书签和本地路径泄露
-.venv/bin/python -m unittest discover -s tests -v  # 运行构建与算法回归测试
-.venv/bin/python -m codes.chapters.ch10.examples.ch10_engineering_baselines  # 第 10 章工程基线
+.venv/bin/python -m codes.chapters.ch00.examples.generate_audio_samples  # 主27组109WAV
+.venv/bin/python -m codes.chapters.ch01.examples.generate_binaural_cues  # 5 WAV：binaural_audio
+.venv/bin/python -m codes.chapters.ch01.examples.generate_spectral_cues  # 4 WAV：spectral_audio
+.venv/bin/python -m codes.chapters.ch02.examples.generate_stft_convolution  # 3 WAV：stft_audio
+.venv/bin/python -m codes.chapters.ch02.examples.generate_sweep_audio  # 4 WAV：sweep_audio
+.venv/bin/python -m codes.chapters.ch03.examples.generate_geometry_audio  # 3 WAV：geometry_audio
+.venv/bin/python -m codes.chapters.ch03.examples.generate_baseline_audio  # 6 WAV：baseline_audio
+.venv/bin/python -m codes.chapters.ch04.examples.generate_reflection_audio  # 4 WAV：reflection_audio
+.venv/bin/python -m codes.chapters.ch04.examples.generate_focus_audio  # 4 WAV：focus_audio
+.venv/bin/python -m codes.chapters.ch05.examples.generate_derivative_audio  # 4 WAV：derivative_audio
+.venv/bin/python -m codes.chapters.ch05.examples.generate_phase_audio  # 3 WAV：phase_audio
+.venv/bin/python -m codes.chapters.ch06.examples.generate_apa_audio  # 6 WAV：apa_audio
+.venv/bin/python -m codes.chapters.ch06.examples.generate_reference_audio  # 6 WAV：reference_audio
+.venv/bin/python -m codes.chapters.ch07.examples.generate_delay_audio  # 6 WAV：delay_audio
+.venv/bin/python -m codes.chapters.ch07.examples.mint_teaching_demo  # 6 WAV：mint_audio
+.venv/bin/python -m codes.chapters.ch08.examples.mask_representation_demo  # 6 WAV：mask_audio
+.venv/bin/python -m codes.chapters.ch08.examples.generate_css_audio  # 4 WAV：css_audio
+.venv/bin/python -m codes.chapters.ch08.examples.gss_teaching_demo  # 5 WAV：gss_audio
+.venv/bin/python -m codes.chapters.ch09.examples.moving_source_audio  # 3 WAV：moving_audio
+.venv/bin/python -m codes.chapters.ch09.examples.chapter09_tracking_audio  # 2 WAV：tracking_audio
+.venv/bin/python -m codes.chapters.ch10.examples.generate_noise_mismatch  # 6 WAV：noise_audio
+.venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio  # 6 WAV：channel_audio
+.venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 WAV：scenario_audio
+.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio  # 5 WAV：imaging_audio
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio  # 17 WAV：distributed_audio
+.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 5 WAV：weighted_audio
+.venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 5 WAV：response_audio
+.venv/bin/python scripts/make_figures.py  # 图1～25、33～36、40～72、80
+.venv/bin/python scripts/make_aec_figures.py  # 图26～32、37～39
+.venv/bin/python scripts/make_beamforming_figures.py  # 图73
+.venv/bin/python scripts/make_reference_figures.py  # 图74
+.venv/bin/python scripts/make_delay_figures.py  # 图75
+.venv/bin/python scripts/make_css_figures.py  # 图76
+.venv/bin/python scripts/make_tracking_figures.py  # 图77
+.venv/bin/python scripts/make_channel_figures.py  # 图78
+.venv/bin/python scripts/make_selection_figures.py  # 图79
+.venv/bin/python scripts/build_site.py  # 16当前教程+4兼容+6研究=26 HTML
+.venv/bin/python scripts/build_pdf.py --build-date 2026-10-05
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/quality_check.py
 ```
 
-Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
+上面的日期为明确的封面日期示例，正式构建按出版日期设置或使用 `SOURCE_DATE_EPOCH`。这些参数不保证字体、Chrome或PDF时间元数据跨环境逐字节相同。Windows将 `.venv/bin/python` 换成 `.venv\Scripts\python.exe`。
+
+全部27套清单、样本数和模型边界见[代码音频目录](../codes/chapters/README.md#audio-inventory)。普通生成器均支持只读 `--check`；房间与真实数据检查另用：
+
+```bash
+.venv/bin/python -m codes.chapters.appendix_b.examples.check_room_assets
+.venv/bin/python -m codes.chapters.ch02.examples.prepare_real_recordings --check
+```
+
 
 | 脚本 | 作用 | 输出 |
 |---|---|---|
@@ -63,8 +81,9 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `build_pdf.py` | 合订本脚本。16 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章及附录 A/B 的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
 | `build_markdown_helpers.py` | 两构建器共享的Markdown数学与代码边界处理；保留代码、原始HTML及转义美元符的语义，数学暂存标识避开原文 | 供构建器导入，无独立产物 |
 | `code_layout.py` | 主音频组到首讲章节的唯一映射及路径查询；生成器、构建和检查共同使用这一布局 | 各章 `audio/` 路径，不单独生成文件 |
-| `heading_aliases.py`、`legacy_sequential_anchors.json` | 按主题维护已发布节号和顺序深链；构建器插入历史别名，门禁另外核对主题与唯一性 | 网页和合订HTML中的兼容锚点 |
+| `heading_aliases.py`、`legacy_sequential_anchors.json`、`chapter_identity.py`、`chapter_numbering.json` | 按主题维护已发布节号和顺序深链；构建器插入历史别名，门禁另外核对主题与唯一性 | 网页和合订HTML中的兼容锚点 |
 | `../codes/chapters/ch00/io_contracts.py` | 音频生成和上游获取共用的路径、成员、严格JSON、元数据类型和报告写入原语；各调用者保留独立清单、评分与许可逻辑 | 无独立产物；实际参与生成的源摘要进入相应清单 |
+| `pdf_math.js` | 合订本专用：完整MathML生成固定英文说明，逐式核源身份、真实SVG、非空说明；移除临时身份包装后交给共享排版脚本。嵌入合订HTML并纳入PDF源摘要 | 合订HTML与PDF公式语义 |
 | `inline_layout.js` | 站点与合订本共用的成品排版辅助。等待公式与字体完成后，只保护适合当前宽度的行内公式及紧邻短单位/标点、可见普通文字中的稳定题号；短粗体引导在纸版跟随下一段。视窗和字体变化后重新核对宽度。合订预览在打印前即采用 A4 正文几何，打印期间不重排 DOM；单页网站打印前拆除屏幕分组，结束后恢复。保留 TeX、代码、链接、辅助公式树和长式的滚动接口。脚本内容计入两种产物及独立门禁的源摘要 | 由两个构建器嵌入 HTML；无单独生成物 |
 | `make_tracking_figures.py` | 图77：先严格只读核实际PCM，计算单槽生命周期及可用/状态龄期；12真实源与3输入摘要、全部197行/5事件独立验收 | `figures/fig77_tracking_lifecycle.png`及第9章数值报告 |
 | `make_channel_figures.py` | 图78：先只读核六已知坏麦PCM与清单，分开目标响应、总NMSE与128点波形；9真实源及7输入摘要 | `figures/fig78_channel_failure.png`和第10章数值报告 |
@@ -124,15 +143,29 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
-合订本用 `scripts/vendor/mathjax-3.2.2/` 内固定版本的主脚本、`boldsymbol` 按需扩展和 23 个 WOFF 字体离线排版。构建前核对脚本摘要与资源完整性；打印后检查未渲染 TeX 和 AEC 算例页的数学字形子集。Chrome 将这些数学字形嵌为缺少可靠 ToUnicode 映射的 Type3 字体，因此文本提取时公式可能为空，即使画面正常；正式发布前仍须打开 PDF，抽查公式、宽表、长代码块、图片和分页是否存在半渲染、溢出或裁切。
+合订本使用本地固定MathJax3.2.2 SVG和SRE4.0.6英文规则。每个公式出现（包括目录重复）绑定精确TeX源摘要，先取得完整MathML再生成英文结构说明；仅实际连接在页面中的真实SVG元素取得辅助标签；浏览器实际读取度量字体和规则时复核各自完整字节与固定分数初始化控制，防止非空但退化的说明。打印后按源身份核完整数量、唯一MCID与实际绘制，将对应Figure改为Formula，并在同一内容标记和结构元素保存ActualText，不按页面位置猜测或把数学改成装饰。未知宏、缺少公式、重复身份、空说明或无绘制都会拒绝发布。
+
+公式说明描述分数、矩阵、上下标等数学结构。SRE4.0.6没有中文规则，公式说明标为英文，源中文文字标签可能保留，混合发音仍待人工核验；星号、横线和H上标读作所见记号，其共轭等含义仍由正文定义。机器生成说明不能代替辅助技术对实际阅读顺序和含义的人工核验。
+
+旧CHTML资源保留用于历史复现；当前数学字形由SVG路径绘制，其余PDF字体仍须分别核查。固定资源、许可与哈希详见[资源README](vendor/mathjax-3.2.2/README.md)。
+
+[逐式浏览器记录](../reviews/2026-10-05-pdf-formula-audit.json)保存13652个TeX身份/数学树摘要/说明，[初轮19组浏览器控制](../reviews/2026-10-05-pdf-browser-controls.json)保留正常HTTP/file与17异常的真实结果；[最终24组字体闭环控制](../reviews/2026-10-05-pdf-browser-controls-calibrated.json)另核真实字体载入顺序、五种字体异常及相同规则边界，2组正常、22组异常均符合预期。
+
+它们是日期快照，不代替最终PDF结构与实际辅助技术验收。正式发布仍须实际打开PDF抽查公式、宽表、长代码块、图片和分页。
 
 PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式按 110% 显示，长式由公式容器独立横向滚动。
+
+合订本先实际加载固定原MathJax度量字体，再同时标定公式预度量与SVG容器的`ex`单位；它的`0.442em` x-height与固定TeX参数一致。禁用合成粗斜体以免单位再次漂移，数学字形仍是SVG路径，中文文字仍用正文中文字体。只调整SVG外框会漏掉带编号公式的内部尺度，因此还须检查真实字形、编号和表格单元格边界。
 
 打印后检查长中文正文的变换矩阵：正常 CSS 像素到 PDF 点的比例为 0.75，低于 0.74 时拒绝发布，以发现过宽公式或表格触发的整书缩小。该检查不代替逐式版式检查。
 
 竖图打印高度上限为 225 mm，章标题与首节标题使用紧凑间距；图片最终有效字号仍需按实际打印尺寸复核。
 
-**PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
+**PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。构建另补真实列表正文LBody、标准角色映射、链接说明、页内焦点顺序和XMP，辅助引用移出纸张但保留真实目标。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
+
+Chrome遗留的排版空格只在严格证明后加Layout标记：未处于现有内容标记中的原`Tj`字节必须为CID0003，字体必须为Identity-H/CIDFontType2且CIDToGIDMap为Identity，ToUnicode唯一映射到U+0020，嵌入TrueType的对应字形必须无轮廓且有真实水平推进。用fontTools检查嵌入字体（主环境已随matplotlib安装），原文字操作及推进保持；可见文字、数学路径、图片或未知字体不能作为装饰处理。
+
+纯SVG公式不一定进入普通文字提取结果。空页/少字页检查仅在真实Formula父树、唯一MCID、同一ActualText和实际绘制均吻合时补入公式结构说明；120字符启发阈值保持。这是正文存在性检查，不测纸面占用面积。标题须整块排版，成像两格手算的输入、计算与结论保持同页；实际长标题拆页和大图造成的留白仍须按成品目视判断，不能靠补充语义文本放行。
 
 **独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、740 个三级书签，共 907 个大纲项，以及图 1～80。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
@@ -213,7 +246,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 .venv/bin/python -m codes.chapters.ch03.examples.audit_upstream_coarray --report codes/chapters/ch03/reports/upstream_coarray_contracts.json
 ```
 
-章节入口复算E03-08～17，另读取随仓四份DMA PCM。独立三WAV由六个真实源生成；32 kHz、2 s、源单声道与两个六声道观测，实际读回在4800:59200稳定窗逐频拟合。六声道播放可能下混，不作为耳听定位成绩；多频检查只证明指定方向对的可辨识信息。图51的变化是无单位约束线性解的方向分量，不是角误差；图52是解析流形相干功率。固定doatools审计需要已核验的本地源码缓存，只提取明确的原方法并局部适配NumPy类型别名，不导入完整软件或运行未知误差校准。
+章节入口复算E03-08～18，另读取随仓四份DMA PCM。独立三WAV由六个真实源生成；32 kHz、2 s、源单声道与两个六声道观测，实际读回在4800:59200稳定窗逐频拟合。六声道播放可能下混，不作为耳听定位成绩；多频检查只证明指定方向对的可辨识信息。图51的变化是无单位约束线性解的方向分量，不是角误差；图52是解析流形相干功率。固定doatools审计需要已核验的本地源码缓存，只提取明确的原方法并局部适配NumPy类型别名，不导入完整软件或运行未知误差校准。
 
 
 ### 第四章聚焦与固定源码诊断
@@ -239,7 +272,7 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 
 四WAV共用增益1和一采样因果参考，16kHz、每通道32002点；八个实际源摘要包含唯一波束核与协方差核。2400:29600窗的解析期望、浮点clean/noise/交叉项和实际PCM总误差分别保存，PCM不虚构可观测的干净/噪声分解。`--check`重新读回与复算但不重生文件；发布复制检查只验证集合、来源、格式、摘要和播放器，数值评分由生成器与独立回归验收。图55/56各从解析响应和高斯密度模型计算，不把期望标成实测。
 
-[原方法审计工具](../codes/chapters/ch05/examples/audit_upstream_beamformers.py)需要既有SciPy环境和锁定的pb_bss独立源码缓存；默认只读，显式`--report`才写报告。工具提取12个原函数执行31个限定输入，保留异常、退化和约束违约；不是完整包、GPU网络或工业整链性能验收。具体运行环境、原源码片段与摘要在[真实报告](../codes/chapters/ch05/reports/upstream_beamformers.json)中，不默认假设历史临时环境仍存在。
+[原方法审计工具](../codes/chapters/ch05/examples/audit_upstream_beamformers.py)需要既有SciPy环境和锁定的pb_bss独立源码缓存；默认只读，显式`--report`才写报告。当前工具提取13个原函数执行33个限定输入，保留异常、退化和约束违约；不是完整包、GPU网络或工业整链性能验收。具体运行环境、原源码片段与摘要在[当前报告](../codes/chapters/ch05/reports/upstream_beamformers_current.json)中，旧 `upstream_beamformers.json` 的12函数/31例代表当时执行，不改写；不默认假设历史临时环境仍存在。
 
 ## 第9章：信息边界、生命周期与追踪合同
 
@@ -257,12 +290,12 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 ```bash
 .venv/bin/python -m codes.chapters.ch12.chapter12_exercises
 .venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio
-.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio  # 17 independent WAVs; --check只读
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio  # 17独立WAV；--check只读
 .venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio --check
 .venv/bin/python -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts
 ```
 
-18题只读计算；五个独立24kHz数学WAV保留完整四点传播尾，不混入主109份。图67～69分别复算PSF与二维泄漏、非相干模型及full-CSM CLEAN-SC、校准与不同拟合目标。图80另比较同一合法CSM下的扫描与完整CSM目标。四报告绑定当前四个真实源；原Acoular限定调用报告保留目标差异与未执行条件。源、PCM、图和网页/PDF验收分别记，不能用其中一项代替另一项。详见[音频实验§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-47-1)与[原源合同](../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit)。
+18题只读计算；五个独立24kHz数学WAV保留完整四点传播尾，不混入主109份。图67～69分别复算PSF与二维泄漏、非相干模型及full-CSM CLEAN-SC、校准与不同拟合目标。图80另比较同一合法CSM下的扫描与完整CSM目标。四报告绑定当前四个真实源；原Acoular限定调用报告保留目标差异与未执行条件。源、PCM、图和网页/PDF验收分别记，不能用其中一项代替另一项。详见[音频实验§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#471-十八题分别核对什么)与[原源合同](../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit)。
 
 
 ## 扩展专题Ⅱ的已知统计、音频与原源码合同
@@ -288,3 +321,34 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 扩展专题Ⅰ作者原模块核验需现有环境提供NumPy、SciPy和matplotlib：`python -B -m codes.chapters.ch12.examples.audit_damas_author_contracts`默认只读终端。显式 `--report codes/chapters/ch12/reports/damas_author_contracts_current.json`才保存新当前报告；原零CSM失败与未运行的数据/MATLAB/MEX分别记录。取得源码前先按[来源手册§13](../codes/chapters/ch00/research/04_source_reproduction.md#imaging-author-source)核固定版本与GPL许可。
 
 PDF命名目标来自实际标题或练习的显式锚，不从目录同名文字猜测。透明的非流式引用条使Chrome导出这些真实目标；旧别名在打印后复制当前同主题目标的页号和完整坐标。练习锚可位于标题后或粗体题名旁，因此旧E号绑定当前真实E锚，不能一律改绑最近的h4。写入后重新打开PDF逐项核验；缺失或冲突会拒绝发布。
+
+<a id="optional-verification"></a>
+
+## 主环境与可选核验
+
+主环境按根目录 `requirements.txt` 固定NumPy、matplotlib、Markdown和pypdf。`unittest discover`既检查教学核，也包含需要额外依赖的真实上游路径；退出0但报告skip时，这些路径并未执行。
+
+可选DOA/波束/作者DAMAS/房间重跑需要SciPy、matplotlib、固定上游源码；PRA限定调用与房间重跑另要求 `pyroomacoustics==0.10.0`。在独立环境安装依赖，从仓库根目录运行对应测试，不默默升级主环境。具体固定源码、当前报告与旧历史报告的关系见[复现手册](../codes/chapters/ch00/research/04_source_reproduction.md)。
+
+SMP-PHAT原C路径还要求编译器和固定FFTW 3.3.10前缀，变量为 `SMPPHAT_FFTW_PREFIX`。原实现的已知移植数值失败与测试是否真实执行是两回事；诊断保存或测试预期捕获该失败，不表示原算法已正确运行。
+
+自动门禁、浏览器可加载、PCM指标、辅助技术实测和真人听测分别记录。PDF/UA要指定验证器版本与规范配置，并补人工语义/阅读顺序检查；不通过时保留实际规则和对象，不添加合规声明来绕过问题。
+
+
+本机已将主环境的10条skip记录展开为15个真实测试，在隔离NumPy2.5.3、SciPy1.18.1、matplotlib3.11.2、PRA0.10.0环境与核过摘要的单精度FFTW3.3.10前缀下实际通过。下面给出同范围复跑方式；固定源码缓存须先按锁表取得，编译需要C工具链：
+
+```bash
+python3.13 -m venv /tmp/masp-optional-checks
+/tmp/masp-optional-checks/bin/python -m pip install numpy==2.5.3 scipy==1.18.1 matplotlib==3.11.2 pyroomacoustics==0.10.0
+/tmp/masp-optional-checks/bin/python -B -m codes.chapters.ch04.examples.reproduce_smpphat_reference --download-fftw --work-dir /tmp/masp-fftw-reference --output /tmp/masp-smpphat-diagnosis.json
+```
+
+最后一条真实编译FFTW后执行原C诊断；现有固定原版本保留 `failed_portability`，预期退出2，不把非零状态当成FFTW没有构建。先检查输出中的构建身份与原失败，再用同一已验证前缀运行限定测试：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=tests SMPPHAT_FFTW_PREFIX=/tmp/masp-fftw-reference/fftw-prefix-verified /tmp/masp-optional-checks/bin/python -m unittest test_codes_ch04_upstream_doa.OriginalExecutionTests test_codes_ch05_upstream_beamformers.OriginalExecutionTests test_codes_damas_author_contracts.AuthorOriginalCalls test_codes_room_assets.ActualRoomAssetsTests test_codes_room_srp_exercise.RoomSrpExerciseTest.test_actual_room_direct_component_and_audio_export_when_dependency_available test_codes_smpphat_reference.SMPPHATReferenceTests.test_optional_local_c_rerun -v
+```
+
+实际限定结果及工具身份保存在[可选测试审计](../reviews/2026-10-05-optional-test-audit.json)，保留原CLI退出2和signed lookup失败；测试通过是在核对这些实际结果，不是宣称原算法正确。
+
+这15个方法含原DOA1、原波束2、作者DAMAS4、房间资产6、房间仿真1、原C重跑1。房间资产类在主环境用一条类初始化skip跳过六个方法，所以不能把skip记录数直接当测试方法数。限定测试通过与全量主环境仍有skip分别报告；以上没有移除跳过装饰器、修改上游或升级主环境依赖。

@@ -1,0 +1,732 @@
+{
+  "status": "final003_finite_visual_and_structure_accepted",
+  "pdf_sha256": "36d3ddb920e017c3135525df076017429a8e319cea54bedb251df8581fa4682c",
+  "pdf_bytes": 69462354,
+  "pdf_pages": 940,
+  "source_digest": "595906c8e634",
+  "combined_html_sha256": "9a00b631a66c5d2e6a5d96bf851ed566e8f38070d3ac1d11169ad41342474056",
+  "current_pdf_file_sha_rechecked": true,
+  "independent_actual_render_count": 30,
+  "render_dpi": 160,
+  "pixel_comparison": {
+    "previous_candidate002_sha": "01b12d3ca7c2d125443f1ccda7b213220d742780a881b04f20891877cc9575ba",
+    "exact_full_rgba_same": 29,
+    "different_pages": [
+      1
+    ],
+    "method": "160dpi Poppler independently rendered, exact dimensions/full decoded RGBA np.array_equal"
+  },
+  "direct_final_original_view_pages": [
+    1,
+    264,
+    295,
+    342,
+    343,
+    612,
+    780,
+    781,
+    782,
+    877,
+    920,
+    927
+  ],
+  "direct_final_original_view_count": 12,
+  "inherited_actual_original_view_pages": [
+    16,
+    52,
+    76,
+    139,
+    189,
+    274,
+    294,
+    296,
+    350,
+    471,
+    528,
+    598,
+    662,
+    732,
+    774,
+    814,
+    851,
+    894
+  ],
+  "inherited_actual_original_view_count": 18,
+  "total_scope_closed": 30,
+  "true_targets": {
+    "/ch-5-sec-5-5": {
+      "page": 295,
+      "XYZ": [
+        "0.0",
+        "841.91998",
+        "0.0"
+      ]
+    },
+    "/ch-14-sec-u-3179856767": {
+      "page": 781,
+      "XYZ": [
+        "0.0",
+        "841.91998",
+        "0.0"
+      ]
+    }
+  },
+  "focused_structure_checks": [
+    {
+      "role": "long-error-expansion",
+      "physical_page": 342,
+      "formula_id": "005127",
+      "tex_sha256": "22277f48eaeff54b0068f285678fa593092c6247d8240631293bd9b348832986",
+      "mcid": 98,
+      "real_parenttree_identity": true,
+      "unique_BDC": [
+        {
+          "role": "/Formula",
+          "ActualText": "StartFraction 1 Over upper N EndFraction sigma summation Underscript n Endscripts left parenthesis e Subscript s Baseline left bracket n right bracket plus n Subscript o u t Baseline left bracket n right bracket right parenthesis squared equals StartFraction 1 Over upper N EndFraction sigma summation Underscript n Endscripts e Subscript s Baseline left bracket n right bracket squared plus StartFraction 1 Over upper N EndFraction sigma summation Underscript n Endscripts n Subscript o u t Baseline left bracket n right bracket squared plus StartFraction 2 Over upper N EndFraction sigma summation Underscript n Endscripts e Subscript s Baseline left bracket n right bracket n Subscript o u t Baseline left bracket n right bracket 。"
+        }
+      ],
+      "actual_paint_operations_in_mcid": 127
+    },
+    {
+      "role": "long-whitening",
+      "physical_page": 877,
+      "formula_id": "012619",
+      "tex_sha256": "20c62a3b67f9c7449e7e26b87fbc8509ed42937577b3ba79c1965264ac2c96fc",
+      "mcid": 64,
+      "real_parenttree_identity": true,
+      "unique_BDC": [
+        {
+          "role": "/Formula",
+          "ActualText": "bold upper W equals Start 2 By 2 Matrix 1st Row 1st Column 1 divided by 2 2nd Column 0 2nd Row 1st Column 0 2nd Column 1 EndMatrix comma bold upper W bold upper R Subscript n n Baseline bold upper W Superscript upper H Baseline equals Start 2 By 2 Matrix 1st Row 1st Column left parenthesis 1 divided by 2 right parenthesis squared times 4 2nd Column 0 2nd Row 1st Column 0 2nd Column 1 squared times 1 EndMatrix equals bold upper I comma bold upper W ModifyingAbove a With right arrow equals StartBinomialOrMatrix 1 divided by 2 Choose 1 EndBinomialOrMatrix 。"
+        }
+      ],
+      "actual_paint_operations_in_mcid": 95
+    },
+    {
+      "role": "long-half-sample",
+      "physical_page": 920,
+      "formula_id": "013310",
+      "tex_sha256": "82f63f9b4b515667d9bf6a3cee0b6c901a7cf91b2f06886716bb19cd399e67ed",
+      "mcid": 56,
+      "real_parenttree_identity": true,
+      "unique_BDC": [
+        {
+          "role": "/Formula",
+          "ActualText": "StartLayout 1st Row with Label left parenthesis 15 hyphen 5 right parenthesis EndLabel upper H Subscript 1 divided by 2 Baseline left parenthesis e Superscript j omega Baseline right parenthesis equals e Superscript minus j omega divided by 2 Baseline cosine left parenthesis omega divided by 2 right parenthesis comma upper H Subscript 1 divided by 2 Superscript 2 Baseline left parenthesis e Superscript j omega Baseline right parenthesis equals e Superscript minus j omega Baseline cosine squared left parenthesis omega divided by 2 right parenthesis period EndLayout"
+        }
+      ],
+      "actual_paint_operations_in_mcid": 112
+    },
+    {
+      "role": "long-tac",
+      "physical_page": 927,
+      "formula_id": "013481",
+      "tex_sha256": "e6f938a973cfec792944f723e5ff6e45750659c7513cc21e10ef93a227746ab4",
+      "mcid": 107,
+      "real_parenttree_identity": true,
+      "unique_BDC": [
+        {
+          "role": "/Formula",
+          "ActualText": "StartLayout 1st Row with Label left parenthesis 15 hyphen 6 right parenthesis EndLabel u Subscript m Baseline equals upper P left parenthesis x Subscript m Baseline right parenthesis comma u overbar equals StartFraction 1 Over upper M EndFraction sigma summation Underscript m equals 1 Overscript upper M Endscripts u Subscript m Baseline comma o Subscript m Baseline equals x Subscript m Baseline plus upper S left parenthesis left bracket u Subscript m Baseline comma upper R left parenthesis u overbar right parenthesis right bracket right parenthesis period EndLayout"
+        }
+      ],
+      "actual_paint_operations_in_mcid": 97
+    },
+    {
+      "role": "table-gls-position",
+      "physical_page": 264,
+      "formula_id": "003655",
+      "tex_sha256": "81f22b9813fce8ef97f922e63fc6662bbf2f2ef1904d35e2bed8993fab5835e7",
+      "mcid": 81,
+      "real_parenttree_identity": true,
+      "unique_BDC": [
+        {
+          "role": "/Formula",
+          "ActualText": "left parenthesis 0.481143819 comma 0.502357023 right parenthesis"
+        }
+      ],
+      "actual_paint_operations_in_mcid": 50
+    },
+    {
+      "role": "table-derivative-components",
+      "physical_page": 343,
+      "formula_id": "005131",
+      "tex_sha256": "83cb7606a0e1242ee58ff5a127b6f747083b379b65adaad2554694847aa84d24",
+      "mcid": 61,
+      "real_parenttree_identity": true,
+      "unique_BDC": [
+        {
+          "role": "/Formula",
+          "ActualText": "2.85619697 times 10 Superscript negative 4"
+        }
+      ],
+      "actual_paint_operations_in_mcid": 30
+    }
+  ],
+  "independent_source_sha_and_multiset": {
+    "chapters": 16,
+    "source_count": 13652,
+    "all_16_source_file_SHA_match": true,
+    "all_source_TeX_SHA_multiset_independent_match": true
+  },
+  "actual_body_scale_on_22_representative_pages": [
+    {
+      "physical_page": 16,
+      "sample_count": 14,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本页是全套教程的入口，教程正文一共 16 个文件：本页导读＋13 章正文（含两篇扩展专题）＋2"
+      }
+    },
+    {
+      "physical_page": 52,
+      "sample_count": 21,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本章从客厅里的远距离语音交互出发，区分定位、波束形成和追踪的输入输出，再计算阵列为什"
+      }
+    },
+    {
+      "physical_page": 76,
+      "sample_count": 23,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本章沿着“距离差 → 时延 → 复数相位 → 多通道统计量 → 波束指标”学习。先检查几何和单"
+      }
+    },
+    {
+      "physical_page": 139,
+      "sample_count": 6,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本章要回答三个问题：麦克风放在哪里，哪些方向会产生不同观测，实际通道误差会怎样破坏这"
+      }
+    },
+    {
+      "physical_page": 189,
+      "sample_count": 6,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本章把“方向”和“位置”分开：DOA 给出相对阵列的角度；位置还包括距离，通常需要球面"
+      }
+    },
+    {
+      "physical_page": 264,
+      "sample_count": 11,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": " 表示其加权残差平方，并记二维信息"
+      }
+    },
+    {
+      "physical_page": 274,
+      "sample_count": 21,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "先看一个可观察的问题：同一句话到达不同麦克风的时刻略有差别。若直接相加，目标声音可能"
+      }
+    },
+    {
+      "physical_page": 342,
+      "sample_count": 28,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "最终四个 WAV 均为32002点，时长约2.000125 s，使用共同发布增益1。源参考、单约束输出和"
+      }
+    },
+    {
+      "physical_page": 343,
+      "sample_count": 17,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "源和噪声独立只使交叉项的期望为零，不保证一次有限记录恰好正交。上表不能直接充当某个"
+      }
+    },
+    {
+      "physical_page": 350,
+      "sample_count": 13,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "第 4、5 章和第 9 章讨论声源方向、波束和轨迹。本章转向设备播放声返回麦克风所形成的回"
+      }
+    },
+    {
+      "physical_page": 471,
+      "sample_count": 13,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "第 6 章处理设备播放声返回麦克风形成的回声。本章讨论房间混响的晚期拖尾及 WPE 去混响。"
+      }
+    },
+    {
+      "physical_page": 528,
+      "sample_count": 8,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "第 7 章讨论传播形成的混响拖尾，本章讨论多个说话人同时发声时的混合与分离。主要方法包括"
+      }
+    },
+    {
+      "physical_page": 598,
+      "sample_count": 18,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "第 4 章的定位回答“这一帧声音从哪里来”，本章追踪回答“结合之前的观测，当前方向及其不"
+      }
+    },
+    {
+      "physical_page": 662,
+      "sample_count": 2,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本章把前九章的算法放进真实系统，讨论模块启用条件、信号取点、资源预算和验收方法。"
+      }
+    },
+    {
+      "physical_page": 732,
+      "sample_count": 8,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "选型应从任务和约束开始。同一个四麦阵列用于固定座位通话、多人会议或机器人跟随时，合适"
+      }
+    },
+    {
+      "physical_page": 774,
+      "sample_count": 13,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "运行中的设备可能同时产生轴承声、风扇声和壳体振动声。只看一支麦克风的频谱，能知道某个"
+      }
+    },
+    {
+      "physical_page": 814,
+      "sample_count": 8,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "会议桌上的两台设备各有两支麦克风。一台靠近说话人，另一台可能更接近噪声源。远端设备的"
+      }
+    },
+    {
+      "physical_page": 851,
+      "sample_count": 23,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "本附录的 14.1～14.3 汇总符号、术语和数学工具，14.4 用小矩阵、短序列与边界反例练习复"
+      }
+    },
+    {
+      "physical_page": 877,
+      "sample_count": 24,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": " 的解，并找出范数最小者。"
+      }
+    },
+    {
+      "physical_page": 894,
+      "sample_count": 14,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "下面的阅读与实验顺序从经典模型开始，再过渡到公开基线、数据集和硬件实验。"
+      }
+    },
+    {
+      "physical_page": 920,
+      "sample_count": 23,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": "：两次半采样插值能否代替一次整采样延迟。"
+      }
+    },
+    {
+      "physical_page": 927,
+      "sample_count": 24,
+      "min_scale": 0.749982808750715,
+      "max_scale": 0.749982808750715,
+      "example": {
+        "scale": 0.749982808750715,
+        "actual_body_point_size": 11.99972494001144,
+        "text": " 构造两个长度为 3 的实数离散 RIR，直达部分都为 "
+      }
+    }
+  ],
+  "findings": {
+    "cover": "updated hash and two complete metadata lines, no character wrap",
+    "LCMV": "complete h2 on295 followed by derivation; prior294 no half title",
+    "imaging": "finite handexample all on781 with12-10/11 and conclusion; prior780 PSF material complete; next782 fig67+caption complete",
+    "particle612": "substantive likelihood/normalization tables, not orphan",
+    "all_long_formulas_and_tables": "complete visible bodies and tags, no cell collision",
+    "new_defects": []
+  },
+  "images": [
+    {
+      "page": 1,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-001.png",
+      "png_sha256": "6874b71ef865dbc7e795a5ff236a9f86c20f95775482d22b83146acd1b38dcaa",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 16,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-016.png",
+      "png_sha256": "8842d87379b9944e1ee0f857bddda51cac810fc35d65407d03dfddbce6c63d21",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 52,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-052.png",
+      "png_sha256": "b3440fb26ceebd1112bcb99b2573eada6d1392f051a5491148b53d05dc67e277",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 76,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-076.png",
+      "png_sha256": "69838219c7e7b08896c4367f97074a28621b555a369781ceff1d7df74ea5926b",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 139,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-139.png",
+      "png_sha256": "d61971ab3eb2376f7e1fdf07343830af06ad3c723c26b374bf3ba97cda3e619c",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 189,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-189.png",
+      "png_sha256": "7d02e0736c90a1d9eb80785b60aa1df99187e55367671d3f3e1d6e98ace3d07b",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 264,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-264.png",
+      "png_sha256": "2eac4e66d8a5b4f7d8f725d389c1da017edee4b1c47f0461c8ccea6aa41dd475",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 274,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-274.png",
+      "png_sha256": "c56f4861f514a9fce48ce084b7becca522ba515fb152198aa258db44e084f0db",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 294,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-294.png",
+      "png_sha256": "d99ada2173104f2712e0cff6d1f3ae0daa966415872ad4035fdc78934dcdae25",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 295,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-295.png",
+      "png_sha256": "deefc5cb6569fc0e6300b2294a8875b042bafb0bcff2e9625cb2a7d60889d12a",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 296,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-296.png",
+      "png_sha256": "9dbb05c6e74c0bfa09e7207097e15a12fcb9312a6f7aecfde6cbeec123c3c9d6",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 342,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-342.png",
+      "png_sha256": "0d0dda299636e10a4697254c5d25b503c5b969b8497de07a33814033cd704b4f",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 343,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-343.png",
+      "png_sha256": "6339b964e56908661e32576e19c8b3b42c3c27fc3c62aaf72c3165301df67a78",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 350,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-350.png",
+      "png_sha256": "f2609c6ed4759de9c10b195d752fb1847518b15ff782a63d34b0283bb7318679",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 471,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-471.png",
+      "png_sha256": "fa260a03437f8c1ab50813221a7665600f2e2bfe59349704bf9555a80f4977aa",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 528,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-528.png",
+      "png_sha256": "fb6211b9396cbecb8da0f0f048a9664054a2c7675d8b99c4664e998dadcb1c48",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 598,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-598.png",
+      "png_sha256": "a71dfd7683702f4733d2dde3f11dc0d50763a21672edf8cb259f136941e4f6db",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 612,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-612.png",
+      "png_sha256": "074015c8bd9860f1f0744a479f8e0f908178c30d0c3ed95766c79c41041acc77",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 662,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-662.png",
+      "png_sha256": "26be1e208aa620cf1111d4e8fe0eac09d4040aa7714951b3f40dea7e01af50d3",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 732,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-732.png",
+      "png_sha256": "0f410dcc368f84e29e1de9f6cb8b213985a9c06e8a6acb7feb1d508d8c6b0464",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 774,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-774.png",
+      "png_sha256": "c05f2f43dc02449a7cf7c1c785a3ca5191085f41be532441194f48f93803f402",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 780,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-780.png",
+      "png_sha256": "f61280f6b6bc2c69a2145c1f5c087bcf1c67fff4021b13fce029650c0193ad3b",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 781,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-781.png",
+      "png_sha256": "1450310b36e7b74316432dc6135694e7208733cfede809b00fd49fb3d6119a9b",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 782,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-782.png",
+      "png_sha256": "2437fc13d84d33419318a2668534ed25cc6624c65bc628fb2eeb92f6d340aff6",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 814,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-814.png",
+      "png_sha256": "15158d5f60ce84e818958590bdcc7bcfac971c6715d4d5ffdecc25751d6e9a6f",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 851,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-851.png",
+      "png_sha256": "aa1e95e7b6cbf31ce639f81dc4cf2ea289f5f34554d67432e470c8cee1ca13ad",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 877,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-877.png",
+      "png_sha256": "6ac0d31509c08d059f3a6fbba02b310718d1a8a2eaf13ee4dd004ff8642035c1",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 894,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-894.png",
+      "png_sha256": "ef6bd37e51af947ce330d1ce8d1c85f57d4ddc32bff03f3a8d6798f8e6f8680c",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "exact_full_RGBA_inheritance_from_actual_original_viewed002"
+    },
+    {
+      "page": 920,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-920.png",
+      "png_sha256": "908a080ce633e3134dd8ba4f7c393cd2060cef9fdb2f5afa4be26cc2af64328c",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    },
+    {
+      "page": 927,
+      "path": "/private/tmp/masp-svg-width-math/candidate003/page-927.png",
+      "png_sha256": "f43823abe841eb00b906099f59079dd3ffea53dc0e4787bccefb1ba030f5069c",
+      "size": [
+        1323,
+        1871
+      ],
+      "acceptance": "final_original_view"
+    }
+  ],
+  "limits": [
+    "finite30-page visual scope; not full940-page visual review",
+    "MCID paint evidence is structural, not pixel identity assertion for allformulas",
+    "no PDF-UA or assistive-technology runtime certification",
+    "no human audio listening claim"
+  ]
+}

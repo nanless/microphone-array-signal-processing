@@ -1,0 +1,1765 @@
+{
+  "sources": {
+    "README.md": {
+      "sha256": "d0fa0a779e9840120b71dc4efe6b462c39a189b96b50caa76938b94c66e91cf1",
+      "lines": 127,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "README_EN.md": {
+      "sha256": "0be7a80c1056d27875024abb7af3c0f12ff6517db87a68214384b3da4aec96fd",
+      "lines": 127,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "codes/chapters/README.md": {
+      "sha256": "e35ac720bb87ae2c144f47b3da7678519ed3b20aeab995f7822cff420f1eb4b6",
+      "lines": 171,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "codes/chapters/ch00/research/README.md": {
+      "sha256": "ed30d9fc1bfcd5d6cb9d9e6feacd0452b5bd54cd930a0e6b3de2847444ffe465",
+      "lines": 85,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "codes/chapters/ch00/upstream/README.md": {
+      "sha256": "4dfa0948cf37005e56f3630935b0570fff651c1a5e2f656948e51bfdb77f6b8f",
+      "lines": 132,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "codes/chapters/ch02/real_audio/README.md": {
+      "sha256": "1e89135828d296053ac6f0ae4186d09071bfbab3c2d7593fcd38228d0a48127a",
+      "lines": 151,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "scripts/README.md": {
+      "sha256": "d47b219df51fcf02917ee64576f777c27981724db66710c761bb11c6b1a2a6fa",
+      "lines": 354,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    },
+    "scripts/vendor/mathjax-3.2.2/README.md": {
+      "sha256": "b4b4a5bacfbd25b8200404e9630a11342ac644d4b97dd338dfc643c46a039d28",
+      "lines": 38,
+      "readScope": "Full actual text read, truncated aggregate gap112..145 codes README independently read; newly changed vendor lines re-read."
+    }
+  },
+  "localLinks": [
+    {
+      "source": "README.md",
+      "line": 5,
+      "href": "chapters/00_overview.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/00_overview.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 5,
+      "href": "codes/chapters/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 5,
+      "href": "codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 7,
+      "href": "codes/chapters/README.md#audio-inventory",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README.md",
+      "line": 7,
+      "href": "codes/chapters/ch02/real_audio/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 9,
+      "href": "codes/chapters/ch00/research/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 11,
+      "href": "README_EN.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/README_EN.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 19,
+      "href": "codes/chapters/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 44,
+      "href": "codes/chapters/ch00/upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 48,
+      "href": "dist/microphone-array-tutorial.pdf",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/dist/microphone-array-tutorial.pdf",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 73,
+      "href": "requirements.txt",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/requirements.txt",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 99,
+      "href": "scripts/README.md#audio-regeneration",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README.md",
+      "line": 101,
+      "href": "scripts/README.md#optional-verification",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README.md",
+      "line": 111,
+      "href": "codes/chapters/ch00/upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 111,
+      "href": "codes/chapters/ch00/COVERAGE.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/COVERAGE.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 111,
+      "href": "codes/chapters/ch00/THIRD_PARTY.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/THIRD_PARTY.md",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "line": 119,
+      "href": "chapters/15_appendix-guide.md#153-研究前沿速览2024",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/15_appendix-guide.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README.md",
+      "line": 119,
+      "href": "chapters/15_appendix-guide.md#156-思考与练习",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/15_appendix-guide.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README.md",
+      "line": 125,
+      "href": "codes/chapters/README.md#音频技术检查与真人听辨记录",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README.md",
+      "line": 127,
+      "href": "scripts/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 5,
+      "href": "chapters/00_overview.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/00_overview.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 5,
+      "href": "codes/chapters/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 5,
+      "href": "codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 7,
+      "href": "codes/chapters/README.md#audio-inventory",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 7,
+      "href": "codes/chapters/ch02/real_audio/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 9,
+      "href": "codes/chapters/ch00/research/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 11,
+      "href": "README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 19,
+      "href": "codes/chapters/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 44,
+      "href": "codes/chapters/ch00/upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 48,
+      "href": "dist/microphone-array-tutorial.pdf",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/dist/microphone-array-tutorial.pdf",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 73,
+      "href": "requirements.txt",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/requirements.txt",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 99,
+      "href": "scripts/README.md#audio-regeneration",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 101,
+      "href": "scripts/README.md#optional-verification",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 111,
+      "href": "codes/chapters/ch00/upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 111,
+      "href": "codes/chapters/ch00/COVERAGE.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/COVERAGE.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 111,
+      "href": "codes/chapters/ch00/THIRD_PARTY.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/THIRD_PARTY.md",
+      "exists": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 119,
+      "href": "chapters/15_appendix-guide.md#153-研究前沿速览2024",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/15_appendix-guide.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 119,
+      "href": "chapters/15_appendix-guide.md#156-思考与练习",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/15_appendix-guide.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 125,
+      "href": "codes/chapters/README.md#音频技术检查与真人听辨记录",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "README_EN.md",
+      "line": 127,
+      "href": "scripts/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 5,
+      "href": "ch04/core/covariance.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04/core/covariance.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 9,
+      "href": "ch00/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 10,
+      "href": "ch01/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch01",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 11,
+      "href": "ch02/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 12,
+      "href": "ch03/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 13,
+      "href": "ch04/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 14,
+      "href": "ch05/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch05",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 15,
+      "href": "ch06/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch06",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 16,
+      "href": "ch07/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch07",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 17,
+      "href": "ch08/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch08",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 18,
+      "href": "ch09/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch09",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 19,
+      "href": "ch10/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 20,
+      "href": "ch11/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch11",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 21,
+      "href": "ch12/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch12",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 22,
+      "href": "ch13/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch13",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 23,
+      "href": "appendix_a/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_a",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 24,
+      "href": "appendix_b/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_b",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 33,
+      "href": "../../chapters/00_overview.md#8-动手复现",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/00_overview.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 41,
+      "href": "ch04/reflection_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04/reflection_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 41,
+      "href": "ch00/research/01_spatial_and_tracking.md#58-直达路径证据dpd筛选与dp-rtf不是同一计算",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 43,
+      "href": "ch03/baseline_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03/baseline_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 43,
+      "href": "ch03/reports/upstream_coarray_contracts.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03/reports/upstream_coarray_contracts.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 45,
+      "href": "ch02/sweep_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/sweep_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 45,
+      "href": "ch02/reports/upstream_model_contracts.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/reports/upstream_model_contracts.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 49,
+      "href": "ch00/COVERAGE.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/COVERAGE.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 49,
+      "href": "ch00/research/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 51,
+      "href": "ch00/cross_chapter/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/cross_chapter",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 51,
+      "href": "ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 53,
+      "href": "ch06/examples/aec_same_input_truth.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch06/examples/aec_same_input_truth.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 53,
+      "href": "ch00/research/02_aec_wpe_separation.md#aec",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/02_aec_wpe_separation.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 61,
+      "href": "ch00/audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 61,
+      "href": "../../scripts/code_layout.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/code_layout.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 65,
+      "href": "ch01/binaural_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch01/binaural_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 66,
+      "href": "ch01/spectral_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch01/spectral_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 67,
+      "href": "ch02/stft_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/stft_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 68,
+      "href": "ch02/sweep_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/sweep_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 69,
+      "href": "ch03/geometry_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03/geometry_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 70,
+      "href": "ch03/baseline_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03/baseline_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 71,
+      "href": "ch04/reflection_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04/reflection_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 72,
+      "href": "ch04/focus_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04/focus_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 73,
+      "href": "ch05/derivative_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch05/derivative_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 74,
+      "href": "ch05/phase_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch05/phase_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 75,
+      "href": "ch06/apa_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch06/apa_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 76,
+      "href": "ch06/reference_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch06/reference_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 77,
+      "href": "ch07/delay_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch07/delay_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 78,
+      "href": "ch07/mint_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch07/mint_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 79,
+      "href": "ch08/mask_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch08/mask_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 80,
+      "href": "ch08/css_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch08/css_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 81,
+      "href": "ch08/gss_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch08/gss_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 82,
+      "href": "ch09/moving_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch09/moving_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 83,
+      "href": "ch09/tracking_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch09/tracking_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 84,
+      "href": "ch10/noise_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/noise_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 85,
+      "href": "ch10/channel_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/channel_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 86,
+      "href": "ch11/scenario_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch11/scenario_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 87,
+      "href": "ch12/imaging_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch12/imaging_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 88,
+      "href": "ch13/distributed_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch13/distributed_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 89,
+      "href": "appendix_a/weighted_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_a/weighted_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 90,
+      "href": "appendix_b/response_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_b/response_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 91,
+      "href": "appendix_b/room_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_b/room_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 93,
+      "href": "../../scripts/README.md#audio-regeneration",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 95,
+      "href": "ch02/real_audio/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 103,
+      "href": "ch00/COVERAGE.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/COVERAGE.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 103,
+      "href": "ch00/research/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/cross_chapter/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/cross_chapter",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/examples/generate_audio_samples.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/examples/generate_audio_samples.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/ARCHIVE_SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/ARCHIVE_SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/SOURCE_STATUS.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/ARCHIVE_SOURCE_STATUS.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/ARCHIVE_SOURCE_STATUS.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 105,
+      "href": "ch00/upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 107,
+      "href": "ch00/source_snapshots/",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/source_snapshots",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 107,
+      "href": "ch00/core/source_history.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/core/source_history.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 107,
+      "href": "ch00/research/04_source_reproduction.md#historical-source-bindings",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 109,
+      "href": "ch00/audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 109,
+      "href": "../../chapters/00_overview.md#audio-assets",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/00_overview.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 113,
+      "href": "ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 115,
+      "href": "ch02/real_audio/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 117,
+      "href": "ch00/SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 117,
+      "href": "ch00/ARCHIVE_SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/ARCHIVE_SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 117,
+      "href": "ch00/THIRD_PARTY.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/THIRD_PARTY.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 117,
+      "href": "ch00/SOURCE_STATUS.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 117,
+      "href": "ch00/research/04_source_reproduction.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 119,
+      "href": "ch00/research/04_source_reproduction.md#overview-source-entrypoints",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 121,
+      "href": "ch00/upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 125,
+      "href": "ch02/examples/generate_stft_convolution.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/examples/generate_stft_convolution.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 126,
+      "href": "ch02/examples/audit_upstream_models.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/examples/audit_upstream_models.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 136,
+      "href": "ch03/geometry_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch03/geometry_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 142,
+      "href": "ch00/research/02_aec_wpe_separation.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/02_aec_wpe_separation.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 144,
+      "href": "ch09/reports/upstream_tracking_contracts_current.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch09/reports/upstream_tracking_contracts_current.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 144,
+      "href": "ch09/reports/tracking_upstream_interfaces_current.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch09/reports/tracking_upstream_interfaces_current.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 144,
+      "href": "ch00/research/01_spatial_and_tracking.md#tracking-contract-audit",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 146,
+      "href": "ch10/noise_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/noise_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 146,
+      "href": "ch10/examples/audit_industrial_contracts.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/examples/audit_industrial_contracts.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 150,
+      "href": "appendix_a/weighted_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_a/weighted_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 152,
+      "href": "appendix_b/response_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_b/response_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 158,
+      "href": "ch10/core/channel_selection.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/core/channel_selection.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 158,
+      "href": "ch10/channel_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/channel_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 158,
+      "href": "ch10/examples/generate_channel_audio.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/examples/generate_channel_audio.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 160,
+      "href": "ch12/examples/audit_damas_author_contracts.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch12/examples/audit_damas_author_contracts.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 165,
+      "href": "../../reviews/2026-10-05-audio-technical-audit.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-audio-technical-audit.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 167,
+      "href": "../../reviews/2026-10-05-human-listening-plan.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-human-listening-plan.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/README.md",
+      "line": 167,
+      "href": "../../reviews/2026-10-05-human-listening-register.csv",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-human-listening-register.csv",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 7,
+      "href": "../SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 7,
+      "href": "../COVERAGE.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/COVERAGE.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 12,
+      "href": "04_source_reproduction.md#tac-contracts",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 18,
+      "href": "04_source_reproduction.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 26,
+      "href": "../../appendix_b/room_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/appendix_b/room_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 30,
+      "href": "01_spatial_and_tracking.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 31,
+      "href": "02_aec_wpe_separation.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/02_aec_wpe_separation.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 32,
+      "href": "03_industrial_deployment.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/03_industrial_deployment.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 33,
+      "href": "04_source_reproduction.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 34,
+      "href": "05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 34,
+      "href": "../../../../chapters/00_overview.md#audio-assets",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/00_overview.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 44,
+      "href": "04_source_reproduction.md#appendix-solver-contracts",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 46,
+      "href": "04_source_reproduction.md#appendix-b-reproduction",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 47,
+      "href": "05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 61,
+      "href": "../COVERAGE.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/COVERAGE.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 61,
+      "href": "05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 62,
+      "href": "../SOURCE_STATUS.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 62,
+      "href": "../ARCHIVE_SOURCE_STATUS.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/ARCHIVE_SOURCE_STATUS.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 63,
+      "href": "04_source_reproduction.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 64,
+      "href": "03_industrial_deployment.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/03_industrial_deployment.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 66,
+      "href": "../upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 69,
+      "href": "../../ch04/reports/doatools_esprit_reference.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04/reports/doatools_esprit_reference.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 69,
+      "href": "../../ch04/reports/figure13_gcc_reverb.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch04/reports/figure13_gcc_reverb.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 71,
+      "href": "../../../../chapters/12_acoustic-imaging.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/12_acoustic-imaging.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 71,
+      "href": "01_spatial_and_tracking.md#imaging-contract-audit",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 71,
+      "href": "05_exercises_and_audio.md#471-十八题分别核对什么",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 73,
+      "href": "../../../../chapters/13_distributed-enhancement.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/13_distributed-enhancement.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 73,
+      "href": "03_industrial_deployment.md#distributed-network-deployment",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/03_industrial_deployment.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 73,
+      "href": "04_source_reproduction.md#distributed-reproduction",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 73,
+      "href": "05_exercises_and_audio.md#distributed-exercises-audio",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 75,
+      "href": "04_source_reproduction.md#overview-source-entrypoints",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 80,
+      "href": "../../../../README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 80,
+      "href": "../../../../chapters/00_overview.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/00_overview.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 81,
+      "href": "../../README.md#audio-inventory",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 82,
+      "href": "../../../../scripts/README.md#audio-regeneration",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/research/README.md",
+      "line": 83,
+      "href": "../upstream/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 37,
+      "href": "../io_contracts.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/io_contracts.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 49,
+      "href": "../research/04_source_reproduction.md#overview-source-entrypoints",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 51,
+      "href": "../research/04_source_reproduction.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 57,
+      "href": "../ARCHIVE_SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/ARCHIVE_SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 73,
+      "href": "../THIRD_PARTY.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/THIRD_PARTY.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 95,
+      "href": "../research/01_spatial_and_tracking.md#12-声速参数必须与实际实现一致",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 108,
+      "href": "../SOURCES.lock.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 108,
+      "href": "../research/01_spatial_and_tracking.md#tracking-model-lifecycle-sphere",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 117,
+      "href": "../research/04_source_reproduction.md#imaging-author-source",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 132,
+      "href": "../../README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch00/upstream/README.md",
+      "line": 132,
+      "href": "../../../../scripts/README.md#optional-verification",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 17,
+      "href": "ATTRIBUTION.txt",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/ATTRIBUTION.txt",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 18,
+      "href": "LICENSE.txt",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/LICENSE.txt",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 48,
+      "href": "demand_nriver_16ch_10s.wav",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/demand_nriver_16ch_10s.wav",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 49,
+      "href": "demand_nriver_ch01_10s.wav",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/demand_nriver_ch01_10s.wav",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 50,
+      "href": "demand_nriver_mean02_10s.wav",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/demand_nriver_mean02_10s.wav",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 51,
+      "href": "demand_nriver_mean16_10s.wav",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/demand_nriver_mean16_10s.wav",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 149,
+      "href": "../core/real_recordings.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/core/real_recordings.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 150,
+      "href": "../examples/prepare_real_recordings.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/examples/prepare_real_recordings.py",
+      "exists": true
+    },
+    {
+      "source": "codes/chapters/ch02/real_audio/README.md",
+      "line": 151,
+      "href": "MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch02/real_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 5,
+      "href": "../codes/chapters/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 60,
+      "href": "../codes/chapters/README.md#audio-inventory",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 108,
+      "href": "#附录-b-房间仿真复算",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 110,
+      "href": "../codes/chapters/ch11/chapter11_experiments.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch11/chapter11_experiments.py",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 110,
+      "href": "../chapters/11_selection-guide.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/chapters/11_selection-guide.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 110,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 112,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 122,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 126,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 126,
+      "href": "../codes/chapters/ch00/audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 150,
+      "href": "vendor/mathjax-3.2.2/README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/README.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 152,
+      "href": "../reviews/2026-10-05-pdf-formula-audit.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-pdf-formula-audit.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 152,
+      "href": "../reviews/2026-10-05-pdf-browser-controls.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-pdf-browser-controls.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 152,
+      "href": "../reviews/2026-10-05-pdf-browser-controls-calibrated.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-pdf-browser-controls-calibrated.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 238,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md#36-第二章有限窗卷积二阶交叉项与窗归一化",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 275,
+      "href": "../codes/chapters/ch05/examples/audit_upstream_beamformers.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch05/examples/audit_upstream_beamformers.py",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 275,
+      "href": "../codes/chapters/ch05/reports/upstream_beamformers_current.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch05/reports/upstream_beamformers_current.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 281,
+      "href": "../codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch09/examples/audit_upstream_tracking_contracts.py",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 298,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md#471-十八题分别核对什么",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 298,
+      "href": "../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/01_spatial_and_tracking.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 309,
+      "href": "../codes/chapters/ch00/research/05_exercises_and_audio.md#distributed-exercises-audio",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/05_exercises_and_audio.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 319,
+      "href": "../codes/chapters/ch10/channel_audio/MANIFEST.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch10/channel_audio/MANIFEST.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 321,
+      "href": "../codes/chapters/ch00/research/04_source_reproduction.md#imaging-author-source",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true,
+      "fragmentMethod": "Explicit source IDs or GitHub-style heading approximation",
+      "fragmentPresent": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 331,
+      "href": "../codes/chapters/ch00/research/04_source_reproduction.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/research/04_source_reproduction.md",
+      "exists": true
+    },
+    {
+      "source": "scripts/README.md",
+      "line": 352,
+      "href": "../reviews/2026-10-05-optional-test-audit.json",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/reviews/2026-10-05-optional-test-audit.json",
+      "exists": true
+    },
+    {
+      "source": "scripts/vendor/mathjax-3.2.2/README.md",
+      "line": 7,
+      "href": "LICENSE",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/LICENSE",
+      "exists": true
+    },
+    {
+      "source": "scripts/vendor/mathjax-3.2.2/README.md",
+      "line": 9,
+      "href": "SRE-LICENSE",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/vendor/mathjax-3.2.2/SRE-LICENSE",
+      "exists": true
+    },
+    {
+      "source": "scripts/vendor/mathjax-3.2.2/README.md",
+      "line": 24,
+      "href": "../../README.md",
+      "target": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/scripts/README.md",
+      "exists": true
+    }
+  ],
+  "badLinks": [],
+  "vendorResources": {
+    "tex-svg.js": {
+      "bytes": 2108580,
+      "sha256": "d4295dc33744836935c1399feece5159577b34c5c8ffb9f1c6324cd82e03a882",
+      "documented": true
+    },
+    "input/tex/extensions/boldsymbol.js": {
+      "bytes": 4056,
+      "sha256": "d6771fee0772db2657796c8d0e20e1878bb3237f6d3ed1e828e1834a4ff743ca",
+      "documented": true
+    },
+    "a11y/sre.js": {
+      "bytes": 337064,
+      "sha256": "a41dc487037b75d6dae75677e36fe2f03d1d2684f232d96f0422a11b35051660",
+      "documented": true
+    },
+    "sre/mathmaps/base.json": {
+      "bytes": 115025,
+      "sha256": "83311887b069476a6a4d0c6afe7f8e55075c85b44b029588739c0d835fc912b8",
+      "documented": true
+    },
+    "sre/mathmaps/en.json": {
+      "bytes": 409173,
+      "sha256": "19d9b309dc0d25d2bde2d3130bd3772b6d7c3f8316ebbd85306bef55ac89b2a7",
+      "documented": true
+    },
+    "LICENSE": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "documented": true
+    },
+    "SRE-LICENSE": {
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "documented": true
+    },
+    "output/chtml/fonts/woff-v2/MathJax_Math-Regular.woff": {
+      "bytes": 19288,
+      "sha256": "c01d3321e89b403c4b811aa153c4e618eda3421f92d8a072a02c8d190782a191",
+      "documented": true
+    }
+  },
+  "boundaries": [
+    "No rendered README acceptance claimed.",
+    "GitHub heading normalization is an approximation, not live remote navigation.",
+    "Module/help/27audio inventory already actual checked in prior v2 report; no repeated generator execution here.",
+    "No human listening or screen-reader/TTS experience claimed."
+  ]
+}
