@@ -1,4 +1,4 @@
-"""Independent arithmetic and real temporary PCM oracles for E12-06..19."""
+"""Independent arithmetic and real temporary PCM oracles for E12-06..20."""
 
 import json
 import tempfile
@@ -27,7 +27,7 @@ class AppendixAMathTests(unittest.TestCase):
         cls.rows = run_experiments(repo_root=root, weighted_directory=directory)
 
     def test_exact_ids_and_json(self):
-        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 20)})
+        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 21)})
         json.dumps(self.rows, allow_nan=False)
 
     def test_signed_bins_and_complex_norm(self):

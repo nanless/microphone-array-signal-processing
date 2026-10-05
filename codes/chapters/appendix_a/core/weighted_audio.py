@@ -10,6 +10,7 @@ import io
 import struct
 import wave
 import numpy as np
+from codes.chapters.ch00.io_contracts import same_metadata
 
 SAMPLE_RATE = 16000
 SAMPLES = 32000
@@ -115,3 +116,140 @@ def analyze_pcm(buffers):
             'score': [lo, hi], 'gain_fitting': False, 'delay_fitting': False}
     return {'scored_samples': hi-lo, 'integer_reference_squared_sum': denominator,
             'decoded_amplitude_denominator': 32768, 'candidates': candidates}
+
+
+def _literal_contract():
+    """Independent fixed fixture, rather than a second call to build_fixture.
+
+    Literal constants deliberately do not follow mutable generation constants.
+    This checks trusted internal model drift; it is not an untrusted-code sandbox.
+    """
+    weights = {'weighted_ols': [.5, .5], 'weighted_gls': [.8, .2],
+               'weighted_reversed': [.2, .8]}
+    parameters = {
+        'sample_rate_hz': 16000, 'samples_per_channel': 32000,
+        'source_score': [1600, 30400], 'scored_samples': 28800,
+        'target_frequency_hz': 700, 'target_amplitude': .2,
+        'noise_frequencies_hz': [3500, 4000], 'noise_amplitudes': [.03, .06],
+        'envelope': 'min(1,n/640,(31999-n)/640), n=0..31999; endpoints exactly zero',
+        'weights': weights, 'noise_covariance_on_score': [[.00045, 0.], [0., .0018]],
+        'common_export_gain': 1.0, 'delay_samples': 0,
+        'limits': 'deterministic finite-window orthogonality, not random independence, estimated covariance, speech or listening-study evidence',
+    }
+    n = np.arange(32000)
+    envelope = np.minimum(1., np.minimum(n/640, (31999-n)/640))
+    target = .2*np.cos(2*np.pi*700*n/16000)*envelope
+    first = .03*np.cos(2*np.pi*3500*n/16000)*envelope
+    second = .06*np.cos(2*np.pi*4000*n/16000)*envelope
+    signals = {'weighted_target': target,
+               'weighted_array': np.stack((target+first, target+second))}
+    components = {}
+    for name, (w1, w2) in weights.items():
+        noise = w1*first+w2*second
+        signals[name] = target+noise
+        components[name] = {'clean': target.copy(), 'noise': noise}
+    return {'parameters': parameters, 'signals': signals, 'components': components}
+
+
+def _fixed_array(actual, expected, label):
+    if (type(actual) is not np.ndarray or actual.dtype.kind != 'f'
+            or actual.shape != expected.shape or not np.all(np.isfinite(actual))):
+        raise ValueError(f'{label} must be a finite real floating array of the fixed shape')
+    if not np.allclose(actual, expected, rtol=0., atol=3e-13):
+        raise ValueError(f'{label} differs from the fixed literal waveform')
+    if np.any(actual[..., (0, -1)] != 0.):
+        raise ValueError(f'{label} fixed envelope endpoints must be exactly zero')
+
+
+def validate_fixed_fixture(fixture):
+    """Check exact typed declarations and all unquantized samples before IO."""
+    literal = _literal_contract()
+    if type(fixture) is not dict or fixture.keys() != literal.keys():
+        raise ValueError('fixed weighted fixture must have exactly parameters/signals/components')
+    if not same_metadata(fixture['parameters'], literal['parameters']):
+        raise ValueError('fixed weighted parameters differ in value, structure or type')
+    for section in ('signals', 'components'):
+        if type(fixture[section]) is not dict or fixture[section].keys() != literal[section].keys():
+            raise ValueError(f'fixed weighted {section} member set differs')
+    for name, expected in literal['signals'].items():
+        _fixed_array(fixture['signals'][name], expected, name)
+    for name, expected in literal['components'].items():
+        actual = fixture['components'][name]
+        if type(actual) is not dict or actual.keys() != expected.keys():
+            raise ValueError('fixed weighted component fields differ')
+        for key, values in expected.items():
+            _fixed_array(actual[key], values, name+'.'+key)
+    return literal
+
+
+def _fixed_report(actual, expected, label):
+    """Fixed report structure/types; powers nonnegative, signed cross allowed."""
+    if type(actual) is not type(expected):
+        raise ValueError(f'{label} has an incorrect metadata type')
+    if type(expected) is dict:
+        if actual.keys() != expected.keys():
+            raise ValueError(f'{label} fields differ')
+        for key, value in expected.items():
+            _fixed_report(actual[key], value, label+'.'+key)
+    elif type(expected) is list:
+        if len(actual) != len(expected):
+            raise ValueError(f'{label} length differs')
+        for index, value in enumerate(expected):
+            _fixed_report(actual[index], value, label+f'[{index}]')
+    elif type(expected) is float:
+        if not np.isfinite(actual):
+            raise ValueError(f'{label} must be finite')
+        if label.rsplit('.', 1)[-1] != 'cross_term' and expected >= 0 and actual < 0:
+            raise ValueError(f'{label} power/error must not be negative')
+        if not np.isclose(actual, expected, rtol=1e-12, atol=2e-15):
+            raise ValueError(f'{label} differs from the literal model')
+    elif actual != expected:
+        raise ValueError(f'{label} differs from the literal model')
+
+
+def validate_fixed_export(fixture, analytic, floating, buffers, pcm):
+    """Pure preflight of declarations, float statistics and actual encoded PCM.
+
+    Output PCM is independently quantized from the literal target/noise sum.
+    No gain or delay is fitted. Small float summation residuals remain allowed;
+    negative cross terms are legal, unlike negative squared powers.
+    """
+    literal = validate_fixed_fixture(fixture)
+    powers = {'weighted_ols': 9/16000, 'weighted_gls': 9/25000,
+              'weighted_reversed': 117/100000}
+    expected_analytic = {'target_power': .02, 'noise_covariance': [[.00045, 0.], [0., .0018]],
+                         'candidates': {}}
+    expected_float = {'scored_samples': 28800, 'reference_power': .02, 'candidates': {}}
+    for name, power in powers.items():
+        row = {'target_distortion_power': 0., 'residual_noise_power': power,
+               'cross_term': 0., 'total_error_power': power, 'nmse': power/.02}
+        expected_analytic['candidates'][name+'.wav'] = row
+        expected_float['candidates'][name+'.wav'] = {**row, 'component_identity_max_error': 0.}
+    _fixed_report(analytic, expected_analytic, 'analytic')
+    _fixed_report(floating, expected_float, 'floating')
+    expected_names = {name+'.wav' for name in literal['signals']}
+    if type(buffers) is not dict or buffers.keys() != expected_names:
+        raise ValueError('fixed weighted export must contain exactly five WAV buffers')
+    quantized = {}
+    for name, values in literal['signals'].items():
+        expected = np.rint(np.atleast_2d(values)*32768).astype(np.int64)
+        blob = buffers[name+'.wav']
+        if type(blob) is not bytes:
+            raise ValueError('fixed weighted WAV buffers must be bytes')
+        actual = decode_pcm(blob, channels=2 if name == 'weighted_array' else 1)
+        if not np.array_equal(actual, expected):
+            raise ValueError(f'{name} PCM differs from independent literal quantization')
+        quantized[name] = expected
+    reference = quantized['weighted_target'][0, 1600:30400]
+    denominator = sum(int(value)**2 for value in reference)
+    expected_pcm = {'scored_samples': 28800, 'integer_reference_squared_sum': denominator,
+                    'decoded_amplitude_denominator': 32768, 'candidates': {}}
+    for name in powers:
+        numerator = sum((int(x)-int(y))**2 for x, y in zip(
+            quantized[name][0, 1600:30400], reference))
+        expected_pcm['candidates'][name+'.wav'] = {
+            'integer_error_squared_sum': numerator, 'integer_reference_squared_sum': denominator,
+            'scored_samples': 28800, 'mse': numerator/(28800*32768**2), 'nmse': numerator/denominator,
+            'score': [1600, 30400], 'gain_fitting': False, 'delay_fitting': False}
+    if not same_metadata(pcm, expected_pcm):
+        raise ValueError('fixed weighted PCM scores differ in value, structure or type')

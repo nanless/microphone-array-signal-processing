@@ -247,7 +247,7 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 
 矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。[附录 A 的 E12-03](../../../../chapters/12_appendix-symbols-math.md#sec-u-3899a8c1b7)说明零残差不保证参数唯一；[E12-05](../../../../chapters/12_appendix-symbols-math.md#sec-u-935c1036ea)说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。
 
-本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行[限定审计工具](../../appendix_a/examples/audit_upstream_solver_contracts.py)。工具完整加载固定 `pb_bss` 提交 `10acc347fc9ea21e3d312806a0bd751d0d0af183` 的[原 `pb_bss/math/solve.py`](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py "citation")，仅调用 `stable_solve`；不做AST提取、源码补丁或算法替身，也不导入完整 `pb_bss` 包。该模块是维护者提供的通用求解助手，按原[MIT许可证](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE "citation")使用，不是本书自行实现的求解器。
+[旧历史报告](../../appendix_a/reports/upstream_solver_contracts.json)记录本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行[当时版本的限定工具](https://github.com/nanless/microphone-array-signal-processing/blob/241513c8f35d952747f16ccbb40cf85a5363b5ae/codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py)。旧报告登记完整加载固定 `pb_bss` 提交 `10acc347fc9ea21e3d312806a0bd751d0d0af183` 的[原 `pb_bss/math/solve.py`](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py "citation")，仅调用 `stable_solve`；不做AST提取、源码补丁或算法替身，也不导入完整 `pb_bss` 包。该模块是维护者提供的通用求解助手，按原[MIT许可证](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE "citation")使用，不是本书自行实现的求解器。
 
 原函数先尝试 `numpy.linalg.solve`；矩阵奇异时，逐矩阵回退到 `numpy.linalg.lstsq`。对
 $\mathbf A=\left[\begin{smallmatrix}1&1\\2&2\end{smallmatrix}\right]$、$\mathbf B=\mathbf I_2$，令两行参数之和为 $s$，第一列残差最小化为 $(s-1)^2+(2s)^2$，驻点 $s=1/5$；第二列则为 $s^2+(2s-1)^2$，驻点 $s=2/5$。在每列固定和的解中，两个分量取相等值使范数最小，因此独立期望为
@@ -268,10 +268,25 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。
 
 ```bash
 .venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts
-.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts.json
+.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts_current.json
 ```
 
-默认命令只把当前审计写到标准输出；显式 `--report` 才原子保存[独立报告](../../appendix_a/reports/upstream_solver_contracts.json)。报告核对官方origin、完整HEAD、锁表摘要、两个原文件的SHA/Git blob、MIT许可、工具摘要和运行前后洁净状态，并保存四个原函数例、两个独立NumPy例的输入类型、输出、独立期望、容差、警告和失败分类。拒绝符号链接、词法 `..`、非普通目标与上游缓存内报告路径。不覆盖旧历史报告，不取得新源码；完整包、波束音频、模型和设备都未在这个审计中运行。
+默认命令只把当前审计写到标准输出；显式 `--report` 才原子保存[当前报告](../../appendix_a/reports/upstream_solver_contracts_current.json)。仓内仅此当前路径可写，旧报告、源码、AGENTS、锁表、状态、历史快照及上游缓存目标在执行原函数前和替换目标前均拒绝；仓外普通目标仍可保存，普通父链、符号链接、词法 `..` 与非普通文件按原合同检查。这是有限的本地写前检查，不宣称消除并发竞态。
+
+本书于2026-10-05实际执行[当前工具](../../appendix_a/examples/audit_upstream_solver_contracts.py)并保存上述当前报告。它复用既有来源核验，分别保存115项锁表/获取状态、完整选集与实际所用的原源码和许可身份；直接依赖、官方origin、固定HEAD、原文件SHA/Git blob及工作树状态在运行前后核对。旧报告绑定的是100项历史锁表及当时工具；旧锁表由已登记的完整字节快照核验，不给旧报告替换成当前摘要。旧报告没有获取状态摘要，也未记录实际读取的pyc身份，不能倒推这两项已经核验。
+
+[Python字节码说明](https://docs.python.org/3.13/library/sys.html#sys.dont_write_bytecode "citation")只保证`-B`或`dont_write_bytecode`不写新的pyc，已有有效缓存仍可能被普通源码加载器读取；[缓存失效规则](https://docs.python.org/3.13/reference/import.html#cached-bytecode-invalidation "citation")解释时间戳/长度及哈希缓存的判断。因此当前工具从已核完整`solve.py`字节编译执行整个原模块，并保留正常模块元数据、原导入与函数，不做AST提取或源码补丁，也不读取、删除或改写原pyc。工具及三个实际复用的仓内依赖、NumPy入口和线性代数包装文件前后摘要另记；这些是直接文件身份，不代表整个NumPy包或本机LAPACK二进制依赖闭包。
+
+原四例与两个独立NumPy例继续分栏，新增四个原函数控制另列。固定[原函数91～114行](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py#L91-L114 "citation")中的形状判断和`zeros_like(B)`回退决定以下行为：
+
+| 新增原输入控制 | 实际行为 | 比较边界 |
+|---|---|---|
+| 二阶方阵与一维右端向量 | 原接口产生`IndexError` | NumPy支持向量右端项，不代表此助手也支持相同shape |
+| 三行两列矩阵与三行一列右端项 | 原接口产生`AssertionError` | 原助手面向方阵合同，不能因NumPy有`lstsq`就扩称任意矩形LS |
+| $A=jI_2$、实数$B=I_2$，单个非奇异矩阵 | 返回复矩阵$-jI_2$ | 复系数/实右端项并非所有路径都会丢虚部 |
+| 同一复矩阵加一个零矩阵及零右端项，组成批次 | 奇异块使整批进入回退；实数`zeros_like(B)`丢失第一块虚部，记录两次`ComplexWarning` | 连原先非奇异的块也受批次分支影响；此复矩阵不是Hermitian噪声协方差 |
+
+工具保留输入类型、输出、独立期望、容差、警告和失败分类，不修补上游，也不把四个控制并入旧四例的通过计数。完整包、波束音频、模型和设备都未在这个审计中运行。[独立负控](../../../../tests/test_codes_appendix_a_source_guards.py)检查有效旧pyc与被拒报告目标，正常原源执行另由[接口测试](../../../../tests/test_codes_upstream_solver_contracts.py)核验。
 
 <a id="appendix-b-reproduction"></a>
 

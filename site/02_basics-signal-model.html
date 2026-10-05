@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="645849d8f4d7"><style>
+<meta name="source-digest" content="525c7075d556"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -434,7 +435,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>再认几枚上标：$^H$ 是共轭转置（频域复数用）、$^\top$ 是转置（时域实数用）、$^*$ 是共轭、$^{-1}$ 是逆；$\hat{\ }$ 表示估计值，$\|\cdot\|$ 为范数、$|\cdot|$ 为幅度。</p>
 <p><strong>标量上标星号与向量上标 H</strong>：单个复数取共轭用上标星号（如 $X_2^*$），整列向量先转置再共轭用上标 H（如 $\vec{x}^H$）。读后面的公式时，先确认所操作的是单个复数还是整列向量。</p>
 <p><strong>大写谱值仍可为标量</strong>：语音文献习惯用 $X(f)$、$X(f_k,\ell)$ 这类大写字母表示某一物理频率或时频点上的复数谱值。它们是标量，不是矩阵；本书沿用这一惯例，并在首次出现处注明。</p>
-<p><strong>字母复用</strong>：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。每个符号以所在公式的定义为准。</p>
+<p><strong>字母复用</strong>：受文献惯例所限，$k$ 可表示频点索引或 WPE 的滞后帧号；附录符号表和第5章球谐推导用 $\kappa=2\pi f/c$ 表示波数（单位 rad/m），部分局部推导和文献仍用 $k$ 或 $k_f$，须按所在定义与无量纲频点索引区分；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。每个符号以所在公式的定义为准，完整对照见<a href="12_appendix-symbols-math.html#sec-12-1">附录A符号表</a>。</p>
 <p><strong>频率与帧索引</strong>：本章的连续频率统一记作 $f$，单位 Hz；DFT/STFT 的频点索引记作 $k$。实信号单边谱的 $0\le k\le\lfloor N/2\rfloor$ 对应 $f_k=kf_s/N$；完整 DFT 的高半区 $k>N/2$ 对应有符号频率 $(k-N)f_s/N$。帧索引记作 $\ell$。文献中常见的 $\vec x(f,t)$ 是简写，本书需要区分离散网格时写成 $\vec x(f_k,\ell)$。复指数 $e^{-\mathrm j2\pi f\tau}$ 中必须代入 Hz 频率 $f$ 或按频点范围正确映射的 $f_k$，不能直接代入无量纲索引 $k$。</p>
 </blockquote>
 <p>§2.1 得到了各麦到达时刻之差。下面先写每路麦克风的波形，再把时延转成频域相位，最后将多路式子合成一个向量式。</p>

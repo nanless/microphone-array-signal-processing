@@ -2183,3 +2183,76 @@ ROOT八共享网页原尺寸真实看（导读25题段与358题段、研究READM
 最终冻结后完整2535项实际976.278s，真实退出0、OK（10skip），日志`/private/tmp/masp-stage3-ch15-root/full-suite-frozen-rerun.log`。首次2535项失败日志保留，不回写成功。10skip为DOA原环境1、波束原环境2、作者原环境4、PRA房间2及FFTW前缀原C1；既有隔离环境14项真实执行覆盖可运行DOA/波束/作者/房间范围，不与全仓数重复相加。FFTW前缀原C复编译未执行，PDF/UA和输出流人工听测未完整验收，边界保持。
 
 三路最终验收均无开放P1/P2；媒体最后JSON SHA d1c2056b9a8fffeb1625c7ac2b16de1c1f140e4276b56090b45c0e08324103f0。正式站点645849d8f4d7、PDF源590d94585e89、PDF SHA670b99d31ff23a0ba6cf60f47a8c72818b0ca9748f3df235762461687cb26ab7与current报告9743f4efc488a51a79fc555d4743e85db2743ede0381a65f6f5894a29a7a7e80在完整回归后再次实际核对；534跟踪WAV逐个与6c1f144原Git字节相等。S3-15-01～07均已完成源、独立复算、测试及受影响出版验收，更新为已验证。保留第四阶段处理的音频链接顿号分行P3。按第15篇主题提交推送成功后才开始附录A，不宣称全书已完工。
+
+
+第15篇随后普通提交并推送`241513c8f35d952747f16ccbb40cf85a5363b5ae`，实际origin/main等于HEAD，工作区干净；新current raw/main实际200且字节同正式报告，证据`/private/tmp/masp-stage3-ch15-post-push-remote.json`。此后才分派附录A三路只读调查。
+
+## 阶段3附录A：符号、术语与数学基础的三路完整只读调查
+
+主智能体已完整分段通读当前939行AGENTS与788行附录正文，截断输出补读后才登记；数学教学、原始资料与实现、实验图表三个角色分别独立通读与调查。附录A稳定身份12/E12/式12-x，阅读位置在15之后/B之前；本次不开始B或第四阶段。ROOT维护唯一合并台账，角色先只读、仓外证据，合并真实缺陷及详细方案后按互斥源文件实施。
+
+有限清单覆盖：全书FFT正负频率与阵列坐标/字母复用；复数共轭和能量、线性/循环卷积与块尾、相关滞后；总体期望与有限样本中心化/未中心化及秩；复数LS/正规方程与条件数平方、伪逆最小范数、复数Wirtinger驻点；正定MVDR与奇异噪声零空间反例；Hermitian EVD及UPLO/虚对角接口区别；绝对/相对加载；已知协方差GLS与噪声白化、无偏权重及误差方差；TSVD阈值与ridge收缩区别；19个稳定题的输入、中间量、边界；三图48/49/65、八主WAV与五独立weighted WAV的模型、PCM及证据范围。术语字典也逐组阅读全文和跨章目标，不以关键词表代替理解。
+
+只读基线HEAD241513c、正文及规范身份、保护资产SHA/mtime记录`/private/tmp/masp-stage3-appa-root/baseline.json`，包括全部534跟踪WAV、80编号图及房间补图、锁表状态/历史快照与旧A原求解报告。19项A入口/边界基线0.248s实际通过零skip；weighted/原求解/图门禁相关基线另跑，结果单列，不宣称单测替代原资料、网页或PDF验收。优先找真正讲解缺口、数值与来源问题，保留现有题/公式/锚身份；不为数量重复新增音频或算法，全部出版物由真实源统一重生后逐页验收，提交push成功后才进入B。
+
+
+ROOT其余29项weighted/原求解/图65出版门禁相关基线1.507s实际通过零skip，与上述19项共48项不同测试，不代替独立复算。旧A原report SHAa12c768cacc7d6c1256a4c758cfc18c25b1ed00ba9fef74a7c7350388a27c7ab、mtime1790886799398036798，原100项锁55ab323及2026-10-01执行时刻保留；ROOT只读stdout实际运行当前原审计EXIT0，仍四原stable_solve例3数值匹配/1整数fallback截断和两独立NumPy例，当前锁115不追写旧100表。
+
+ROOTprimary实际打开Netlib LAPACK第三版node27式(2.1)/表2.3、node28式(2.3)/B可逆后的WLS等价、NumPy固定2.5 lstsq的rcond/空residual返回、eigh的UPLO/虚对角说明（2026-10-05），没有用搜索摘要代替原文。独立Fraction与NumPy构造相关噪声GLS候选：C=[[1,3/2],[3/2,4]]行列式7/4、共同目标两路a=[1,1]，完整已知C权重(5/4,−1/4)仍保持目标响应1，方差7/8；只用对角倒方差(4/5,1/5)实际方差32/25，OLS实际方差2。证据`masp-stage3-appa-root/correlated-gls-candidate.json`。本候选展示目前仅一句提示的相关噪声与负权，不是新算法或实录成绩；由数学角色独立核算并评估新题/段落是否值得，尚未采用或改正文。
+
+
+来源角色仓外模拟确认现report_target接受旧report、AGENTS、正文、tool自身与锁状态目标（已有main写前检查/strictJSON/原子写，缺仓内目标白名单和历史拒绝，不误说全部没有）。此外来源与ROOT两条独立临时实验均构造合法timestamp/size的缓存PYC，在完全保留固定solve.py源码SHA be440ee6…时，现load_original仍执行未核cached sentinel而无stable_solve；ROOT独立py_compile流程证据`masp-stage3-appa-root/independent-pyc-control.json`，来源不同代码构造证据`masp-stage3-appa-sources/loader-bytecode-control.json`。没有改仓内或原缓存。Python3.13官方sys.dont_write_bytecode和import§5.4.6实际核：-B控制写出PYC，不能据此保证读取当前已核源码。候选修法由已核完整sourcebytes compile/exec，保留模块身份和原imports、非AST，不删除现有原PYC。尚未修改源。
+
+
+### 附录A三路只读合并与互斥实施方案
+
+三份完整只读报告实际齐备：数学 `/private/tmp/masp-stage3-appa-math/readonly-final.json` SHAac3fae01b88b1e733c1e1f3ce7714478f18727453edb039b6ceb8912c58a23d4；来源 `/private/tmp/masp-stage3-appa-sources/final-readonly.json` SHA6b4b184f2c1e314922f2cd37177450f0daabcde09649bd229418687c2722f2ee；媒体 `/private/tmp/masp-stage3-appa-media/readonly-final.json` SHAb6f71749ca8ef459166e390c4efafce6427da778a56fe1078fee403430629c0d。数学48项1.673s、来源41项0.834s、媒体33项1.352s基线各实际通过零skip，范围重叠不相加；旧19题/7编号式无硬数字错误，三图original及165mm/860px真实看过，13主/独立WAV全样本literal量化均同。ROOT独立从verified完整原sourcebytes执行四额外边界控制亦同来源结论，证据`masp-stage3-appa-root/original-additional-controls-independent.json`。来源使用diag(i,1)、ROOT使用iI，分开保留，不把两个输入合称相同实测。
+
+| ID | 问题/严重度 | 实施内容与边界 | 唯一写入责任 | 状态 |
+|---|---|---|---|---|
+| S3-A-01 | 原报告目标范围P1 | 仓内只允许新upstream_solver_contracts_current.json，旧报告/正文/工具/LOCK/STATUS/snapshot/cache写前及replace前拒绝；普通仓外报告可用，默认stdout只读 | 来源：audit及原测试/新guard测试 | 已验证 |
+| S3-A-02 | 原完整模块加载P1 | 核原bytes后完整compile/exec，不读取已有pyc、不删除或改原缓存；模块元数据与原imports保留，非AST | 来源同上 | 已验证 |
+| S3-A-03 | 当前执行身份与接口范围P2 | 已有origin/HEAD/blob/前后clean继续保留；新增当前LOCK/STATUS/完整live选集分栏、真实直接依赖前后与NumPy两入口；旧4原+2NumPy不改，新增4原边界控制另栏。历史100快照和241513旧tool真实Git字节保留，不补造旧STATUS/整包闭包 | 来源同上；ROOT正式report/研究说明 | 已验证 |
+| S3-A-04 | 相关GLS教学缺口P2 | 唯一E12-20完整C及负无偏权重、variance完成平方、Cholesky同时变换A与b及错误only-b目标响应；独立19旧题身份/7旧编号式保留，新编号从12-8后顺序追加 | 数学：A正文/唯一题入口/math测试 | 已验证 |
+| S3-A-05 | 固定音频内部漂移P2 | 五类可信内部漂移先写齐六成员，修为typed/literal参数/波形/weights/components/功率/PCM首次写前预检；保留四真实依赖和五原WAV，不称安全攻击或盲估计 | 媒体：weighted核/生成器/音频测试及fixture负控 | 已验证 |
+| S3-A-06 | 波数/入口/共享和谐P3/P2索引 | A用κ=2πf/c并说明文献k、本地其他κ下标；ROOT只同步02相邻符号消费者，不回改公式；A入口给可复制块；同步20题/全书359与h4=739/大纲906及新current全部消费者 | 数学A局部；ROOT共享全部 | 已验证 |
+| S3-A-07 | 实际PDF841表内长乘积越列P2 | 三cell保留全部数字与加法，拆成首项/加次项两行；不改原displaymath/计数/数值核，重建后复看受影响网页/纸面 | 数学A三cell；ROOT真实重建 | 已验证 |
+| S3-A-08 | 直接消费者E05-20跳转遮挡P2 | screen唯一anchor60px留白，旧ID/正文/打印保留；122实际两宽goto全部通过，两个修好目标原尺寸真实看 | ROOT限定CSS/真实生成；来源与ROOT实际导航复核 | 已验证 |
+
+没有新增章、算法覆盖行、图或WAV；原图/PCM数值已正确，无依据重画来追求数量。TSVD/ridge/奇异MVDR已有题分别解释，不重复新例；不添加全局大型稀疏求解、迭代细化或LAPACK编译研究旁支，既有固定pb_bss和当前NumPy接口足够支持本附录模型。三角色只改互斥源，不写正式生成物/shared/Git；ROOT待冻结后实际生成5样本、图65及出版物，保留全部历史/锁与WAV字节，做独立交叉复核、两宽网页/全篇PDF逐页验收后再提交push。没有开始B/第四阶段。
+
+附录A符号消费者核验补充：第3章367行局部波数`k_f`、437行局部波数`k`和第10章758行波数`k`仍有明确局部定义，已登记第四阶段的全书符号一致性处理。本轮附录符号表/第2章说明区分`κ`与频点`k`，不声称全书公式已经统一，也不跨过串行章级验收顺手重写其他章推导。
+
+
+### 附录A实施、独立复算与第一版出版检查
+
+三路互斥源及测试全部冻结并完成互审：媒体29项2.227s、来源34项0.802s、数学54项2.264s真实通过零skip；范围重叠不相加。ROOT相关102项51.205s实际EXIT0零skip，原19题完整标题、22块旧displaymath及12-1～7完整公式逐字保持。当前source独立对照始终用已核整个原模块，默认stdout和正式new current各实际EXIT0；旧4原例/2NumPy例及计数与旧报告语义相等，新4shape/complex控制分栏保留真实异常。正式current SHAd71cfe9445ec57534220d67612b4589b2e3908e1a45f8a84aff8ee51e33f574e，绑定115项目LOCK/STATUS、pb_bss完整source_verified、两所用原blob、直接4仓内依赖和2NumPy文件，前后身份一致。旧a12c768报告SHA/mtime1790886799398036798、LOCK/STATUS与历史快照原字节保持。
+
+ROOT真实生成五weighted WAV并严格只读重放EXIT0，五payload逐字同HEAD241513，仅清单绑定当前4真实源；没有手工改PCM或换参考。九真实绘图入口全部EXIT0，80编号图RGBA/尺寸逐个同已验收HEAD，只有图65当前输入摘要与报告真实重生。全书359题、A20题、37h4及739/906大纲显式基线先同步独立测试再构建。第一版site ea97b106970d、PDF源9bc34bf501e8、PDF SHA1be6bc333c9fbeaef2a6c162e284f9d5ad4b2e8f613fb5d036d04a24a5ca80b5，886页；A806～84439页，B845。发布quality真实EXIT0，22页×两宽44live自动案例PASS，不把44自动案例称44视觉审阅。
+
+第一版三路按连续范围实际目视：来源806～822、媒体823～837、数学838～844；网页按开头～12.2、12.3～E13、E14～末分配两宽全文。数学实际PDF841发现E19三cell乘积末括号略越列界约5px，ROOToriginal确认P2，保留初次截图而不把该页升级验收。仅三个inline cell按首项与加次项分两行，正文新SHA8fc5e1806186301d2a89ce514051202ff2091a4159c0a5d41a03354eb96d269c，代码、测试、旧displaymath/题ID/数值与结构数量均未改变；正在重新生成最终站点/PDF。来源PDF809把“远”识成“近”的候选，经源68行及实际文字层/原PNG复核撤回，未改正确源。媒体手机E13首次字体初显缺diag首字母候选保持捕获；同源稳态重捕与键盘完整表独立复看，不在缺乏可复现证据时改仓库。
+
+完整回归在全部代码/测试冻结后启动；上述三cell文字排版修复发生于测试期间，代码与测试没有变动。最终出版与文档专项会在重建后独立复跑，不将首版PDF或“全仓所有输入未变”冒称最终版本。既有隔离环境本轮另外20项21.346s实际零skip覆盖可运行DOA/beamformer/作者/房间范围，范围不与主环境全仓叠加；FFTW前缀原C、PDF/UA完整辅助技术和输出流人工听测边界仍保留。
+
+
+### 附录A最后跨章跳转缺陷与限定修复
+
+代码/测试冻结的完整回归实际2568项1361.438s、退出0、OK（10skip）；最终三cell排版版的出版专项52项469.342s实际退出0、零skip。两轮不相加，不将全仓称全部源输入始终不变。随后来源角色真实122跨章目标导航发现A所链接的E05-20显式空anchor位于p内，标题在390/1360宽top7.171875/6.890625px，低于44.5/46.25px sticky页头；原接受脚本严格断言失败，未生成假成功记录。
+
+新增S3-A-08（P2）：ROOT只在build_site的screen CSS为唯一a[id="e05-20"]添加60px scroll-margin-top，保留正文、ID及打印。这是本附录直接消费者的实际跳转缺陷，非全书锚点重写。站点和PDF必须重新真实构建，来源角色重跑122目标并按最终摘要验收；数学、媒体已闭环的39页合计范围及两宽正文按最终whole RGBA重新核对后才能继承。最后复跑受影响构建/锚兼容检查及质量门禁，不因单行CSS无技术算法变化再泛化重跑全部2568项。此处尚未将第8项升级已验证，未开始B。
+
+
+### 附录A锚修正版最终生成与两路验收
+
+最终两构建均实际EXIT0：站点525c7075d556、PDF源6f375ffece7f；正式PDF SHA6f645c4f29ea6d9ca2ebb9387ed187b203c29051b259ae3b5241990c0fc838bb，886页，A806～84439页、B845，E20两个稳定目标均843/XYZtop841.91998。最终cover真实日期2026-10-05，前两候选cover确为2026-10-04且原文件保留，不混淆执行时刻或手工伪造固定日期。25项最后构建/历史锚回归62.404s实际零skip通过；最后quality与44live自动场景均实际EXIT0。
+
+ROOT最终29共享网页、两个键盘右端全部整幅RGBA与真正已看51eb版本相同，五共享PDF中14/27/44/80四页整幅相同，封面1页因日期/源摘要不同已新original实际看。具体证据root-shared-anchor-final-acceptance.json；不将自动网页扫描称人工目视。534WAV字节及23个保护JSON SHA/mtime再次全部同基线，current report仍d71cfe9445ec57534220d67612b4589b2e3908e1a45f8a84aff8ee51e33f574e；原19题完整标题、22displaymath与七旧式逐字保持。
+
+媒体final-anchor/final-anchor-acceptance.json实际闭环70网页/15PDF823～837全部整幅RGBA同旧112个已实际验收对象。八播放器DOM、顺序、label、duration、真实HTTP全文SHA与旧操作及源PCM同，最后仅继承已真实执行的play/pause/seek/键盘/Range/原率decode，新增播放/decode计数0；三图原/165mm/860尺度与13PCM独立literal证据保留，不称人工听测。数学final3-anchor-publication/final3-anchor-acceptance.json闭环七页838～844及26正文全部同；八附件七同、一个中间滚动动画差图original新看，独立80键/400ms最终右端也original再看，完整式12-7括号和号齐全。两路无开放P1/P2、不开始B，等待来源前17页与122跨章目标最终接受记录。
+
+
+### 附录A三路全部验收与最终提交前核对
+
+来源最终接受记录SHAd03061658e9758dead89c392a35a42ee6071ec733532b083868ced226d27b09f，前806～82217PDF全同已实际看候选；69代表scope网页、2式12-1右端、2修好E05目标与17纸页共90实际接受对象，85整幅继承/5新original实际看。100总捕获只99同/1差，不把31冗余截图称额外逐图接受。122真实goto每宽61个全部实际ID/meta/heading bounds通过；E05两标题top67.171875/66.890625大于44.5/46.25页头，ROOT也独立original看两图。数学最终SHA47369b0ef68284ee870d79755171db47dd8a5149c0ddfea69243f669ab4f5c62、媒体最终SHA9d429ddf75a20f0a9bc431b1753dc0241f62c9adfc391562b496ebf5633ddfb3，三路连续17+15+7=39PDF完整覆盖，无开放P1/P2。
+
+最后源差异、独立旧19题/22display/7编号式、实际359题/739h4/906大纲、534WAV及23保护JSON、80图RGBA、正式current d71cfe…与最终525c/6f375/6f645…再次核对。完整2568项（10环境skip）、出版52、锚构建25与隔离20各真实退出0，重叠不相加。原FFTW前缀C复编译、完整NumPy/native包闭包、完整上游波束整链、PDF/UA辅助技术与输出流人工听测仍未执行，不写成通过。S3-A-01～08均已验证，按附录主题普通提交、推送并核远端成功后才开始B，不宣称全书任务完成。

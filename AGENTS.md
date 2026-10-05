@@ -32,9 +32,9 @@
 | 教学代码源文件 | `codes/chapters/{ch00,ch01～ch11,ch14,ch15,appendix_a,appendix_b}/` 中的 `core/`、`examples/` 与单章入口 | 共享数值核按首讲章节唯一归档，跨章练习在 `ch00/cross_chapter/` | 修改唯一真实实现；同步测试、覆盖表和对应章节；旧 `codes.array_tutorial`、`codes.examples` 路径已退出仓内接口 |
 | 共享文件IO源文件 | `codes/chapters/ch00/io_contracts.py` | 普通父链与成员、严格JSON、元数据类型及报告写入的公共原语 | 生成器和获取工具复用原语；各资产的schema、评分和来源边界由调用者负责。参与生成时须绑定真实SHA；有限写前检查不宣称消除并发竞态或保证崩溃持久性 |
 | 主音频布局 | `codes/chapters/ch00/audio/MANIFEST.json`、各章 `audio/*.wav`；`scripts/code_layout.py` 固定组→章节映射 | 27 组、109 个数学合成 WAV，单一总清单、分章存放 | 改生成源后按新布局重生；清单绑定20个真实源，记录每条所属章、生成源 SHA 与 WAV SHA；禁止手改单个 WAV |
-| 已知噪声加权源与生成物 | `codes/chapters/appendix_a/core/weighted_audio.py`、`codes/chapters/appendix_a/examples/generate_weighted_audio.py` → `codes/chapters/appendix_a/weighted_audio/` | 5个16kHz、32000点单/双声道数学合成WAV，独立清单 | 同一700Hz目标与3500/4000Hz干扰，已知固定权重和均1；28800点稳窗解析/浮点分量/实际PCM整数分开，四真实源/增益1；不是盲估噪声、真实阵列或随机独立性证据；只接受六普通成员，`--check`严格只读完整回放 |
+| 已知噪声加权源与生成物 | `codes/chapters/appendix_a/core/weighted_audio.py`、`codes/chapters/appendix_a/examples/generate_weighted_audio.py` → `codes/chapters/appendix_a/weighted_audio/` | 5个16kHz、32000点单/双声道数学合成WAV，独立清单 | 同一700Hz目标与3500/4000Hz干扰，已知固定权重和均1；28800点稳窗解析/浮点分量/实际PCM整数分开，四真实源/增益1；不是盲估噪声、真实阵列或随机独立性证据；只接受六普通成员；首次写目录前独立核固定参数、波形、分量、权重与量化；`--check`严格只读完整回放 |
 | 同DRR频谱源与生成物 | `codes/chapters/appendix_b/core/response_audio.py`、`codes/chapters/appendix_b/examples/generate_response_audio.py` → `codes/chapters/appendix_b/response_audio/` | 5个16kHz、32002点单声道数学合成WAV，独立清单 | 同一2000/4000Hz源、两反射短FIR同能量；增益1、完整两点尾；28800点稳窗解析/浮点分量/实际PCM整数分开；四真实源/六普通成员；不是实房间、盲估计或主观听测，`--check`严格只读回放 |
-| 附录A当前原求解合同 | `codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py` → `codes/chapters/appendix_a/reports/upstream_solver_contracts.json` | 固定pb_bss完整原模块的限定helper调用与独立NumPy接口比较 | 保留原dtype失败、LS与约束优化的目标差别及前后源码身份；不改上游或旧报告，不称完整波束整链；默认只读stdout，只有显式`--report`写当前报告 |
+| 附录A当前原求解合同 | `codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py` → `codes/chapters/appendix_a/reports/upstream_solver_contracts_current.json` | 从已核源码字节执行固定pb_bss完整原模块的限定helper与独立NumPy接口比较 | 保留旧四例、两NumPy例及另列的四个形状/复数批次控制；当前锁表/状态/完整选集与实际所用源分栏，直接依赖前后核；仓内只写此当前路径，旧报告保持原字节；默认只读stdout，不读取或删除原pyc，不称完整波束整链 |
 | 图65数值报告 | `scripts/make_figures.py::fig_weighted_noise` → `codes/chapters/appendix_a/reports/figure65_weighted_noise.json` | 三种已知权重、固定解析误差与三个真实PCM整数E/D | 随图重生；同窗同参考，不拟合增益或延迟，谱线正交只限所声明的稳定整数周期窗 |
 | 图66数值报告 | `scripts/make_figures.py::fig_equal_drr_response` → `codes/chapters/appendix_b/reports/figure66_equal_drr_response.json` | 短反射RIR系数、两频解析功率增益与两个真实PCM整数E/D | 随图重生；RIR DRR与给定源加权反射功率分别命名，完整PCM差含量化，不拟合时延或增益 |
 | STFT卷积源与生成物 | `codes/chapters/ch02/core/stft_convolution.py`、`codes/chapters/ch02/examples/generate_stft_convolution.py` → `codes/chapters/ch02/stft_audio/` | 3个同源、完整尾部、共同增益的数学合成WAV与独立清单 | 浮点/PCM结果分别保留；未改谱往返参考原源，逐帧近似参考完整卷积；`--check`严格只读，不混入主109样本 |
@@ -705,7 +705,7 @@ MathJax 公式统一缩到明显小于相邻正文；优先拆行、使用 `alig
 | 构建脚本或依赖 | 运行受影响命令及最小回归；检查退出状态和输出文件 | 命令正常结束；输出完整；未引入无关依赖或文件变化 |
 
 当前完整构建的基线是 80 张编号 PNG 和 1 张房间补图、16 个教程页面（首页加15篇）与 6 个研究手册页面，以及 PDF 的 16 个章级、151 个节级、
-738 个子节级书签，共 905 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
+739 个子节级书签，共 906 个大纲项。子节级书签来自第 1～11 章、扩展专题Ⅰ/Ⅱ与附录 A/B；各篇独立数量见 `scripts/quality_check.py` 的显式清单。
 质量门禁应从独立的发布清单或显式常量读取这些基线，不能只从待检 Markdown 动态生成“期望值”
 再自我比较。构建后应核对数量和名称。若本次任务改变章节或图表结构，先更新发布清单、README 和本节，
 再按新值验收，不能为了通过检查保留过期数字。

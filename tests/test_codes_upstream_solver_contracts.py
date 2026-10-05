@@ -1,4 +1,5 @@
 """Independent expectations and offline source/output boundary checks."""
+from contextlib import contextmanager
 from fractions import Fraction
 import hashlib
 import json
@@ -44,6 +45,25 @@ class SolverContractTests(unittest.TestCase):
         self.assertTrue(report['before_clean'] and report['after_clean'])
         self.assertFalse(report['execution']['ast_extraction'])
         self.assertEqual(report['execution']['substitutes'], [])
+        self.assertFalse(report['execution']['bytecode_cache_read'])
+        self.assertTrue(report['source_identity_after']['clean_after'])
+        self.assertEqual(report['source_identity_before']['ignored_members_before'],
+                         report['source_identity_after']['ignored_members_after'])
+        self.assertEqual(report['direct_sources_before'], report['direct_sources_after'])
+        self.assertEqual(report['external_numpy_files_before'], report['external_numpy_files_after'])
+        controls = {r['name']: r for r in report['additional_original_controls']}
+        self.assertEqual(controls['vector_rhs']['error']['type'], 'IndexError')
+        self.assertEqual(controls['rectangular_matrix']['error']['type'], 'AssertionError')
+        single = controls['complex_single_real_rhs']
+        self.assertTrue(single['matched_expected'])
+        np.testing.assert_array_equal(single['output']['imag'], -np.eye(2))
+        batch = controls['complex_batch_real_rhs']
+        self.assertFalse(batch['matched_expected'])
+        np.testing.assert_array_equal(batch['output']['real'], np.zeros((2, 2, 2)))
+        np.testing.assert_array_equal(batch['output']['imag'], np.zeros((2, 2, 2)))
+        self.assertEqual([w['category'] for w in batch['warnings']], ['ComplexWarning'] * 2)
+        self.assertEqual(report['additional_counts'], {'original_function_cases': 4, 'shape_exceptions': 2,
+                                                      'matches': 1, 'complex_batch_dtype_differences': 1})
         audit.strict_loads(json.dumps(report, allow_nan=False))
 
     def test_json_invalid_and_near_valid(self):
@@ -133,14 +153,27 @@ class PathAndSourceTests(unittest.TestCase):
         lock = self.folder / 'lock.json'
         entry = {'id': 'pb_bss', 'url': audit.ORIGIN, 'revision': revision,
                  'license': 'MIT', 'entrypoints': list(files)}
-        lock.write_text(json.dumps({'projects': [entry]}))
+        lock.write_text(json.dumps({'schema_version': 1, 'projects': [entry]}))
+        self.status = self.folder / 'status.json'
+        self.status.write_text(json.dumps({'schema_version': 1, 'lock_sha256': audit.digest(lock.read_bytes()),
+                                          'projects': [{'id': 'pb_bss', 'revision': revision, 'status': 'source_verified'}]}))
         hashes = {p: audit.digest(v) for p, v in files.items()}
         return checkout, lock, revision, hashes, git
 
+    @contextmanager
+    def fixture_identity(self, lock, revision, files):
+        # A synthetic Git checkout tests provenance guards only. It never
+        # impersonates fixed original numerical execution in a report.
+        license_hash = audit.digest((self.cache / 'pb_bss/LICENSE').read_bytes())
+        fixed = (audit.ORIGIN, revision, 'MIT', 'LICENSE', license_hash)
+        with patch.object(audit, 'LOCK', lock), patch.object(audit, 'STATUS', self.status), \
+                patch.object(audit, 'REVISION', revision), patch.object(audit, 'FILES', files), \
+                patch.dict(audit.upstream.PROJECTS, {'pb_bss': fixed}):
+            yield
+
     def test_fixture_identity_and_git_environment(self):
         checkout, lock, rev, files, _ = self.make_fixture()
-        with patch.object(audit, 'LOCK', lock), patch.object(audit, 'REVISION', rev), patch.object(audit, 'FILES', files), \
-                patch.dict(os.environ, {'GIT_DIR': '/nonexistent', 'GIT_WORK_TREE': '/wrong', 'GIT_CONFIG_COUNT': '1'}):
+        with self.fixture_identity(lock, rev, files), patch.dict(os.environ, {'GIT_DIR': '/nonexistent', 'GIT_WORK_TREE': '/wrong', 'GIT_CONFIG_COUNT': '1'}):
             record = audit.verify_sources(self.cache)
         self.assertEqual(record['checkout'], str(checkout))
         self.assertEqual(record['source_lock_project_count'], 1)
@@ -150,22 +183,22 @@ class PathAndSourceTests(unittest.TestCase):
     def test_dirty_fixture_rejected(self):
         checkout, lock, rev, files, _ = self.make_fixture()
         (checkout / 'extra').write_text('untracked')
-        with patch.object(audit, 'LOCK', lock), patch.object(audit, 'REVISION', rev), patch.object(audit, 'FILES', files):
-            with self.assertRaisesRegex(ValueError, 'not clean'):
+        with self.fixture_identity(lock, rev, files):
+            with self.assertRaisesRegex(ValueError, 'entirely clean'):
                 audit.verify_sources(self.cache)
 
     def test_wrong_hash_rejected(self):
         _, lock, rev, files, _ = self.make_fixture()
         files['LICENSE'] = '0' * 64
-        with patch.object(audit, 'LOCK', lock), patch.object(audit, 'REVISION', rev), patch.object(audit, 'FILES', files):
+        with self.fixture_identity(lock, rev, files):
             with self.assertRaisesRegex(ValueError, 'digest/blob'):
                 audit.verify_sources(self.cache)
 
     def test_wrong_origin_rejected(self):
         _, lock, rev, files, git = self.make_fixture()
         git('remote', 'set-url', 'origin', 'https://example.invalid/wrong.git')
-        with patch.object(audit, 'LOCK', lock), patch.object(audit, 'REVISION', rev), patch.object(audit, 'FILES', files):
-            with self.assertRaisesRegex(ValueError, 'HEAD or origin'):
+        with self.fixture_identity(lock, rev, files):
+            with self.assertRaisesRegex(ValueError, 'origin or HEAD'):
                 audit.verify_sources(self.cache)
 
     def test_wrong_lock_and_duplicate_entry_rejected(self):
@@ -173,7 +206,7 @@ class PathAndSourceTests(unittest.TestCase):
         document = json.loads(lock.read_text())
         for entries in ([dict(document['projects'][0], license='unknown')], document['projects'] * 2):
             lock.write_text(json.dumps({'projects': entries}))
-            with patch.object(audit, 'LOCK', lock), patch.object(audit, 'REVISION', rev), patch.object(audit, 'FILES', files):
+            with self.fixture_identity(lock, rev, files):
                 with self.assertRaises(ValueError):
                     audit.verify_sources(self.cache)
 

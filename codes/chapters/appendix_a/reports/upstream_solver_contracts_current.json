@@ -1,0 +1,1611 @@
+{
+  "created_utc": "2026-10-05T00:22:27.447950+00:00",
+  "tool_sha256": "0d6693fddf7de9753bd0711b018c6957d1e87c691a3d2ffae9fcc069c25724b7",
+  "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
+  "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+  "origin": "https://github.com/fgnt/pb_bss.git",
+  "source_lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+  "source_lock_project_count": 115,
+  "source_status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+  "sources": [
+    {
+      "path": "LICENSE",
+      "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+      "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175",
+      "role": "license"
+    },
+    {
+      "path": "pb_bss/math/solve.py",
+      "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+      "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+      "role": "complete original Python module"
+    }
+  ],
+  "clean": true,
+  "source_identity": {
+    "project": "pb_bss",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
+    "origin": "https://github.com/fgnt/pb_bss.git",
+    "head": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+    "lock_entry": {
+      "id": "pb_bss",
+      "url": "https://github.com/fgnt/pb_bss.git",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "license": "MIT",
+      "scope": "cACGMM, spatial mixture models and beamforming",
+      "fetch_enabled": true,
+      "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
+      "entrypoints": [
+        "LICENSE",
+        "pb_bss/distribution/cacgmm.py",
+        "pb_bss/extraction/beamformer.py",
+        "pb_bss/math/solve.py"
+      ]
+    },
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "recorded_complete_selection": {
+      "id": "pb_bss",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_complete_selection": {
+      "id": "pb_bss",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "status": "source_verified",
+      "source_selection_verified": true,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [
+      "pb_bss/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+    ],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+        "bytes": 1111,
+        "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175",
+        "actual_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175"
+      },
+      "pb_bss/math/solve.py": {
+        "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+        "bytes": 3794,
+        "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+        "actual_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb"
+      }
+    },
+    "clean_before": true,
+    "clean_after": true,
+    "ignored_members_after": [
+      "pb_bss/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+    ]
+  },
+  "before_clean": true,
+  "after_clean": true,
+  "source_identity_before": {
+    "project": "pb_bss",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
+    "origin": "https://github.com/fgnt/pb_bss.git",
+    "head": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+    "lock_entry": {
+      "id": "pb_bss",
+      "url": "https://github.com/fgnt/pb_bss.git",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "license": "MIT",
+      "scope": "cACGMM, spatial mixture models and beamforming",
+      "fetch_enabled": true,
+      "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
+      "entrypoints": [
+        "LICENSE",
+        "pb_bss/distribution/cacgmm.py",
+        "pb_bss/extraction/beamformer.py",
+        "pb_bss/math/solve.py"
+      ]
+    },
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "recorded_complete_selection": {
+      "id": "pb_bss",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_complete_selection": {
+      "id": "pb_bss",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "status": "source_verified",
+      "source_selection_verified": true,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [
+      "pb_bss/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+    ],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+        "bytes": 1111,
+        "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175",
+        "actual_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175"
+      },
+      "pb_bss/math/solve.py": {
+        "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+        "bytes": 3794,
+        "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+        "actual_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb"
+      }
+    },
+    "clean_before": true,
+    "clean_after": false
+  },
+  "source_identity_after": {
+    "project": "pb_bss",
+    "checkout": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/upstream/_downloads/pb_bss",
+    "origin": "https://github.com/fgnt/pb_bss.git",
+    "head": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+    "lock_entry": {
+      "id": "pb_bss",
+      "url": "https://github.com/fgnt/pb_bss.git",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "license": "MIT",
+      "scope": "cACGMM, spatial mixture models and beamforming",
+      "fetch_enabled": true,
+      "note": "Statistical model toolkit; speaker activities and a complete GSS pipeline are separate inputs/components.",
+      "entrypoints": [
+        "LICENSE",
+        "pb_bss/distribution/cacgmm.py",
+        "pb_bss/extraction/beamformer.py",
+        "pb_bss/math/solve.py"
+      ]
+    },
+    "lock_sha256": "ea8ce3cf679d70d06305f4942dbf9afeee94b69bd0ad7a5b9b09470c327a598f",
+    "source_document_paths": {
+      "lock": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCES.lock.json",
+      "status": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/codes/chapters/ch00/SOURCE_STATUS.json"
+    },
+    "status_sha256": "be926fccb75979e2f2ac428ac6c65c76a46d672771e21a01d589908d776fcac0",
+    "recorded_complete_selection": {
+      "id": "pb_bss",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "status": "source_verified",
+      "missing_entrypoints": [],
+      "execution": "not_run",
+      "dependency_validation": "not_run",
+      "asset_policy": "sparse_source_checkout",
+      "requested_source_paths": [
+        "repository"
+      ],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "source_selection_verified": true
+    },
+    "live_complete_selection": {
+      "id": "pb_bss",
+      "revision": "10acc347fc9ea21e3d312806a0bd751d0d0af183",
+      "status": "source_verified",
+      "source_selection_verified": true,
+      "missing_entrypoints": [],
+      "observed_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "expected_sparse_patterns": [
+        "/*",
+        "!**/*.wav",
+        "!**/*.flac",
+        "!**/*.mp3",
+        "!**/*.mp4",
+        "!**/*.ogg",
+        "!**/*.pt",
+        "!**/*.pth",
+        "!**/*.ckpt",
+        "!**/*.onnx",
+        "!**/*.tflite",
+        "!**/*.h5",
+        "!**/*.hdf5",
+        "!**/*.npz",
+        "!**/*.npy",
+        "!**/*.so",
+        "!**/*.dll",
+        "!**/*.dylib",
+        "!**/*.zip",
+        "!**/*.tar",
+        "!**/*.gz",
+        "!**/*.bin",
+        "!**/*.pb",
+        "!**/*.pkl",
+        "!**/*.pickle",
+        "!**/*.mat",
+        "!**/*.safetensors",
+        "!**/*.whl",
+        "!**/*.a",
+        "!**/*.o",
+        "!**/*.exe",
+        "!**/*.wasm",
+        "!**/*.weights"
+      ],
+      "requested_source_paths": [
+        "repository"
+      ],
+      "asset_policy": "sparse_source_checkout"
+    },
+    "used_source_identity": "verified",
+    "file_identity_scope": "declared original files plus tracked Python preflight when requested; does not claim every verified file executed",
+    "git_clean_scope": "tracked and nonignored untracked files; ignored members listed separately",
+    "ignored_members_before": [
+      "pb_bss/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+    ],
+    "used_files": {
+      "LICENSE": {
+        "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214",
+        "bytes": 1111,
+        "git_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175",
+        "actual_blob": "dbb5ffdda37b3ea9855fdda4adaa193a7bdf6175"
+      },
+      "pb_bss/math/solve.py": {
+        "sha256": "be440ee6f252e42a6ae5d7b6f3cc7205da5d4c29bcb01cae7885ab9f8c6a53ed",
+        "bytes": 3794,
+        "git_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb",
+        "actual_blob": "55fb235ca12b9eefa99f1afc7ad6bc90b9e13bbb"
+      }
+    },
+    "clean_before": true,
+    "clean_after": true,
+    "ignored_members_after": [
+      "pb_bss/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_mir_eval.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_pesq.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_si_sdr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_srmr.cpython-313.pyc",
+      "pb_bss/evaluation/__pycache__/module_stoi.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/__init__.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/gammatone.cpython-313.pyc",
+      "pb_bss/transform/__pycache__/griffin_lim_module.cpython-313.pyc"
+    ]
+  },
+  "direct_sources_before": {
+    "codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py": "0d6693fddf7de9753bd0711b018c6957d1e87c691a3d2ffae9fcc069c25724b7",
+    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "direct_sources_after": {
+    "codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py": "0d6693fddf7de9753bd0711b018c6957d1e87c691a3d2ffae9fcc069c25724b7",
+    "codes/chapters/ch04/core/upstream_contracts.py": "db86f54c9e7e96217d271f74bcca11831ff4c36985ec8a82df7d0a3f5cd271ef",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
+    "codes/chapters/ch00/upstream/fetch_upstreams.py": "442d17a5818ef0edf620bde85cc7959c1e73602a47f75e1cc8fce2b227ae11b4"
+  },
+  "direct_source_scope": "four local Python source files; no complete transitive or installed dependency closure claim",
+  "external_numpy_files_before": {
+    "entry": {
+      "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/numpy/__init__.py",
+      "sha256": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11",
+      "version": "2.5.3",
+      "scope": "actual imported entry or Python wrapper file only; not whole package or native LAPACK"
+    },
+    "linalg_lstsq_wrapper": {
+      "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/numpy/linalg/_linalg.py",
+      "sha256": "fb51e084cbb05b72a571a088299222055f3f176792ea9ea66186327a31ec787f",
+      "version": "2.5.3",
+      "scope": "actual imported entry or Python wrapper file only; not whole package or native LAPACK"
+    }
+  },
+  "external_numpy_files_after": {
+    "entry": {
+      "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/numpy/__init__.py",
+      "sha256": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11",
+      "version": "2.5.3",
+      "scope": "actual imported entry or Python wrapper file only; not whole package or native LAPACK"
+    },
+    "linalg_lstsq_wrapper": {
+      "path": "/Users/francis7999/code/github_repos/microphone-array-signal-processing/.venv/lib/python3.13/site-packages/numpy/linalg/_linalg.py",
+      "sha256": "fb51e084cbb05b72a571a088299222055f3f176792ea9ea66186327a31ec787f",
+      "version": "2.5.3",
+      "scope": "actual imported entry or Python wrapper file only; not whole package or native LAPACK"
+    }
+  },
+  "license": {
+    "name": "MIT",
+    "path": "LICENSE",
+    "sha256": "48241e1eae6ab4c15c5718992ca60d3d15961212a4e324e09e5dbfbc79b78214"
+  },
+  "execution": {
+    "module": "pb_bss/math/solve.py",
+    "original_functions_called": [
+      "stable_solve"
+    ],
+    "scope": "complete unmodified source bytes compiled/executed; one function called",
+    "bytecode_cache_read": false,
+    "bytecode_cache_written": false,
+    "source_patch": false,
+    "ast_extraction": false,
+    "substitutes": [],
+    "not_executed": [
+      "full pb_bss package",
+      "_lstsq helper",
+      "beamformers",
+      "models",
+      "audio",
+      "hardware"
+    ]
+  },
+  "environment": {
+    "python": "3.13.12 | packaged by conda-forge | (main, Feb  5 2026, 06:11:05) [Clang 19.1.7 ]",
+    "numpy": "2.5.3",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "numpy_linalg_wrapper_sha256": "fb51e084cbb05b72a571a088299222055f3f176792ea9ea66186327a31ec787f"
+  },
+  "original_lstsq_default": {
+    "argument": "rcond omitted by original stable_solve",
+    "runtime_default": "NumPy 2.x eps * max(M,N)",
+    "float64_2_by_2_ratio": 4.440892098500626e-16
+  },
+  "comparison_tolerance": {
+    "absolute": 1e-14,
+    "relative": 0
+  },
+  "oracle": "independent Fraction 1/10,1/5 and diagonal/constraint closed forms",
+  "cases": [
+    {
+      "name": "singular_float_rhs",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          2.0,
+          2.0
+        ]
+      ],
+      "rhs": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "float64",
+      "output_dtype": "float64",
+      "output": [
+        [
+          0.09999999999999996,
+          0.19999999999999993
+        ],
+        [
+          0.09999999999999996,
+          0.19999999999999993
+        ]
+      ],
+      "independent_expected": [
+        [
+          0.1,
+          0.2
+        ],
+        [
+          0.1,
+          0.2
+        ]
+      ],
+      "matched_expected": true,
+      "classification": "matched_independent_expected",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true
+    },
+    {
+      "name": "singular_integer_rhs",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          2.0,
+          2.0
+        ]
+      ],
+      "rhs": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "int64",
+      "output_dtype": "int64",
+      "output": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "independent_expected": [
+        [
+          0.1,
+          0.2
+        ],
+        [
+          0.1,
+          0.2
+        ]
+      ],
+      "matched_expected": false,
+      "classification": "observed_integer_fallback_truncation",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true,
+      "cause_static": "original fallback allocates zeros_like(B), then assigns floating lstsq results"
+    },
+    {
+      "name": "nonsingular_integer_rhs",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "rhs": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "int64",
+      "output_dtype": "float64",
+      "output": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "independent_expected": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "matched_expected": true,
+      "classification": "matched_independent_expected",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true
+    },
+    {
+      "name": "psd_nullspace_ls",
+      "execution": "original stable_solve",
+      "matrix": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "rhs": [
+        [
+          1.0
+        ],
+        [
+          1.0
+        ]
+      ],
+      "matrix_dtype": "float64",
+      "rhs_dtype": "float64",
+      "output_dtype": "float64",
+      "output": [
+        [
+          0.0
+        ],
+        [
+          1.0
+        ]
+      ],
+      "independent_expected": [
+        [
+          0.0
+        ],
+        [
+          1.0
+        ]
+      ],
+      "matched_expected": true,
+      "classification": "matched_independent_expected",
+      "warnings": [],
+      "error": null,
+      "inputs_unchanged": true,
+      "independent_mvdr_model": {
+        "covariance": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "steering": [
+          1,
+          1
+        ],
+        "constraint": "w^H a = 1",
+        "optimal_weight": [
+          1,
+          0
+        ],
+        "optimal_noise_power": 0,
+        "normalized_ls_weight": [
+          0,
+          1
+        ],
+        "normalized_ls_noise_power": 1,
+        "derivation": "noise power = |w2|^2; w1+w2=1 admits w2=0",
+        "execution": "hand-derived optimization only; no upstream beamformer called"
+      }
+    }
+  ],
+  "numpy_comparisons": [
+    {
+      "name": "numpy_rcond_1e-06",
+      "execution": "independent NumPy comparison; not pb_bss parameter",
+      "matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1e-08
+        ]
+      ],
+      "rhs": [
+        1.0,
+        1e-08
+      ],
+      "dtype": "float64",
+      "rcond": 1e-06,
+      "cutoff": 1e-06,
+      "singular_values": [
+        1.0,
+        1e-08
+      ],
+      "rank": 1,
+      "output": [
+        1.0,
+        0.0
+      ],
+      "independent_expected": [
+        1.0,
+        0.0
+      ],
+      "returned_residual_array": [],
+      "explicit_residual_norm": 1e-08,
+      "expected_residual_norm": 1e-08,
+      "empty_residual_reason": "M=N, so M<=N in this API",
+      "classification": "matched_independent_expected"
+    },
+    {
+      "name": "numpy_rcond_1e-10",
+      "execution": "independent NumPy comparison; not pb_bss parameter",
+      "matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1e-08
+        ]
+      ],
+      "rhs": [
+        1.0,
+        1e-08
+      ],
+      "dtype": "float64",
+      "rcond": 1e-10,
+      "cutoff": 1e-10,
+      "singular_values": [
+        1.0,
+        1e-08
+      ],
+      "rank": 2,
+      "output": [
+        1.0,
+        1.0
+      ],
+      "independent_expected": [
+        1.0,
+        1.0
+      ],
+      "returned_residual_array": [],
+      "explicit_residual_norm": 0.0,
+      "expected_residual_norm": 0.0,
+      "empty_residual_reason": "M=N, so M<=N in this API",
+      "classification": "matched_independent_expected"
+    }
+  ],
+  "additional_original_controls": [
+    {
+      "name": "vector_rhs",
+      "execution": "original stable_solve; separate additional control",
+      "matrix": {
+        "shape": [
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "rhs": {
+        "shape": [
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          1.0,
+          1.0
+        ],
+        "imag": [
+          0.0,
+          0.0
+        ]
+      },
+      "output": null,
+      "independent_expected": null,
+      "expected_error_type": "IndexError",
+      "error": {
+        "type": "IndexError",
+        "message": "tuple index out of range"
+      },
+      "matched_expected": null,
+      "inputs_unchanged": true,
+      "warnings": [],
+      "classification": "observed_shape_exception",
+      "scope": "generic linear-system control; matrix is not claimed to be a covariance or beamformer"
+    },
+    {
+      "name": "rectangular_matrix",
+      "execution": "original stable_solve; separate additional control",
+      "matrix": {
+        "shape": [
+          3,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "rhs": {
+        "shape": [
+          3,
+          1
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            1.0
+          ],
+          [
+            1.0
+          ],
+          [
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0
+          ],
+          [
+            0.0
+          ],
+          [
+            0.0
+          ]
+        ]
+      },
+      "output": null,
+      "independent_expected": null,
+      "expected_error_type": "AssertionError",
+      "error": {
+        "type": "AssertionError",
+        "message": "((3, 2), (3, 1))"
+      },
+      "matched_expected": null,
+      "inputs_unchanged": true,
+      "warnings": [],
+      "classification": "observed_shape_exception",
+      "scope": "generic linear-system control; matrix is not claimed to be a covariance or beamformer"
+    },
+    {
+      "name": "complex_single_real_rhs",
+      "execution": "original stable_solve; separate additional control",
+      "matrix": {
+        "shape": [
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "rhs": {
+        "shape": [
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "imag": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "output": {
+        "shape": [
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0
+          ]
+        ]
+      },
+      "independent_expected": {
+        "shape": [
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "imag": [
+          [
+            -1.0,
+            -0.0
+          ],
+          [
+            -0.0,
+            -1.0
+          ]
+        ]
+      },
+      "expected_error_type": null,
+      "error": null,
+      "matched_expected": true,
+      "inputs_unchanged": true,
+      "warnings": [],
+      "classification": "matched_independent_expected",
+      "scope": "generic linear-system control; matrix is not claimed to be a covariance or beamformer"
+    },
+    {
+      "name": "complex_batch_real_rhs",
+      "execution": "original stable_solve; separate additional control",
+      "matrix": {
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "rhs": {
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "output": {
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "dtype": "float64",
+        "real": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "independent_expected": {
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "dtype": "complex128",
+        "real": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "imag": [
+          [
+            [
+              -1.0,
+              -0.0
+            ],
+            [
+              -0.0,
+              -1.0
+            ]
+          ],
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "expected_error_type": null,
+      "error": null,
+      "matched_expected": false,
+      "inputs_unchanged": true,
+      "warnings": [
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part"
+        },
+        {
+          "category": "ComplexWarning",
+          "message": "Casting complex values to real discards the imaginary part"
+        }
+      ],
+      "classification": "observed_complex_batch_fallback_discard",
+      "scope": "generic linear-system control; matrix is not claimed to be a covariance or beamformer"
+    }
+  ],
+  "additional_counts": {
+    "original_function_cases": 4,
+    "shape_exceptions": 2,
+    "matches": 1,
+    "complex_batch_dtype_differences": 1
+  },
+  "counts": {
+    "original_function_cases": 4,
+    "independent_numpy_cases": 2,
+    "original_matches": 3,
+    "original_known_dtype_failures": 1
+  }
+}

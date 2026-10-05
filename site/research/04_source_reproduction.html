@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码获取与独立复现记录 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="645849d8f4d7"><style>
+<meta name="source-digest" content="525c7075d556"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -682,7 +683,7 @@ ViSQOL 还需固定 speech/audio 模式、采样率和映射模型，不能混�
 <p><a id="appendix-solver-contracts"></a></p>
 <span id="sec-13" class="anchor-alias" aria-hidden="true"></span><span id="附录-a最小二乘回退数值秩与物理目标" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1cd13055df">附录 A：最小二乘回退、数值秩与物理目标</h3>
 <p>矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。<a href="../12_appendix-symbols-math.html#sec-u-3899a8c1b7">附录 A 的 E12-03</a>说明零残差不保证参数唯一；<a href="../12_appendix-symbols-math.html#sec-u-935c1036ea">E12-05</a>说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。</p>
-<p>本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py">限定审计工具</a>。工具完整加载固定 <code>pb_bss</code> 提交 <code>10acc347fc9ea21e3d312806a0bd751d0d0af183</code> 的<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py" title="citation">原 <code>pb_bss/math/solve.py</code></a>，仅调用 <code>stable_solve</code>；不做AST提取、源码补丁或算法替身，也不导入完整 <code>pb_bss</code> 包。该模块是维护者提供的通用求解助手，按原<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE" title="citation">MIT许可证</a>使用，不是本书自行实现的求解器。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts.json">旧历史报告</a>记录本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/241513c8f35d952747f16ccbb40cf85a5363b5ae/codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py">当时版本的限定工具</a>。旧报告登记完整加载固定 <code>pb_bss</code> 提交 <code>10acc347fc9ea21e3d312806a0bd751d0d0af183</code> 的<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py" title="citation">原 <code>pb_bss/math/solve.py</code></a>，仅调用 <code>stable_solve</code>；不做AST提取、源码补丁或算法替身，也不导入完整 <code>pb_bss</code> 包。该模块是维护者提供的通用求解助手，按原<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE" title="citation">MIT许可证</a>使用，不是本书自行实现的求解器。</p>
 <p>原函数先尝试 <code>numpy.linalg.solve</code>；矩阵奇异时，逐矩阵回退到 <code>numpy.linalg.lstsq</code>。对
 $\mathbf A=\left[\begin{smallmatrix}1&1\\2&2\end{smallmatrix}\right]$、$\mathbf B=\mathbf I_2$，令两行参数之和为 $s$，第一列残差最小化为 $(s-1)^2+(2s)^2$，驻点 $s=1/5$；第二列则为 $s^2+(2s-1)^2$，驻点 $s=2/5$。在每列固定和的解中，两个分量取相等值使范数最小，因此独立期望为
 $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
@@ -721,9 +722,44 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。</p>
 <p>另外两例直接调用NumPy接口，与上游调用分栏记录。取 $\mathbf A=\operatorname{diag}(1,10^{-8})$、$\vec b=[1,10^{-8}]^\top$，显式 <code>rcond=1e-6</code> 得秩1、解 $[1,0]^\top$、残差范数 $10^{-8}$；<code>rcond=1e-10</code> 得秩2、解 $[1,1]^\top$、残差零。两次返回的残差数组都为空，因为矩阵为方阵，接口条件是 $M\leq N$。判秩和残差各自记录，依据<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html" title="citation">NumPy 2.5接口的Parameters/Returns</a>（2026-10-02核实）。<code>stable_solve</code> 本身没有向调用者暴露这两个 <code>rcond</code> 参数。</p>
 <p><a href="../12_appendix-symbols-math.html#e12-16">E12-16截断与ridge</a>进一步区分删去弱方向与连续收缩；<a href="../12_appendix-symbols-math.html#e12-18">E12-18厄米输入检查</a>则提醒 <code>eigh</code> 使用指定三角且忽略对角虚部，不能把分解成功当作输入协方差有效的证明。这两个练习由本书入口实现，不属于上述原函数的执行范围。<a href="https://www.netlib.org/lapack/lug/node27.html" title="citation">Netlib LAPACK最小二乘驱动说明</a>的式(2.1)/表2.3区分满秩QR/LQ与秩亏求解，支持先说明目标、秩假设和截断策略，再选择接口；本书没有另行编译这些Fortran驱动。</p>
 <pre><code class="language-bash">.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts
-.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts.json
+.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts_current.json
 </code></pre>
-<p>默认命令只把当前审计写到标准输出；显式 <code>--report</code> 才原子保存<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts.json">独立报告</a>。报告核对官方origin、完整HEAD、锁表摘要、两个原文件的SHA/Git blob、MIT许可、工具摘要和运行前后洁净状态，并保存四个原函数例、两个独立NumPy例的输入类型、输出、独立期望、容差、警告和失败分类。拒绝符号链接、词法 <code>..</code>、非普通目标与上游缓存内报告路径。不覆盖旧历史报告，不取得新源码；完整包、波束音频、模型和设备都未在这个审计中运行。</p>
+<p>默认命令只把当前审计写到标准输出；显式 <code>--report</code> 才原子保存<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/reports/upstream_solver_contracts_current.json">当前报告</a>。仓内仅此当前路径可写，旧报告、源码、AGENTS、锁表、状态、历史快照及上游缓存目标在执行原函数前和替换目标前均拒绝；仓外普通目标仍可保存，普通父链、符号链接、词法 <code>..</code> 与非普通文件按原合同检查。这是有限的本地写前检查，不宣称消除并发竞态。</p>
+<p>本书于2026-10-05实际执行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py">当前工具</a>并保存上述当前报告。它复用既有来源核验，分别保存115项锁表/获取状态、完整选集与实际所用的原源码和许可身份；直接依赖、官方origin、固定HEAD、原文件SHA/Git blob及工作树状态在运行前后核对。旧报告绑定的是100项历史锁表及当时工具；旧锁表由已登记的完整字节快照核验，不给旧报告替换成当前摘要。旧报告没有获取状态摘要，也未记录实际读取的pyc身份，不能倒推这两项已经核验。</p>
+<p><a href="https://docs.python.org/3.13/library/sys.html#sys.dont_write_bytecode" title="citation">Python字节码说明</a>只保证<code>-B</code>或<code>dont_write_bytecode</code>不写新的pyc，已有有效缓存仍可能被普通源码加载器读取；<a href="https://docs.python.org/3.13/reference/import.html#cached-bytecode-invalidation" title="citation">缓存失效规则</a>解释时间戳/长度及哈希缓存的判断。因此当前工具从已核完整<code>solve.py</code>字节编译执行整个原模块，并保留正常模块元数据、原导入与函数，不做AST提取或源码补丁，也不读取、删除或改写原pyc。工具及三个实际复用的仓内依赖、NumPy入口和线性代数包装文件前后摘要另记；这些是直接文件身份，不代表整个NumPy包或本机LAPACK二进制依赖闭包。</p>
+<p>原四例与两个独立NumPy例继续分栏，新增四个原函数控制另列。固定<a href="https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py#L91-L114" title="citation">原函数91～114行</a>中的形状判断和<code>zeros_like(B)</code>回退决定以下行为：</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">新增原输入控制</th>
+<th scope="col">实际行为</th>
+<th scope="col">比较边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>二阶方阵与一维右端向量</td>
+<td>原接口产生<code>IndexError</code></td>
+<td>NumPy支持向量右端项，不代表此助手也支持相同shape</td>
+</tr>
+<tr>
+<td>三行两列矩阵与三行一列右端项</td>
+<td>原接口产生<code>AssertionError</code></td>
+<td>原助手面向方阵合同，不能因NumPy有<code>lstsq</code>就扩称任意矩形LS</td>
+</tr>
+<tr>
+<td>$A=jI_2$、实数$B=I_2$，单个非奇异矩阵</td>
+<td>返回复矩阵$-jI_2$</td>
+<td>复系数/实右端项并非所有路径都会丢虚部</td>
+</tr>
+<tr>
+<td>同一复矩阵加一个零矩阵及零右端项，组成批次</td>
+<td>奇异块使整批进入回退；实数<code>zeros_like(B)</code>丢失第一块虚部，记录两次<code>ComplexWarning</code></td>
+<td>连原先非奇异的块也受批次分支影响；此复矩阵不是Hermitian噪声协方差</td>
+</tr>
+</tbody>
+</table></div>
+<p>工具保留输入类型、输出、独立期望、容差、警告和失败分类，不修补上游，也不把四个控制并入旧四例的通过计数。完整包、波束音频、模型和设备都未在这个审计中运行。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_appendix_a_source_guards.py">独立负控</a>检查有效旧pyc与被拒报告目标，正常原源执行另由<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_upstream_solver_contracts.py">接口测试</a>核验。</p>
 <p><a id="appendix-b-reproduction"></a></p>
 <span id="sec-14" class="anchor-alias" aria-hidden="true"></span><span id="附录-b先对齐研究方向的任务与版本" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-6882e0b4c8">附录 B：先对齐研究方向的任务与版本</h3>
 <p><a href="../13_appendix-guide.html#sec-13-3">附录B的研究速览</a>包含八类方向，但它们并不输出同一种结果。目标说话人提取输出音轨，DiCoW输出指定说话人的文字，CHiME-9 ECHI输出低延迟增强流；ArrayDPS的输出又有参考通道与混响源像的定义。选型前先固定目标，不能把不同任务的WER、SI-SDR或延迟写成统一排名。</p>

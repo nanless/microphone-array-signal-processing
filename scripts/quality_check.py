@@ -147,7 +147,7 @@ EXPECTED_SUBSECTION_COUNTS = {
     "09_source-tracking.md": 62,  # three independent topics and E09-24/25/26
     "10_engineering-practice.md": 56,
     "11_selection-guide.md": 41,  # two evidence topics and E11-26/27 are independently navigable
-    "12_appendix-symbols-math.md": 36,
+    "12_appendix-symbols-math.md": 37,
     "13_appendix-guide.md": 29,
     "14_acoustic-imaging.md": 65,
     # 40 separately navigable topics and 25 exercise headings, manually read.
@@ -174,17 +174,17 @@ EXPECTED_CHAPTERS = [
 ]
 EXPECTED_CHAPTER_COUNT = 16
 EXPECTED_SECTION_COUNT = 151
-EXPECTED_SUBSECTION_COUNT = 738
-EXPECTED_OUTLINE_ITEM_COUNT = 905
+EXPECTED_SUBSECTION_COUNT = 739
+EXPECTED_OUTLINE_ITEM_COUNT = 906
 EXPECTED_FIGURE_NUMBERS = set(range(1, 81))
-EXPECTED_EXERCISE_COUNT = 358
+EXPECTED_EXERCISE_COUNT = 359
 EXPECTED_EXERCISE_COUNTS = {
     '01_problem-definition.md': 10, '02_basics-signal-model.md': 20,
     '03_array-geometry.md': 18, '04_doa-estimation.md': 25,
     '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
     '08_speech-separation.md': 32, '09_source-tracking.md': 26,
     '10_engineering-practice.md': 34, '11_selection-guide.md': 27,
-    '12_appendix-symbols-math.md': 19, '13_appendix-guide.md': 14,
+    '12_appendix-symbols-math.md': 20, '13_appendix-guide.md': 14,
     '14_acoustic-imaging.md': 18, '15_distributed-enhancement.md': 25,
 }
 # 研究附站使用独立显式清单，不挤占 16 篇教程或教程 PDF 大纲基线。

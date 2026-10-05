@@ -69,9 +69,9 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `make_tracking_figures.py` | 图77：先严格只读核实际PCM，计算单槽生命周期及可用/状态龄期；12真实源与3输入摘要、全部197行/5事件独立验收 | `figures/fig77_tracking_lifecycle.png`及第9章数值报告 |
 | `make_channel_figures.py` | 图78：先只读核六已知坏麦PCM与清单，分开目标响应、总NMSE与128点波形；9真实源及7输入摘要 | `figures/fig78_channel_failure.png`和第10章数值报告 |
 | `make_selection_figures.py` | 图79：同一已知三麦模型的DS/三加载MVDR，实际噪声与另模型DI分开，声学两硬条件及设备证据三态；8真实源 | `figures/fig79_selection_evidence.png`和`ch11/reports/figure79_selection_evidence.json`；无新音频 |
-| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/738 个指定子节/80 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
+| `quality_check.py` | 发布门禁。用独立基线检查 16 篇/151 节/739 个指定子节/80 图，核对图号、alt、公式编号与引用、小节语义链接、PNG 绘图脚本摘要、网页导航和 PDF 三级书签。确定性问题阻断发布，高风险口语只提醒人工复核 | 通过、失败清单，以及不阻断发布的人工复核与可访问性提示 |
 
-358 道稳定编号的代码题可从各章入口复算，例如：
+359 道稳定编号的代码题可从各章入口复算，例如：
 
 ```bash
 .venv/bin/python -m codes.chapters.ch04.chapter04_experiments
@@ -90,9 +90,15 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 第 11 章 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 包含 E11-10～27 十八道选型计算。图 46 读取本书构造的四候选表；图 47 在四个实际导出的 FIR 音频通过摘要校验后，从 PCM 重新投影频率并核对对齐误差。图64另读两场景八个独立WAV，共同增益与完整尾部保留。图79另用已知单频统计比较四个真实计算候选，分开实际噪声、另模型DI、声学硬条件与未测设备延迟，不产生新WAV。四图的条件、数据与脚本入口见[第 11 章](../chapters/11_selection-guide.md)和[音频实验 §33与§44](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
-附录 A 的入口复算E12-06～19。E12-08先核20个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E12-19核对`weighted_audio/`严格六成员与四个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+附录 A 的入口复算E12-06～20；E12-20用已知完整相关噪声协方差求无失真权重，并同步白化观测和设计向量。E12-08先核20个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E12-19核对`weighted_audio/`严格六成员与四个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
-固定pb_bss原求解器的本地合同可运行`.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts.json`。工具校验精确提交、许可、源码与洁净状态，完整加载原模块，仅调用`stable_solve`四例；另两例直接调用NumPy。原整数回退截断失败保留为真实结果，不改上游，不把局部调用当成完整波束形成。
+固定pb_bss原求解器的本地合同可运行：
+
+```bash
+.venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts --report codes/chapters/appendix_a/reports/upstream_solver_contracts_current.json
+```
+
+工具复用已注册的来源核验，分开记录当前锁表/获取状态/完整选集和实际所用两个原文件。从已核完整源码字节编译执行原模块，不读取或删除原字节码缓存；原四例与新增四个形状/复数批次控制分栏，另两例直接调用NumPy。整数回退截断及批次回退丢虚部保留为真实结果。仅上述当前报告路径允许仓内写入，历史报告及源码目标拒绝；直接依赖前后核不代表全包或本机LAPACK依赖闭包核验，不把局部调用当成完整波束形成。
 
 附录B的 E13-11～14 分别复算共享TAC聚合、DRR/EDC安全尺度、T20时间条件化与同DRR频响对照。`appendix_b.examples.generate_response_audio --check`只读核四真实源、严格六成员及五WAV完整内存回放。图66独立读实际PCM整数，保存`appendix_b/reports/figure66_equal_drr_response.json`；解析反射能量与实际完整输出误差分别显示。参数、五个播放器和答案见[音频实验§46](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
@@ -114,7 +120,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 738 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 739 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
@@ -128,7 +134,7 @@ PDF 正文固定为 16 px，MathJax 公式按 100% 字号打印；网页公式�
 
 **PDF 可访问性边界**：Chrome 使用 `--export-tagged-pdf` 导出结构树，pypdf 完整克隆页面后添加书签；构建和发布门禁检查标记根、父树及页面连接。标签存在不等于公式辅助文本、阅读顺序或 PDF/UA 已完整验收，最终版仍需辅助技术实测。
 
-**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、738 个三级书签，共 905 个大纲项，以及图 1～80。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
+**独立结构基线**：发布门禁的独立结构基线为 16 个顶级书签、151 个二级书签、739 个三级书签，共 906 个大纲项，以及图 1～80。它还检查图号与 alt、公式编号与引用、小节语义链接、每个源 h2/h3/h4 标题是否真的出现在当前页导航中（源 h1 可排除），以及 PNG 中的 `SourceScript` 和完整 `SourceScriptDigest`。
 
 修改绘图脚本后未重画的 PNG 会使门禁失败；高风险口语命中只输出人工复核提示。
 

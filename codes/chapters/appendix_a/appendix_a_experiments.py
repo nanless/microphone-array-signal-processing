@@ -1,4 +1,4 @@
-"""E12-06..19: reproducible mathematical counterexamples for Appendix A.
+"""E12-06..20: reproducible mathematical counterexamples for Appendix A.
 
 All values are constructed teaching inputs, not measurements. The audio case
 is mathematical PCM16 synthesis; no file is written by importing or running
@@ -23,6 +23,73 @@ from codes.chapters.appendix_a.core.weighted_audio import build_fixture, analyze
 from codes.chapters.appendix_a.core.math_foundations import (
     blockwise_circular_convolution, fft_overlap_add,
 )
+
+
+def correlated_gls_demo() -> dict:
+    """E12-20: one fixed known correlated-noise model, without asset IO.
+
+    Both measurements contain the same scalar target. Solve the whitened
+    least-squares problem using NumPy's existing implementation; this is not
+    a general GLS solver or an estimator of the given noise covariance.
+    """
+    design = np.ones((2, 1))
+    covariance = np.array([[1., 1.5], [1.5, 4.]])
+    rhs = np.array([0., 2.])
+    factor = np.linalg.cholesky(covariance)
+    whitening = np.linalg.solve(factor, np.eye(2))
+    whitened_design = whitening @ design
+    whitened_rhs = whitening @ rhs
+    # The returned row maps whitened observations to the scalar estimate.
+    white_row, _, rank, singular = np.linalg.lstsq(
+        whitened_design, np.eye(2), rcond=None
+    )
+    white_weight = white_row.conj().T[:, 0]
+    full_weight = whitening.conj().T @ white_weight
+    full_solution = np.linalg.lstsq(
+        whitened_design, whitened_rhs, rcond=None
+    )[0]
+    cases = {}
+    for name, weight in (
+        ('ols', np.array([.5, .5])),
+        ('diagonal_only', np.array([.8, .2])),
+        ('full_covariance', full_weight),
+    ):
+        cases[name] = {
+            'effective_original_weight': weight.tolist(),
+            'target_response': float(np.vdot(weight, design[:, 0]).real),
+            'variance_under_given_covariance': float(
+                np.vdot(weight, covariance @ weight).real
+            ),
+            'fixed_observation_estimate': float(np.vdot(weight, rhs).real),
+        }
+    # Deliberately wrong: whiten the rhs but leave the design unchanged.
+    wrong_row = np.linalg.lstsq(design, np.eye(2), rcond=None)[0]
+    wrong_weight = whitening.conj().T @ wrong_row.conj().T[:, 0]
+    wrong_solution = np.linalg.lstsq(design, whitened_rhs, rcond=None)[0]
+    return {
+        'exercise_id': 'E12-20', 'numpy_version': np.__version__,
+        'design': design.tolist(), 'noise_covariance': covariance.tolist(),
+        'determinant': float(np.linalg.det(covariance)),
+        'fixed_observation': rhs.tolist(), 'cholesky_factor': factor.tolist(),
+        'whitening_matrix': whitening.tolist(),
+        'whitened_noise_covariance': (whitening @ covariance @ whitening.conj().T).tolist(),
+        'noise_precision': (whitening.conj().T @ whitening).tolist(),
+        'whitened_design': whitened_design.tolist(),
+        'whitened_observation': whitened_rhs.tolist(),
+        'whitened_coordinate_weight': white_weight.tolist(),
+        'whitened_lstsq_solution': full_solution.tolist(),
+        'whitened_design_rank': int(rank),
+        'whitened_design_singular_values': singular.tolist(),
+        'cases': cases,
+        'wrong_only_observation_whitened': {
+            'effective_original_weight': wrong_weight.tolist(),
+            'target_response': float(np.vdot(wrong_weight, design[:, 0]).real),
+            'fixed_observation_estimate': float(wrong_solution[0]),
+        },
+        'scope': 'given HPD correlated noise and exact common-target design; '
+                 'unbiased population variance, no covariance estimation or audio; '
+                 'one fixed observation does not rank errors against unknown truth',
+    }
 
 
 def run_experiments(*, repo_root=ROOT, weighted_directory=OUTPUT) -> dict:
@@ -251,6 +318,7 @@ def run_experiments(*, repo_root=ROOT, weighted_directory=OUTPUT) -> dict:
     results['E12-19'] = {'parameters':fixture['parameters'],'analytic':analytic_results(),
         'floating_point':analyze_fixture(fixture),'pcm_analysis':published['pcm_analysis'],
         'published_files':published['files'],'source_sha256':published['source_sha256']}
+    results['E12-20'] = correlated_gls_demo()
     return results
 
 

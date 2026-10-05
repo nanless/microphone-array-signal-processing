@@ -131,3 +131,15 @@ class WeightedAudioTests(unittest.TestCase):
             self.assertFalse((top/'new').exists());self.assertFalse((outside/'new').exists())
             for value in ('yes',0,1,None):
                 with self.assertRaises(ValueError):generate(top/'new',check=value)
+
+    def test_fixed_validation_preserves_original_five_pcm_payloads(self):
+        # The baseline is the actual published WAV, not a regeneration used
+        # on both sides of the assertion. The source-bound manifest is allowed
+        # to change only through real generation by the coordinating agent.
+        from codes.chapters.appendix_a.examples.generate_weighted_audio import OUTPUT, SOURCE_PATHS
+        buffers, metadata = expected_assets()
+        self.assertEqual(len(SOURCE_PATHS), 4)
+        for filename, row in metadata['files'].items():
+            original = (OUTPUT/filename).read_bytes()
+            self.assertEqual(buffers[filename], original)
+            self.assertEqual(row['sha256'], hashlib.sha256(original).hexdigest())

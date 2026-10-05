@@ -1,32 +1,41 @@
 """Read-only fixed pb_bss stable_solve contracts and separate NumPy comparisons.
 
-Load the complete original solve.py, without AST extraction or patching. Only
---report writes; no full pb_bss import, beamformer, model or hardware is run.
+Compile the complete verified solve.py bytes without cached bytecode, AST
+extraction or patching. Default output is stdout. Only an explicit ordinary
+--report writes the new current report or an external report; history is kept.
+No full pb_bss import, beamformer, model or hardware is run. Finite pre/post
+checks do not eliminate concurrent races or guarantee crash persistence.
 """
 from __future__ import annotations
 
 import argparse
+import copy
 from datetime import datetime, timezone
 from fractions import Fraction
 import hashlib
 import importlib.util
 import inspect
 import json
-import math
-import os
 from pathlib import Path
 import platform
-import stat
-import subprocess
 import sys
-import tempfile
 import warnings
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[4]
+if __package__ in (None, ''):
+    sys.path.insert(0, str(ROOT))
+from codes.chapters.ch00.io_contracts import (
+    same_metadata, strict_json_loads, validate_parent_chain, write_json_report,
+)
+from codes.chapters.ch04.core import upstream_contracts as upstream
+
 LOCK = ROOT / 'codes/chapters/ch00/SOURCES.lock.json'
+STATUS = LOCK.with_name('SOURCE_STATUS.json')
 CACHE = ROOT / 'codes/chapters/ch00/upstream/_downloads'
+HISTORICAL_REPORT = ROOT / 'codes/chapters/appendix_a/reports/upstream_solver_contracts.json'
+CURRENT_REPORT = HISTORICAL_REPORT.with_name('upstream_solver_contracts_current.json')
 REVISION = '10acc347fc9ea21e3d312806a0bd751d0d0af183'
 ORIGIN = 'https://github.com/fgnt/pb_bss.git'
 FILES = {
@@ -41,37 +50,15 @@ def digest(data):
 
 
 def strict_loads(data):
-    def reject(value):
-        raise ValueError('non-finite JSON constant: ' + value)
-    def finite_float(value):
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError('non-finite JSON number: ' + value)
-        return number
-    def unique_object(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError('duplicate JSON field: ' + key)
-            result[key] = value
-        return result
-    return json.loads(data, parse_constant=reject, parse_float=finite_float,
-                      object_pairs_hook=unique_object)
+    return strict_json_loads(data)
 
 
 def ordinary_path(path, *, directory=False, allow_missing=False):
-    path = Path(path)
-    if '..' in path.parts:
-        raise ValueError('lexical parent traversal is forbidden')
-    path = path.absolute()
-    for current in reversed((path, *path.parents)):
-        if current.is_symlink():
-            raise ValueError('symbolic link is forbidden: ' + str(current))
-        if current != path and not current.is_dir():
-            raise ValueError('parent is not a directory: ' + str(current))
+    path = validate_parent_chain(path)
+    if not path.parent.is_dir():
+        raise ValueError('parent is not an existing ordinary directory')
     if path.exists():
-        mode = path.stat().st_mode
-        if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
+        if not (path.is_dir() if directory else path.is_file()):
             raise ValueError('unexpected file type: ' + str(path))
     elif not allow_missing:
         raise ValueError('required path is absent: ' + str(path))
@@ -81,9 +68,9 @@ def ordinary_path(path, *, directory=False, allow_missing=False):
 def report_target(path, cache=CACHE):
     target = ordinary_path(path, allow_missing=True)
     cache_path = ordinary_path(cache, directory=True)
-    if target.is_relative_to(CACHE.absolute()) or target.is_relative_to(cache_path):
-        raise ValueError('report must not be inside upstream cache')
-    return target
+    return upstream.report_target(target, CURRENT_REPORT, protected=(
+        CACHE, cache_path, LOCK, STATUS, HISTORICAL_REPORT,
+        ROOT / 'codes/chapters/ch00/source_snapshots', ROOT / 'reviews'))
 
 
 def verify_sources(cache=CACHE):
@@ -97,41 +84,36 @@ def verify_sources(cache=CACHE):
     if (entry['revision'] != REVISION or entry['url'] != ORIGIN or
             entry['license'] != 'MIT' or any(p not in entry['entrypoints'] for p in FILES)):
         raise ValueError('fixed pb_bss lock identity changed')
-    # An outer GIT_DIR/GIT_WORK_TREE/config injection cannot redirect this audit.
-    env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
-    def git(*args, binary=False):
-        result = subprocess.check_output(['git', '-C', str(checkout), *args], env=env,
-                                         stderr=subprocess.PIPE, timeout=20)
-        return result if binary else result.decode().strip()
-    if git('rev-parse', 'HEAD') != REVISION or git('remote', 'get-url', 'origin') != ORIGIN:
-        raise ValueError('upstream HEAD or origin changed')
-    if Path(git('rev-parse', '--show-toplevel')) != checkout:
-        raise ValueError('not an independent checkout')
-    if git('status', '--porcelain', '--untracked-files=all'):
-        raise ValueError('upstream worktree is not clean')
+    identity = upstream.verify_project('pb_bss', checkout, relatives=tuple(FILES),
+                                       lock_path=LOCK, status_path=STATUS)
+    if identity['lock_sha256'] != digest(lock_bytes):
+        raise ValueError('source lock changed during preflight')
     sources = []
     for relative, expected in FILES.items():
-        content = ordinary_path(checkout / relative).read_bytes()
-        if content != git('show', REVISION + ':' + relative, binary=True) or digest(content) != expected:
+        record = identity['used_files'][relative]
+        if record['sha256'] != expected:
             raise ValueError('source digest/blob mismatch: ' + relative)
-        sources.append({'path': relative, 'sha256': digest(content),
-                        'git_blob': git('rev-parse', REVISION + ':' + relative),
+        sources.append({'path': relative, 'sha256': record['sha256'],
+                        'git_blob': record['git_blob'],
                         'role': 'complete original Python module' if relative.endswith('.py') else 'license'})
     return {'checkout': str(checkout), 'revision': REVISION, 'origin': ORIGIN,
             'source_lock_sha256': digest(lock_bytes), 'source_lock_project_count': len(projects),
-            'sources': sources, 'clean': True}
+            'source_status_sha256': identity['status_sha256'],
+            'sources': sources, 'clean': True, 'source_identity': identity}
 
 
 def load_original(checkout):
     path = ordinary_path(Path(checkout) / 'pb_bss/math/solve.py')
+    payload = path.read_bytes()
+    if digest(payload) != FILES['pb_bss/math/solve.py']:
+        raise ValueError('source bytes changed before complete original module execution')
     spec = importlib.util.spec_from_file_location('_masp_original_pb_bss_solve', path)
     module = importlib.util.module_from_spec(spec)
-    old = sys.dont_write_bytecode
-    try:
-        sys.dont_write_bytecode = True
-        spec.loader.exec_module(module)
-    finally:
-        sys.dont_write_bytecode = old
+    # SourceFileLoader.exec_module may read an existing valid .pyc even under
+    # -B. Execute these exact verified full bytes; preserve module metadata and
+    # ordinary original imports, without reading, deleting or updating caches.
+    module.__cached__ = None
+    exec(compile(payload, str(path), 'exec'), module.__dict__)
     return module
 
 
@@ -206,31 +188,117 @@ def numpy_cases():
     return rows
 
 
+def complex_array(value):
+    value = np.asarray(value)
+    if not np.all(np.isfinite(value)):
+        raise ValueError('non-finite additional solver control')
+    return {'shape': list(value.shape), 'dtype': str(value.dtype),
+            'real': value.real.tolist(), 'imag': value.imag.tolist()}
+
+
+def additional_solver_cases(module):
+    """Four separate original calls; never alter the historical four-case set."""
+    eye = np.eye(2)
+    definitions = (
+        ('vector_rhs', eye, np.ones(2), 'IndexError', None),
+        ('rectangular_matrix', np.ones((3, 2)), np.ones((3, 1)), 'AssertionError', None),
+        ('complex_single_real_rhs', 1j * eye, eye, None, -1j * eye),
+        ('complex_batch_real_rhs', np.stack((1j * eye, np.zeros((2, 2)))),
+         np.stack((eye, np.zeros((2, 2)))), None,
+         np.stack((-1j * eye, np.zeros((2, 2))))),
+    )
+    rows = []
+    for name, a, b, expected_error, expected in definitions:
+        saved_a, saved_b = a.copy(), b.copy()
+        output, error = None, None
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            try:
+                output = module.stable_solve(a, b)
+            except (IndexError, AssertionError) as exception:
+                error = {'type': type(exception).__name__, 'message': str(exception)}
+        if (error['type'] if error else None) != expected_error:
+            raise ValueError('fixed additional original behavior changed: ' + name)
+        matched = None
+        if expected_error is None:
+            if output.shape != expected.shape or not np.all(np.isfinite(output)):
+                raise ValueError('unexpected additional solver output: ' + name)
+            matched = bool(np.allclose(output, expected, rtol=0, atol=ATOL))
+            if name == 'complex_single_real_rhs':
+                if not matched or output.dtype != np.dtype('complex128') or caught:
+                    raise ValueError('complex direct solve behavior changed')
+            else:
+                if (matched or output.dtype != np.dtype('float64') or
+                        not np.array_equal(output, np.zeros((2, 2, 2))) or
+                        [w.category.__name__ for w in caught] != ['ComplexWarning'] * 2):
+                    raise ValueError('complex batch fallback behavior changed')
+        if not np.array_equal(a, saved_a) or not np.array_equal(b, saved_b):
+            raise ValueError('additional original call changed inputs: ' + name)
+        rows.append({'name': name, 'execution': 'original stable_solve; separate additional control',
+                     'matrix': complex_array(a), 'rhs': complex_array(b),
+                     'output': None if output is None else complex_array(output),
+                     'independent_expected': None if expected is None else complex_array(expected),
+                     'expected_error_type': expected_error, 'error': error,
+                     'matched_expected': matched, 'inputs_unchanged': True,
+                     'warnings': [{'category': w.category.__name__, 'message': str(w.message)} for w in caught],
+                     'classification': ('observed_shape_exception' if expected_error else
+                                        'observed_complex_batch_fallback_discard' if not matched else
+                                        'matched_independent_expected'),
+                     'scope': 'generic linear-system control; matrix is not claimed to be a covariance or beamformer'})
+    return rows
+
+
+def actual_dependencies():
+    """Four real local source files; not the installed dependency closure."""
+    return upstream.dependencies(__file__)
+
+
+def numpy_identities():
+    paths = {'entry': np.__file__,
+             'linalg_lstsq_wrapper': inspect.getsourcefile(inspect.unwrap(np.linalg.lstsq))}
+    return {name: {'path': str(ordinary_path(path)),
+                   'sha256': digest(ordinary_path(path).read_bytes()), 'version': np.__version__,
+                   'scope': 'actual imported entry or Python wrapper file only; not whole package or native LAPACK'}
+            for name, path in paths.items()}
+
+
 def run_audit(cache=CACHE):
+    direct_before, numpy_before = actual_dependencies(), numpy_identities()
     before = verify_sources(cache)
+    source_before = copy.deepcopy(before['source_identity'])
     original = load_original(before['checkout'])
     cases = solver_cases(original)
     comparisons = numpy_cases()
-    after = verify_sources(cache)
-    if before != after:
-        raise ValueError('upstream or lock changed during audit')
+    additional = additional_solver_cases(original)
+    after = upstream.check_unchanged(before['source_identity'])
+    direct_after, numpy_after = actual_dependencies(), numpy_identities()
+    if (not same_metadata(direct_before, direct_after)
+            or not same_metadata(numpy_before, numpy_after)):
+        raise ValueError('actual direct source or NumPy file identity changed during audit')
     report = {'created_utc': datetime.now(timezone.utc).isoformat(),
-              'tool_sha256': digest(Path(__file__).read_bytes()), **before,
+              'tool_sha256': direct_before[str(Path(__file__).resolve().relative_to(ROOT))], **before,
               'before_clean': True, 'after_clean': True,
+              'source_identity_before': source_before, 'source_identity_after': after,
+              'direct_sources_before': direct_before, 'direct_sources_after': direct_after,
+              'direct_source_scope': 'four local Python source files; no complete transitive or installed dependency closure claim',
+              'external_numpy_files_before': numpy_before, 'external_numpy_files_after': numpy_after,
               'license': {'name': 'MIT', 'path': 'LICENSE', 'sha256': FILES['LICENSE']},
               'execution': {'module': 'pb_bss/math/solve.py', 'original_functions_called': ['stable_solve'],
-                            'scope': 'complete unmodified module loaded; one function called',
+                            'scope': 'complete unmodified source bytes compiled/executed; one function called',
+                            'bytecode_cache_read': False, 'bytecode_cache_written': False,
                             'source_patch': False, 'ast_extraction': False, 'substitutes': [],
                             'not_executed': ['full pb_bss package', '_lstsq helper', 'beamformers', 'models', 'audio', 'hardware']},
               'environment': {'python': sys.version, 'numpy': np.__version__, 'platform': platform.platform(),
-                              'numpy_linalg_wrapper_sha256': digest(Path(inspect.getsourcefile(
-                                  inspect.unwrap(np.linalg.lstsq))).read_bytes())},
+                              'numpy_linalg_wrapper_sha256': numpy_before['linalg_lstsq_wrapper']['sha256']},
               'original_lstsq_default': {'argument': 'rcond omitted by original stable_solve',
                                         'runtime_default': 'NumPy 2.x eps * max(M,N)',
                                         'float64_2_by_2_ratio': float(np.finfo(float).eps * 2)},
               'comparison_tolerance': {'absolute': ATOL, 'relative': 0},
               'oracle': 'independent Fraction 1/10,1/5 and diagonal/constraint closed forms',
               'cases': cases, 'numpy_comparisons': comparisons,
+              'additional_original_controls': additional,
+              'additional_counts': {'original_function_cases': 4, 'shape_exceptions': 2,
+                                    'matches': 1, 'complex_batch_dtype_differences': 1},
               'counts': {'original_function_cases': len(cases), 'independent_numpy_cases': len(comparisons),
                          'original_matches': 3, 'original_known_dtype_failures': 1}}
     strict_loads(json.dumps(report, allow_nan=False))
@@ -239,22 +307,11 @@ def run_audit(cache=CACHE):
 
 def write_report(path, report, cache=CACHE):
     target = report_target(path, cache)
-    payload = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n'
-    strict_loads(payload)
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=target.parent,
-                                         prefix='.solver-report-', delete=False) as handle:
-            temporary = Path(handle.name)
-            handle.write(payload)
-            handle.flush()
-            os.fsync(handle.fileno())
-        report_target(target, cache)
-        os.replace(temporary, target)
-        temporary = None
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
+    # The shared writer validates strict finite JSON and checks ordinary
+    # membership/protected roots again immediately before atomic replacement.
+    write_json_report(target, report, forbidden_roots=(
+        CACHE, Path(cache), LOCK, STATUS, HISTORICAL_REPORT,
+        ROOT / 'codes/chapters/ch00/source_snapshots', ROOT / 'reviews'))
 
 
 def main(argv=None):

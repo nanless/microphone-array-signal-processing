@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>附录 A · 符号术语数学 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="645849d8f4d7"><style>
+<meta name="source-digest" content="525c7075d556"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -294,6 +295,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-0e9dab8b8b">E12-17：复相关漏共轭会把真正的延迟峰抵消吗？</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-b849e6d52a">E12-18：eigh 返回有限特征值能证明输入是协方差吗？</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-333ee075d5">E12-19：已知噪声权重如何进入实际双通道输出？</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-97f33585ea">E12-20：相关噪声为什么会产生负权重，白化后还须改变什么？</a></li>
 </ul>
 <div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
@@ -340,6 +342,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-0e9dab8b8b">E12-17：复相关漏共轭会把真正的延迟峰抵消吗？</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-b849e6d52a">E12-18：eigh 返回有限特征值能证明输入是协方差吗？</a></li>
 <li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-333ee075d5">E12-19：已知噪声权重如何进入实际双通道输出？</a></li>
+<li>&nbsp;&nbsp;<a href="12_appendix-symbols-math.html#sec-u-97f33585ea">E12-20：相关噪声为什么会产生负权重，白化后还须改变什么？</a></li>
 </ul></nav></details>
 <blockquote>
 <p>⚠️ 本篇是附录 A（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立查阅，前后篇见下方导航。</p>
@@ -353,7 +356,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本书采用前向傅里叶核 $e^{-\mathrm j2\pi ft}$。</p>
 <p>阵列坐标约定为：麦 1 位于 $x=0$，麦 2 位于 $+x$；正横为 0°，正角朝麦 2；$\vec u$ 从阵列指向声源，传播方向为 $-\vec u$。</p>
 <p>球谐公式常改用从 $+x$ 轴起算的方位角 $\alpha$ 和从 $+z$ 轴起算的极角 $\vartheta$。与本书从 $+y$ 朝 $+x$ 起算的声源方位角 $\theta$、从水平面起算的俯仰角 $\phi_{\mathrm{el}}$ 对接时，应先换算 $\alpha=\pi/2-\theta$（按 $2\pi$ 周期取值）、$\vartheta=\pi/2-\phi_{\mathrm{el}}$，再调用相应公式或接口，见<a href="05_beamforming.html#sec-5-8">§5.8</a>。</p>
-<p><strong>字母复用</strong>（与 §2.3 一致）：受文献惯例所限，$k$ 可表示频点索引、波数或 WPE 的滞后帧号；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。</p>
+<p><strong>字母复用</strong>（与 §2.3 一致）：本符号表把波数记为 $\kappa=2\pi f/c$，与 STFT 频点索引 $k$ 区分；其他章节的局部推导或文献仍可能用 $k$ 表示波数，第7章局部也用 $k$ 表示 WPE 的滞后帧号。$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。具体含义以所在公式的定义为准。</p>
 <p>需要区分 STFT 网格时，本书用 $k$ 表示频点索引、$\ell$ 表示帧索引；连续时间仍用 $t$，离散采样索引用 $n$。实信号的<strong>单边谱</strong>取 $0\leq k\leq\lfloor N/2\rfloor$，对应非负频率 $f_k=kf_s/N$（Hz）。若存储完整 $N$ 点 DFT，后半段索引表示负频率：偶数 $N$ 的 $k>N/2$ 或奇数 $N$ 的 $k>(N-1)/2$ 应解释为 $(k-N)f_s/N$。偶数 $N$ 的 Nyquist 格点 $k=N/2$ 对实信号自共轭，可按单边谱约定记作 $+f_s/2$；不能把完整 DFT 的末格直接解释成接近 $+f_s$ 的新物理频率。E12-06 给出八点算例。</p>
 <p>若必须给<strong>完整双边频谱</strong>的每个格点指定有符号代表频率，本书采用与 NumPy 的 fftfreq 接口一致的排列：</p>
 <p>$$f_k^{\mathrm{full}}=
@@ -381,6 +384,10 @@ kf_s/N,&0\leq k\lt \lceil N/2\rceil,\\
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$c$, $\lambda$, $f$，$f_k$</td>
 <td>声速（示例常取 343 m/s）、波长、连续物理频率（Hz）、单边 DFT/STFT 第 $k$ 个频点的非负物理频率 $f_k=kf_s/N$；完整双边 DFT 的负频率索引按上文换算</td>
+</tr>
+<tr>
+<td class="tutorial-short-column" style="--tutorial-column-width:8em">$\kappa=2\pi f/c$</td>
+<td>波数，单位为 $\mathrm{rad/m}$，使传播相位 $\kappa d$ 无量纲；与频点索引 $k$ 区分。条件数 $\kappa_2(\mathbf A)$ 和球面概率集中度 $\kappa_{\mathrm{vMF}}$ 是另外的局部定义，不能按波数解释</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:8em">$\theta$, $\theta_0$</td>
@@ -1148,6 +1155,7 @@ $\vec v^H\hat{\mathbf R}\vec v=L^{-1}\sum_\ell|\vec v^H\vec x_\ell|^2\geq0$；�
 <p>$\mathbf A^H\mathbf C^{-1}\mathbf A$ 是 $p\times p$；满列秩与正定 $\mathbf C$ 保证它正定。选择可逆的 $m\times m$ 噪声白化矩阵 $\mathbf W$ 使 $\mathbf W\mathbf C\mathbf W^H=\mathbf I$，则 $\mathbf W^H\mathbf W=\mathbf C^{-1}$，加权代价就是 $\|\mathbf W\mathbf A\vec x-\mathbf W\vec b\|_2^2$。白化后必须同时变换设计矩阵和观测。本书从这一等式推导式(12-5)；<a href="https://netlib.org/lapack/lug/node28.html" title="citation">LAPACK 作者《用户指南》第 3 版的广义线性模型说明</a>也给出可逆噪声因子下的加权最小二乘等价关系。</p>
 <p>驻点条件是 $\mathbf A^H\mathbf C^{-1}\vec r=\vec0$，所以加权残差在 $\mathbf C^{-1}$ 度量下与设计列正交。它一般不满足普通的 $\mathbf A^H\vec r=0$。E12-15 直接算出这两个量的区别。</p>
 <p>若 $\mathbf A$ 与真实 $\mathbf C$ 已知、$\mathbf A$ 满列秩，式(12-5)是线性无偏估计：代入 $E\vec b=\mathbf A\vec x_*$ 后得到 $E\hat{\vec x}=\vec x_*$。E12-15 在两观测标量模型中直接比较无偏权重的方差；这不要求噪声高斯，也不保证每一次观测都比 OLS 更接近真值。噪声模型估错、协方差奇异或设计矩阵本身带误差时，需要另行检验。用共同目标的两路确定性音频比较权重见 E12-19；那些正交频点不是独立随机过程的实测证明。</p>
+<p>两路噪声相关时，非对角元素会改变最优组合。权重不一定落在 0 与 1 之间；负权重可以抵消相关噪声，而权重和仍保持目标响应。<a href="#e12-20">E12-20</a>用完整二阶矩、方差完成平方和显式 Cholesky 白化逐步核对这一点。</p>
 <h3 id="sec-12-3-10">12.3.10 数值截断与正则：删去还是收缩弱方向？</h3>
 <p>奇异值分解把设计矩阵写成 $\mathbf A=\mathbf U\boldsymbol\Sigma\mathbf V^H$，其中非负奇异值 $\sigma_i$ 表示对应方向的观测强度。没有截断时，一个非零奇异方向的逆因子是 $1/\sigma_i$，小奇异值会放大该方向上的观测误差。截断奇异值分解（Truncated Singular Value Decomposition，TSVD）选择一个阈值，直接不估计低于保留标准的方向；它改变了有效估计空间。</p>
 <p>二次正则又称 ridge 或 Tikhonov 正则，在残差外惩罚参数范数。令 $\delta>0$，两种解在奇异坐标下为</p>
@@ -1169,7 +1177,16 @@ $\vec v^H\hat{\mathbf R}\vec v=L^{-1}\sum_\ell|\vec v^H\vec x_\ell|^2\geq0$；�
 <p>式(12-6)由把 $\mathbf A=\mathbf U\boldsymbol\Sigma\mathbf V^H$ 代入目标、逐奇异方向求驻点得到。TSVD 的弱方向贡献直接为零，ridge 的弱方向贡献随 $\delta$ 连续缩小；二者都可能引入相对于真实参数的偏差，却不是同一个优化问题。E12-16 用 $10^{-8}$ 的弱方向比较完整解、截断解和半幅收缩。</p>
 <p><a href="https://netlib.org/lapack/lug/node27.html" title="citation">LAPACK 作者的最小二乘说明</a>区分满秩 QR/LQ 与秩不足的最小范数解；<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html" title="citation">NumPy 2.5 <code>lstsq</code> 文档的 <code>rcond</code> 和 Returns</a>说明数值判秩及空残差数组。以上接口说明核实于 2026-10-02。程序还应报告显式阈值与实际残差，不能仅因返回了有限参数就称原问题已被可靠辨识。</p>
 <span id="sec-11" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-12-4">12.4 计算练习</h2>
-<p>E12-01～04 可通过 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering</code> 复算；E12-05 的奇异矩阵反例使用 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises</code>。E12-06～19 使用 <code>.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments</code>。题中数组均为本书构造的输入；下列答案先从短序列或代数独立求出，再用代码核对。图 48～49 与配套音频只说明明确给定的离散模型，不等于自然语音或实测房间。</p>
+<p>E12-01～04 使用跨章入口复算：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch00.cross_chapter.exercises_engineering
+</code></pre>
+<p>E12-05 的奇异矩阵反例使用空间模型入口：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises
+</code></pre>
+<p>E12-06～20 使用附录 A 的入口，输出按练习 ID 分组的结果：</p>
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments
+</code></pre>
+<p>题中数组均为本书构造的输入；下列答案先从短序列或代数独立求出，再用代码核对。图 48～49 与配套音频只说明明确给定的离散模型，不等于自然语音或实测房间。入口还严格只读检查 E12-08 的主音频与 E12-19 的五个独立 WAV，缺失或过期资产会报错，不自动重生。</p>
 <h3 id="sec-u-a894d7ee57">E12-01：FFT 乘法为什么需要补零</h3>
 <p>取 $x=[1,2]$、$h=[1,0.5]$，下标都从 0 开始。求完整线性卷积，再比较 FFT 长度为 2 和 3 时的结果。</p>
 <p>线性卷积逐点为 $y_0=1\times1=1$、$y_1=1\times0.5+2\times1=2.5$、$y_2=2\times0.5=1$，共 $2+2-1=3$ 点。</p>
@@ -1447,19 +1464,19 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 <tbody>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:6em">OLS</td>
-<td>$0.25(0.00045)+0.25(0.0018)$</td>
+<td>$0.25(0.00045)$<br>$+0.25(0.0018)$</td>
 <td style="text-align: right;">0.0005625</td>
 <td style="text-align: right;">0.028125</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:6em">GLS</td>
-<td>$0.64(0.00045)+0.04(0.0018)$</td>
+<td>$0.64(0.00045)$<br>$+0.04(0.0018)$</td>
 <td style="text-align: right;">0.0003600</td>
 <td style="text-align: right;">0.018000</td>
 </tr>
 <tr>
 <td class="tutorial-short-column" style="--tutorial-column-width:6em">反权</td>
-<td>$0.04(0.00045)+0.64(0.0018)$</td>
+<td>$0.04(0.00045)$<br>$+0.64(0.0018)$</td>
 <td style="text-align: right;">0.0011700</td>
 <td style="text-align: right;">0.058500</td>
 </tr>
@@ -1510,6 +1527,72 @@ n_2[n]&=0.06e[n]\cos(2\pi4000n/16000)\text{。}
 </table></div>
 <p>浮点目标均方约为 $0.020000000000000004$，三个浮点 NMSE 在舍入精度内分别为 $0.028125$、$0.018000$、$0.058500$；PCM 表采用实际量化参考的 $D_I$，不把解析 $0.02$ 当作其精确分母。两种结果的微小差别来自量化和浮点舍入，不改变本例权重的排序。这些数值是固定模型、固定窗口的客观读回，不是多次随机实验或听测统计。</p>
 <p>复算命令为 <code>.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments</code>，资产严格只读核验为 <code>.venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio --check</code>；生成模型位于 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/core/weighted_audio.py"><code>weighted_audio.py</code></a>。入口检查正式文件，不自动重生缺失或过期资产。本例频率、噪声比例与稳定窗口均已知；有限包络边缘不纳入此解析评分，也没有执行人工听测。真实噪声相关、协方差未知、时变或目标两路响应不同的情况，应重新建模而不能照搬这组权重。</p>
+<p><a id="e12-20"></a></p>
+<h3 id="sec-u-97f33585ea">E12-20：相关噪声为什么会产生负权重，白化后还须改变什么？</h3>
+<p><strong>题目与输入。</strong> 两次观测包含同一个未知标量 $x_*$，模型为 $\vec b=\vec a x_*+\vec n$，其中 $\vec a=[1,1]^\top$。设计矩阵是这一列 $\mathbf A=\vec a$，不是待估的阵列导向。噪声均值为零，给定真实协方差</p>
+<p>$$\mathbf C=\begin{bmatrix}1&3/2\\3/2&4\end{bmatrix}。$$</p>
+<p>这两路噪声的相关系数为 $(3/2)/\sqrt{1\times4}=3/4$；协方差项与方差同单位。如果观测以数字幅度计，矩阵元素以数字幅度平方计。第一主子式为 1，行列式为 $4-(3/2)^2=7/4>0$，所以 $\mathbf C$ 正定，具有可逆的 Cholesky 因子。本题给定这些总体统计，不从一对观测反推协方差，也不要求噪声服从高斯分布。</p>
+<p>求线性无偏估计 $\hat x=\vec h^H\vec b$ 的最优有效权重，与 OLS 和仅使用协方差对角元素的权重比较。随后用显式白化复算，并检查只变换观测、漏变设计矩阵会发生什么。</p>
+<p><strong>第一步：保留相关项，求完整权重。</strong> 两行都含单位增益的目标，故无偏约束为 $\vec h^H\vec a=1$。由式(12-5)可得 $\vec h=\mathbf C^{-1}\vec a/(\vec a^H\mathbf C^{-1}\vec a)$。先用二阶矩阵的伴随公式计算</p>
+<p>$$\mathbf C^{-1}=\frac47
+\begin{bmatrix}4&-3/2\\-3/2&1\end{bmatrix}。\tag{12-8}$$</p>
+<p>因此 $\mathbf C^{-1}\vec a=[10/7,-2/7]^\top$，归一化分母为 $\vec a^H\mathbf C^{-1}\vec a=8/7$，得到 $\vec h=[5/4,-1/4]^\top$。第二个权重为负，两个权重之和仍为 1；输出中的目标项恰为 $x_*$，没有通过衰减目标来降低噪声。</p>
+<p>噪声输出为 $(5/4)n_1-(1/4)n_2$。其中 $n_2$ 与 $n_1$ 的相关部分被相减抵消，但剩余噪声仍有正方差。权重是线性组合系数，不能当成取值限制在 $[0,1]$ 的活动掩码或概率。</p>
+<p><strong>第二步：在同一个真实协方差下比较。</strong> 对给定权重，参数误差为 $\hat x-x_*=\vec h^H\vec n$，总体误差方差为 $\vec h^H\mathbf C\vec h$。这里的协方差不随所选方法更换。只按方差倒数归一化会得到 $[4/5,1/5]^\top$；它对应忽略相关项的模型，评分时仍必须使用完整的 $\mathbf C$。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
+<thead>
+<tr>
+<th scope="col">方案</th>
+<th scope="col">原观测的有效权重</th>
+<th scope="col" style="text-align: right;">目标响应</th>
+<th scope="col" style="text-align: right;">真实误差方差</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OLS</td>
+<td>$[1/2,1/2]^\top$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">$2$</td>
+</tr>
+<tr>
+<td>只使用对角方差</td>
+<td>$[4/5,1/5]^\top$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">$32/25=1.28$</td>
+</tr>
+<tr>
+<td>完整协方差 GLS</td>
+<td>$[5/4,-1/4]^\top$</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">$7/8=0.875$</td>
+</tr>
+</tbody>
+</table></div>
+<p>例如 OLS 的方差为 $1/4+4/4+2(1/2)(1/2)(3/2)=2$；对角权重的方差为 $16/25+4/25+12/25=32/25$。完整权重的两个自身项之和为 $25/16+4/16=29/16$，交叉项为 $2(5/4)(-1/4)(3/2)=-15/16$，故总方差为 $14/16=7/8$。漏掉交叉项会把这一抵消机制和最终数字同时算错。</p>
+<p><strong>第三步：完成平方，检查是否只是选中了三组候选中的较好者。</strong> 所有线性无偏权重可写成 $\vec h=[t,1-t]^\top$，其中 $t$ 允许为复数。这是因为 $\vec h^H\vec a=t^*+(1-t)^*=1$。记 $V(t)$ 为它的误差方差；两个自身项为 $|t|^2+4|1-t|^2$，交叉项为 $3\operatorname{Re}[t^*(1-t)]$。展开并完成平方得</p>
+<p>$$\begin{aligned}
+V(t)&=2|t|^2-5\operatorname{Re}t+4,\\
+&=2|t-5/4|^2+7/8。
+\end{aligned}\tag{12-9}$$</p>
+<p>平方项非负，且仅在 $t=5/4$ 时为零。因此 $[5/4,-1/4]^\top$ 是所有复线性无偏权重中的唯一最小方差解，不只是三个候选中的最小者。本例与 E12-15 的对角模型共有无偏约束，但目标函数多了真实相关项，所以不能照搬对角模型的权重。</p>
+<p><strong>第四步：用 Cholesky 白化复算。</strong> 直接相乘可检验下面的 $\mathbf C=\mathbf L\mathbf L^H$ 和 $\mathbf W=\mathbf L^{-1}$：</p>
+<p>$$\begin{aligned}
+\mathbf L&=\begin{bmatrix}1&0\\3/2&\sqrt7/2\end{bmatrix},\\
+\mathbf W&=\begin{bmatrix}1&0\\-3/\sqrt7&2/\sqrt7\end{bmatrix}。
+\end{aligned}\tag{12-10}$$</p>
+<p>$\mathbf W$ 不是厄米平方根，但仍满足 $\mathbf W\mathbf C\mathbf W^H=\mathbf I$。因此白化后的模型应为 $\vec b'=\vec a'x_*+\vec n'$，其中 $\vec a'=\mathbf W\vec a=[1,-1/\sqrt7]^\top$，$\vec b'=\mathbf W\vec b$，$E[\vec n'\vec n'^H]=\mathbf I$。设计和观测必须使用同一个变换；这一关系与 <a href="https://netlib.org/lapack/lug/node28.html" title="citation">LAPACK 作者的广义线性模型说明</a>中可逆噪声因子下的加权最小二乘等价关系一致。</p>
+<p>在白化空间中解普通最小二乘。由于 $\vec a'^H\vec a'=1+1/7=8/7$，白化坐标的权重为 $\vec h'=\vec a'/(\vec a'^H\vec a')=[7/8,-\sqrt7/8]^\top$。它乘的是白化观测，不能直接拿来组合原观测。将输出写回原坐标：$\vec h'^H\mathbf W\vec b=(\mathbf W^H\vec h')^H\vec b$，所以原有效权重为 $\mathbf W^H\vec h'=[5/4,-1/4]^\top$，与第一步一致。</p>
+<p><strong>第五步：只白化观测会改变目标。</strong> 假如把 $\vec b$ 换成 $\mathbf W\vec b$，却仍把设计列写成 $[1,1]^\top$，程序会按这个错误模型给出白化坐标权重 $[1/2,1/2]^\top$。回到原观测后，第一权重为 $(1-3/\sqrt7)/2$，第二权重为 $1/\sqrt7$。其真实目标响应为</p>
+<p>$$\begin{aligned}
+H_{\mathrm{wrong}}&=\vec h_{\mathrm{wrong}}^H\vec a,\\
+&=\frac{1-1/\sqrt7}{2},\\
+&\approx0.3110177635。
+\end{aligned}\tag{12-11}$$</p>
+<p>这条处理链仍返回有限估计，噪声也确实被白化；但真实目标被缩放了。它没有保持本题的无偏约束，不能与前表三种单位响应方案混为一谈。这与 E12-04 及第4章的同步变换规则相通：坐标改变后，模型也要跟着改变。</p>
+<p><strong>一次观测与总体结论分开。</strong> 若恰给 $\vec b=[0,2]^\top$，OLS、仅对角加权和完整 GLS 分别得到 $1$、$2/5$ 与 $-1/2$。白化后的观测为 $[0,4/\sqrt7]^\top$；同步变换的最小二乘估计仍为 $-1/2$，错误处理链却得到 $2/\sqrt7$。负的估计值是参数值，不是负方差。未知 $x_*$ 时，仅凭这些数不能排列这一次观测的真实误差；$7/8$ 与 $32/25$ 等数字比较的是给定零均值噪声模型下的总体方差。</p>
+<p><strong>可运行代码与边界。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_a/appendix_a_experiments.py">附录 A 入口</a>中的 <code>correlated_gls_demo()</code> 返回 <code>E12-20</code> 的输入矩阵、Cholesky 因子、白化矩阵、三组原有效权重、真实方差、给定观测的估计以及错误处理链的响应。程序用 NumPy 的 <code>lstsq</code> 解白化问题，不另写通用 GLS 求解器；手算则采用二阶伴随矩阵和完成平方，两种路线独立核对。运行完整入口的命令见本节开头。</p>
+<p>本题没有估计协方差、生成新音频或验证未知时变噪声。$\mathbf C$ 不正定时，本题的可逆白化步骤不成立；估错相关项或目标两路增益时，负权重也可能放大误差。实际系统应验证协方差、目标模型和数值条件，不能只凭“用了负权重”判断方法更好。</p>
 <hr />
 <blockquote>
 <p>📄 本篇信息：配图 3 张 ｜ <a href="index.html">回首页</a></p>
