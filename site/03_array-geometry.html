@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 3 章 · 阵列几何形态 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -291,10 +294,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -338,7 +341,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="03_array-geometry.html#sec-u-fd5bb0b3d9">E03-18：已知方向能把麦克风位置与固定时延分开吗？</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 3 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 3 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="02_basics-signal-model.html">第 2 章 · 声音到达阵列时发生了什么</a> ｜ 下一篇：<a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a></p>
 </blockquote>
 <hr />
@@ -361,7 +364,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>声速 m/s、频率 Hz、波长 $\lambda=c/f$，单位 m；算例取 $c=343$ m/s</td>
 </tr>
 <tr>
-<td>$\theta,\varphi$</td>
+<td>$\theta,\phi_{\mathrm{el}}$</td>
 <td>方位角从 $+y$ 朝 $+x$ 为正；俯仰角从水平面向 $+z$ 为正；三角函数代入弧度</td>
 </tr>
 <tr>
@@ -399,14 +402,14 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>三维方向先写成分量，再计算相对传播时延和导向相位：</p>
 <p>$$\begin{aligned}
 \vec u&=\begin{bmatrix}
-\sin\theta\cos\varphi\\
-\cos\theta\cos\varphi\\
-\sin\varphi
+\sin\theta\cos\phi_{\mathrm{el}}\\
+\cos\theta\cos\phi_{\mathrm{el}}\\
+\sin\phi_{\mathrm{el}}
 \end{bmatrix},\\
 \tau_{m0}&=-\frac{(\vec r_m-\vec r_0)^\top\vec u}{c},\\
 a_m(f,\vec u)&=e^{-\mathrm j2\pi f\tau_{m0}}.
 \end{aligned}\tag{3-1}$$</p>
-<p>$\vec r_0$ 是参考麦，故 $\tau_{00}=0$、$a_0=1$。投影为正表示该麦更靠近声源、到达更早，因此相对时延为负，导向相位为正。例如 ULA 的 $d=4$ cm、$\theta=30°$、$\varphi=0°$，第二麦的投影路程为 $0.04\sin30°=0.02$ m，得到 $\tau_{10}=-58.31$ μs；1 kHz 相位为 $+20.99°$。这是坐标与相位符号的自检，非定位算法输出。</p>
+<p>$\vec r_0$ 是参考麦，故 $\tau_{00}=0$、$a_0=1$。投影为正表示该麦更靠近声源、到达更早，因此相对时延为负，导向相位为正。例如 ULA 的 $d=4$ cm、$\theta=30°$、$\phi_{\mathrm{el}}=0°$，第二麦的投影路程为 $0.04\sin30°=0.02$ m，得到 $\tau_{10}=-58.31$ μs；1 kHz 相位为 $+20.99°$。这是坐标与相位符号的自检，非定位算法输出。</p>
 <p>坐标整体平移后，$\vec r_m-\vec r_0$ 不变，远场相对导向不变。改变参考麦只会给同一方向的全部分量乘共同相位，也不增加可观测信息。几何的作用在于形成不同基线，波束还需要指定权重；同一阵列可以产生多种响应。</p>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-1d1a0d7440">算例 3-1 双麦耳机的差分——1 cm 间距怎么做心形指向</h3>
 <p>用一个适合解释小型设备的教学模型：两只理想全向麦前后排列、间距 $d=1$ cm，目标沿两麦连线从前方入射。这个间距不是某类耳机的统一规格。配合以下延迟与相减，可构成 §5.3 所述的<strong>一阶差分麦克风阵列（Differential Microphone Array，DMA）</strong>。</p>
@@ -694,10 +697,10 @@ B(f,\theta;\theta_0)&=\frac1M\sum_{m=0}^{M-1}e^{\mathrm j\psi_m}.
 <p>两行的常规主瓣宽度在本条件下很接近；白噪声增益相同，是因为目标响应为 1、权重平方和同为 $6(1/6)^2=1/6$。连续滞后结构不同，并不必然使等权 DSB 的主瓣大幅改变。这里没有比较旁瓣、混叠角域、有限样本协同阵估计或房间定位误差，不能由这个表推出两种阵列所有任务性能相同。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch03/chapter03_experiments.py">第 3 章补充实验</a>提供这组固定条件复算。</p>
 <p>差分集合只给出虚拟位置的候选索引。要把这些位置用于子空间估计，还需要从协方差中构造相应的二阶统计量。</p>
 <span id="sec-u-20a0d88f74" class="anchor-alias" aria-hidden="true"></span><span id="sec-8" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-3-3-2">3.3.2 物理协方差怎样给出虚拟滞后</h3>
-<p>考虑一个固定频点：远场源两两不相关、均值为零；所有通道使用相同理想响应；传感器噪声与源不相关，跨通道独立且方差同为 $\sigma_n^2$。令 $P_k$ 是第 $k$ 个源在参考麦的功率，$\vec b_{ij}=\vec r_i-\vec r_j$ 是基线，$k_f=2\pi f/c$ 是波数、单位 rad/m，则</p>
+<p>考虑一个固定频点：远场源两两不相关、均值为零；所有通道使用相同理想响应；传感器噪声与源不相关，跨通道独立且方差同为 $\sigma_n^2$。令 $P_k$ 是第 $k$ 个源在参考麦的功率，$\vec b_{ij}=\vec r_i-\vec r_j$ 是基线，$\kappa_f=2\pi f/c$ 是波数、单位 rad/m，则</p>
 <p>$$\begin{aligned}
 R_{ij}&=\sum_{k=1}^{K}P_k
- e^{\mathrm j k_f\vec b_{ij}^\top\vec u_k}\\
+ e^{\mathrm j \kappa_f\vec b_{ij}^\top\vec u_k}\\
  &\quad+\sigma_n^2\delta_{ij},\\
 \hat r[\ell]&=\frac1{N_\ell}
  \sum_{(i,j):p_i-p_j=\ell}\hat R_{ij}.
@@ -737,17 +740,17 @@ e_{qtm}&=x_{qtm}-g_ma_m(\theta_q)s_{qt}.
 \end{aligned}\tag{3-11}$$</p>
 <p>$\Delta g_m$ 是相对幅度误差、无量纲，且此参数化要求 $1+\Delta g_m>0$；$\Delta\phi_m$ 是相位误差、单位 rad；$s_{qt}$ 是参考处每帧未知的源复谱，$\vec n_{qt}$ 是噪声，$e_{qtm}$ 是逐元素拟合残差；目标函数 $J$ 依赖待估的 $\vec g$、$\boldsymbol\theta$ 和 $\mathbf S$。逐通道增益构成对角矩阵，尚未包含通道间串扰。相位和增益通常随频率变化，单个频点的修正不能不经检查地用于整个语音频带。</p>
 <p>仅由观测，公共源幅度与全部 $g_m$ 的共同复尺度不能分开。相对标定通常选择参考通道，令 $g_0=1$；这表示以参考通道为基准，不表示它已具备绝对声压校准。</p>
-<p><strong>固定参考麦仍不能消除线阵的方向—相位斜率歧义。</strong> 对间距 $d$ 的均匀线阵，本书以正横为 $0°$ 的导向约定给出 $a_m(\theta)=e^{\mathrm j kmd\sin\theta}$，其中 $k=2\pi f/c$。任选一个使所有新方向仍在可用角域内的共同偏移 $\delta$，令</p>
+<p><strong>固定参考麦仍不能消除线阵的方向—相位斜率歧义。</strong> 对间距 $d$ 的均匀线阵，本书以正横为 $0°$ 的导向约定给出 $a_m(\theta)=e^{\mathrm j \kappa md\sin\theta}$，其中 $\kappa=2\pi f/c$。任选一个使所有新方向仍在可用角域内的共同偏移 $\delta$，令</p>
 <p>$$\begin{aligned}
 \sin\theta'_q&=\sin\theta_q+\delta,\\
-g'_m&=g_m e^{-\mathrm j kmd\delta},\\
+g'_m&=g_m e^{-\mathrm j \kappa md\delta},\\
 g'_ma_m(\theta'_q)
-&=g_m e^{-\mathrm j kmd\delta}\\
-&\quad\times e^{\mathrm j kmd(\sin\theta_q+\delta)}\\
+&=g_m e^{-\mathrm j \kappa md\delta}\\
+&\quad\times e^{\mathrm j \kappa md(\sin\theta_q+\delta)}\\
 &=g_ma_m(\theta_q).
 \end{aligned}$$</p>
 <p>这里改动的是每个方向的<strong>正弦值</strong>，不是把每个角度简单加上同一个度数；$m=0$ 时仍有 $g'_0=g_0=1$。因此，即使录到多个不同的未知方向，只要任意复增益的相位斜率也未知，这两套参数仍会逐帧产生完全相同的无噪声观测。</p>
-<p>可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j kmd(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。</p>
+<p>可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j \kappa md(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。</p>
 <p><strong>跨频约束是否能解除这项歧义，取决于通道模型。</strong> 若每个频点都允许任意未知的 $g_m(f)$，则每频都能乘上 $e^{-\mathrm j2\pi fmd\delta/c}$，共同的方向正弦偏移仍能被吸收。增加频点本身没有限制这项自由度。</p>
 <p>若有依据认为同一个未知复增益在 $f_1,f_2$ 两频间保持不变，那么两种补偿相位也必须相等，即 $(f_2-f_1)md\delta/c\in\mathbb Z$。ULA 含相邻基线 $m=1$ 时，非零偏移的最小周期为 $c/[d|f_2-f_1|]$。例如 $d=0.04$ m、两频相差 1 kHz，周期为 8.575，大于正弦方向域中任何两点的最大差 2，因此可排除这项非零斜坡。这个结论依赖跨频复增益确实不变；不能用于任意频率响应。</p>
 <p>若通道未知量含固定的物理时间偏移 $\epsilon_m$，模型为 $g_m(f)=h_m e^{-\mathrm j2\pi f\epsilon_m}$，则改成 $\epsilon'_m=\epsilon_m+md\delta/c$ 又能在全部频率吸收方向偏移。已知通道响应下的多频方向比较见 E03-17；联合校准还需要可信的外部时钟、相位锚或其他约束。解除这一项歧义，也不等于解除几何镜像和所有空间混叠。</p>
@@ -891,7 +894,7 @@ J(\vec v)=\|\mathbf C\vec v-\vec x\|_2^2
 <p>代码将越界结果记为 <code>valid=false</code>、角度为 <code>null</code>，不把它悄悄夹到 90°。系统可以另设夹限策略，但必须保留越界标记；夹限输出是恢复动作，不是一次准确的方向观测。</p>
 <h3 id="sec-u-490a1e7e53">E03-03：同一方向为什么会有两个方位角数字？</h3>
 <p>已知方向单位向量 $\vec u=[-1/2,-1/\sqrt2,1/2]^\top$。按本书约定——方位角零点为 $+y$、正角转向 $+x$——反算方位角与俯仰角，并将角度重新代回方向向量。再与从 $+x$ 朝 $+y$ 计角的常见数学约定比较。</p>
-<p><strong>参考答案</strong>：本书使用 $u_x=\sin\theta\cos\varphi$、$u_y=\cos\theta\cos\varphi$、$u_z=\sin\varphi$，因此 $\theta=\operatorname{atan2}(u_x,u_y)\approx-144.74^\circ$，$\varphi=\arcsin(1/2)=30^\circ$。代回后恢复原来的三个分量，双精度程序的最大绝对误差小于 $10^{-14}$。</p>
+<p><strong>参考答案</strong>：本书使用 $u_x=\sin\theta\cos\phi_{\mathrm{el}}$、$u_y=\cos\theta\cos\phi_{\mathrm{el}}$、$u_z=\sin\phi_{\mathrm{el}}$，因此 $\theta=\operatorname{atan2}(u_x,u_y)\approx-144.74^\circ$，$\phi_{\mathrm{el}}=\arcsin(1/2)=30^\circ$。代回后恢复原来的三个分量，双精度程序的最大绝对误差小于 $10^{-14}$。</p>
 <p>从 $+x$ 计角时，$\alpha=\operatorname{atan2}(u_y,u_x)\approx-125.26^\circ$；它与本书的关系是 $\theta=90^\circ-\alpha$，再将角度折回选定的 $360^\circ$ 区间。两者描述同一方向，不能混用数值与导向模型。<a href="https://numpy.org/doc/2.0/reference/generated/numpy.atan2.html" title="citation">NumPy 的 atan2 文档</a>明确规定第一个参数通常对应纵坐标、第二个对应横坐标；函数不会替调用者选择本书的角度零点。</p>
 <h3 id="sec-u-88cf586092">E03-04：球面波何时足够接近平面波？</h3>
 <p>三只麦位于 $(-0.05,0)$、$(0,0)$、$(0.05,0)$ m，中心麦作参考，声速为 343 m/s。声源方向为本书方位角 $30^\circ$，距中心分别为 0.2、0.5、2、20 m。用真实距离差与平面投影分别计算相对时延，比较三通道时延误差的均方根，并换算为 4 kHz 的相位误差。</p>

@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 9 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 9 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[08_speech-separation.md](08_speech-separation.md) ｜ 下一篇：[10_engineering-practice.md](10_engineering-practice.md)
 

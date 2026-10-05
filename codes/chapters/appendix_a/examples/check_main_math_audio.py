@@ -1,4 +1,4 @@
-"""Strictly read the three published E12-08 main WAVs; never repair them."""
+"""Strictly read the three published E14-08 main WAVs; never repair them."""
 from __future__ import annotations
 import hashlib
 import io

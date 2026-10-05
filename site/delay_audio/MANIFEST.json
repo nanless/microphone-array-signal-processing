@@ -9,7 +9,7 @@
     "codes/chapters/ch07/core/delay_audio.py": "af3795222edfee34e30df460840dfb8ba31a3cef1d48a9e18a2118b69f5f1efa",
     "codes/chapters/ch07/examples/generate_delay_audio.py": "e70f1134c8c87cf05c3eed5409d83f73667eacdc4462b54c982871a00ff44cdb",
     "codes/chapters/ch07/core/prediction_delays.py": "aa20a0c8c6e6da8ad7b2bbfb9822a4fb4d85bb411c9dda4f56ad9b1596b66bb7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {

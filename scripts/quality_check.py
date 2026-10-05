@@ -67,8 +67,8 @@ CSS_AUDIO_WAVS = {"css_"+n+".wav" for n in ("reference","naive","polarity","corr
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
 RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
-IMAGING_AUDIO_ROOT = CODE_CHAPTERS / "ch14" / "imaging_audio"
-DISTRIBUTED_AUDIO_ROOT = CODE_CHAPTERS / "ch15" / "distributed_audio"
+IMAGING_AUDIO_ROOT = CODE_CHAPTERS / "ch12" / "imaging_audio"
+DISTRIBUTED_AUDIO_ROOT = CODE_CHAPTERS / "ch13" / "distributed_audio"
 DISTRIBUTED_AUDIO_CHANNELS = {
     name+'.wav': (4 if name.startswith('array_') else 1) for name in (
         'reference_node1', 'reference_node2', 'array_white', 'array_correlated',
@@ -79,8 +79,8 @@ DISTRIBUTED_AUDIO_CHANNELS = {
     )
 }
 DISTRIBUTED_AUDIO_SOURCES = (
-    'codes/chapters/ch15/core/distributed.py', 'codes/chapters/ch15/core/distributed_audio.py',
-    'codes/chapters/ch15/examples/generate_distributed_audio.py', 'codes/chapters/ch02/core/conventions.py',
+    'codes/chapters/ch13/core/distributed.py', 'codes/chapters/ch13/core/distributed_audio.py',
+    'codes/chapters/ch13/examples/generate_distributed_audio.py', 'codes/chapters/ch02/core/conventions.py',
     'codes/chapters/ch04/core/covariance.py', 'codes/chapters/ch10/sro_closed_loop_demo.py',
     'codes/chapters/ch10/core/engineering.py', 'codes/chapters/ch00/core/audio_samples.py',
     'codes/chapters/ch00/io_contracts.py',
@@ -128,10 +128,10 @@ EXPECTED_SECTION_COUNTS = {
     "09_source-tracking.md": 6,
     "10_engineering-practice.md": 12,
     "11_selection-guide.md": 7,
-    "12_appendix-symbols-math.md": 4,
-    "13_appendix-guide.md": 7,
-    "14_acoustic-imaging.md": 14,
-    "15_distributed-enhancement.md": 16,
+    "14_appendix-symbols-math.md": 4,
+    "15_appendix-guide.md": 7,
+    "12_acoustic-imaging.md": 14,
+    "13_distributed-enhancement.md": 16,
 }
 # 第 1～13 章的源 h4 进入合订目录和 PDF 第三级书签。此表是独立发布
 # 基线，不从构建脚本或待检产物反推。
@@ -147,11 +147,11 @@ EXPECTED_SUBSECTION_COUNTS = {
     "09_source-tracking.md": 62,  # three independent topics and E09-24/25/26
     "10_engineering-practice.md": 56,
     "11_selection-guide.md": 41,  # two evidence topics and E11-26/27 are independently navigable
-    "12_appendix-symbols-math.md": 37,
-    "13_appendix-guide.md": 30,
-    "14_acoustic-imaging.md": 65,
+    "14_appendix-symbols-math.md": 37,
+    "15_appendix-guide.md": 30,
+    "12_acoustic-imaging.md": 65,
     # 40 separately navigable topics and 25 exercise headings, manually read.
-    "15_distributed-enhancement.md": 65,
+    "13_distributed-enhancement.md": 65,
 }
 # 上表为独立发布基线，不从待检 HTML 或构建器反推。
 EXPECTED_CHAPTERS = [
@@ -167,12 +167,23 @@ EXPECTED_CHAPTERS = [
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
-    ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
-    ("15_distributed-enhancement.md", "扩展专题Ⅱ · 分布式麦克风协同增强"),
-    ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
-    ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
+    ("12_acoustic-imaging.md", "第 12 章 · 声学成像与噪声源诊断"),
+    ("13_distributed-enhancement.md", "第 13 章 · 分布式麦克风协同增强"),
+    ("14_appendix-symbols-math.md", "第 14 章 · 附录 A：符号术语数学"),
+    ("15_appendix-guide.md", "第 15 章 · 附录 B：路径地图与练习"),
 ]
 EXPECTED_CHAPTER_COUNT = 16
+# Independent published-topic identities; current display numbers differ.
+EXPECTED_PDF_TOPIC_IDS = {
+    "12_acoustic-imaging.md": 14, "13_distributed-enhancement.md": 15,
+    "14_appendix-symbols-math.md": 12, "15_appendix-guide.md": 13,
+}
+EXPECTED_LEGACY_ROUTES = {
+    "14_acoustic-imaging.html": "12_acoustic-imaging.html",
+    "15_distributed-enhancement.html": "13_distributed-enhancement.html",
+    "12_appendix-symbols-math.html": "14_appendix-symbols-math.html",
+    "13_appendix-guide.html": "15_appendix-guide.html",
+}
 EXPECTED_SECTION_COUNT = 151
 EXPECTED_SUBSECTION_COUNT = 740
 EXPECTED_OUTLINE_ITEM_COUNT = 907
@@ -184,8 +195,8 @@ EXPECTED_EXERCISE_COUNTS = {
     '05_beamforming.md': 24, '06_aec.md': 42, '07_wpe-dereverberation.md': 24,
     '08_speech-separation.md': 32, '09_source-tracking.md': 26,
     '10_engineering-practice.md': 34, '11_selection-guide.md': 27,
-    '12_appendix-symbols-math.md': 20, '13_appendix-guide.md': 15,
-    '14_acoustic-imaging.md': 18, '15_distributed-enhancement.md': 25,
+    '14_appendix-symbols-math.md': 20, '15_appendix-guide.md': 15,
+    '12_acoustic-imaging.md': 18, '13_distributed-enhancement.md': 25,
 }
 # 研究附站使用独立显式清单，不挤占 16 篇教程或教程 PDF 大纲基线。
 # 此清单不能从构建器或待检 HTML 反推。
@@ -604,7 +615,7 @@ def expected_site_content(name: str, source: str):
     ids = {primary for _level, _title, primary in semantic_heading_ids(source)}
     images = Counter(f"../figures/{figure_name}"
                      for _alt, figure_name, _number in extract_figure_references(source))
-    if name == "13_appendix-guide.md":
+    if name == "15_appendix-guide.md":
         if not re.search(r"!\[[^\]]+\]\(\.\./codes/chapters/appendix_b/room_audio/ROOM_RESULTS\.png\)", source):
             raise ValueError("附录 B 缺少房间仿真补充图源引用")
         images["room_audio/ROOM_RESULTS.png"] += 1
@@ -626,7 +637,9 @@ def site_nav_fragment_issues(page_name: str, source_name: str, source: str,
     for href in nav_links:
         parsed = urlparse(href)
         target_name = unquote(parsed.path) or page_name
-        if not parsed.scheme and target_name == page_name and parsed.fragment:
+        if (not parsed.scheme and target_name in {
+                page_name, EXPECTED_LEGACY_ROUTES.get(page_name, page_name)}
+                and parsed.fragment):
             present.add(unquote(parsed.fragment))
     missing = sorted(expected_site_nav_fragments(source_name, source) - present)
     return [f"当前页导航缺少源标题片段：{fragment}" for fragment in missing]
@@ -663,7 +676,7 @@ def expected_outline_heading_ids(documents=None):
                      for path in CHAPTERS.glob("*.md")}
     result = []
     for index, (name, _label) in enumerate(EXPECTED_CHAPTERS):
-        chapter_id = "ch-" + str(int(name.split("_", 1)[0]))
+        chapter_id = "ch-" + str(EXPECTED_PDF_TOPIC_IDS.get(name, int(name.split("_", 1)[0])))
         ids = [chapter_id]
         section_level = 2 if name == "00_overview.md" else 3
         for level, _title, primary in semantic_heading_ids(documents[name]):
@@ -801,7 +814,7 @@ def check_figures(errors: list[str]):
             for issue in png_provenance_issues(path, script_path):
                 fail(errors, f"PNG 溯源失效：figures/{name}: {issue}")
             if number == 80:
-                check_imaging_objective_png(path, ROOT/'codes/chapters/ch14/reports/figure80_imaging_objectives.json')
+                check_imaging_objective_png(path, ROOT/'codes/chapters/ch12/reports/figure80_imaging_objectives.json')
             if number == 21:
                 report_path = ROOT / "codes/chapters/ch07/reports/figure21_wpe.json"
                 with Image.open(path) as image:
@@ -871,7 +884,7 @@ IMAGING_FIGURE_REPORTS = {
     80: 'figure80_imaging_objectives.json',
 }
 IMAGING_FIGURE_SOURCES = (
-    'scripts/make_figures.py', 'codes/chapters/ch14/core/imaging.py',
+    'scripts/make_figures.py', 'codes/chapters/ch12/core/imaging.py',
     'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/io_contracts.py',
 )
 
@@ -1113,7 +1126,7 @@ def check_imaging_figures(errors):
     """Strictly read four reports, preserving every failed source/numeric check."""
     for number, filename in IMAGING_FIGURE_REPORTS.items():
         try:
-            _check_imaging_figure_report(ROOT/'codes/chapters/ch14/reports'/filename, number)
+            _check_imaging_figure_report(ROOT/'codes/chapters/ch12/reports'/filename, number)
         except (OSError, ValueError, KeyError, TypeError, IndexError) as error:
             fail(errors, f'图{number}声学成像报告：{error}')
 
@@ -1218,13 +1231,26 @@ def _check_tracking_information_report(path):
 
 def check_site(errors: list[str]):
     pages = sorted(SITE.glob("*.html"))
-    if len(pages) != EXPECTED_CHAPTER_COUNT:
-        fail(errors, f"站点页面数应为 {EXPECTED_CHAPTER_COUNT}，实际 {len(pages)}")
+    canonical_pages = {"index.html"} | {name.replace(".md", ".html")
+                        for name, _label in EXPECTED_CHAPTERS[1:]}
+    expected_pages = canonical_pages | set(EXPECTED_LEGACY_ROUTES)
+    if {page.name for page in pages} != expected_pages:
+        fail(errors, "站点教程页面集合应为16个当前页面及4个旧路径兼容页面")
+    for old, current in EXPECTED_LEGACY_ROUTES.items():
+        if not (SITE / old).is_file() or not (SITE / current).is_file():
+            continue
+        old_text = (SITE / old).read_text(encoding="utf-8")
+        current_text = (SITE / current).read_text(encoding="utf-8")
+        marker = f'<link rel="canonical" href="{current}">'
+        if old_text.count(marker) != 1 or old_text.replace("\n" + marker, "", 1) != current_text:
+            fail(errors, f"旧路径兼容页面未绑定同主题当前正文：{old}")
     documents = {path.name: path.read_text(encoding="utf-8")
                  for path in CHAPTERS.glob("*.md")}
     source_by_page = {"index.html": "00_overview.md"}
     source_by_page.update({name.replace(".md", ".html"): name
                            for name, _label in EXPECTED_CHAPTERS[1:]})
+    source_by_page.update({old: current.replace(".html", ".md")
+                           for old, current in EXPECTED_LEGACY_ROUTES.items()})
     expected_digest = site_source_digest()
     for path in pages:
         page_text = path.read_text(encoding="utf-8")
@@ -1416,7 +1442,7 @@ def check_combined_html(errors: list[str]):
     expected_ids = set()
     expected_images = Counter()
     for index, (name, _label) in enumerate(EXPECTED_CHAPTERS):
-        chapter_id = "ch-" + str(int(name.split("_", 1)[0]))
+        chapter_id = "ch-" + str(EXPECTED_PDF_TOPIC_IDS.get(name, int(name.split("_", 1)[0])))
         expected_ids.add(chapter_id)
         section_level = 2 if name == "00_overview.md" else 3
         for level, _title, primary in semantic_heading_ids(documents[name]):
@@ -1428,7 +1454,7 @@ def check_combined_html(errors: list[str]):
             f"../figures/{figure_name}"
             for _alt, figure_name, _number in extract_figure_references(documents[name])
         )
-        if name == "13_appendix-guide.md":
+        if name == "15_appendix-guide.md":
             expected_images["../codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png"] += 1
     missing_ids = sorted(expected_ids - ids)
     if missing_ids:
@@ -1455,6 +1481,8 @@ def source_digest():
     paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "build_markdown_helpers.py",
               ROOT / "scripts" / "inline_layout.js",
               ROOT / "scripts" / "heading_aliases.py",
+              ROOT / "scripts" / "chapter_identity.py",
+              ROOT / "scripts" / "chapter_numbering.json",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in (ROOT / "scripts" / "vendor" / "mathjax-3.2.2").rglob("*")
                     if path.is_file())
@@ -1486,7 +1514,7 @@ def site_source_digest():
     paths += sorted((ROOT / "figures").glob("fig*.png"))
     paths += [ROOT / "scripts" / name for name in
               ("build_site.py", "build_markdown_helpers.py", "inline_layout.js", "heading_aliases.py",
-               "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
+               "chapter_identity.py", "chapter_numbering.json", "legacy_sequential_anchors.json", "code_layout.py", "make_figures.py",
                "make_aec_figures.py", "make_beamforming_figures.py", "make_reference_figures.py", "make_delay_figures.py", "make_css_figures.py", "make_tracking_figures.py", "make_channel_figures.py", "make_selection_figures.py")]
     paths.append(ROOT / "requirements.txt")
     paths.append(ROOT / "codes/chapters/ch00/io_contracts.py")
@@ -1911,7 +1939,7 @@ def check_room_audio(errors):
             if actual[0] != baseline[0] or any(round(value, 3) != reference
                                                for value, reference in zip(actual[1:], baseline[1:])):
                 raise ValueError(f"房间结果报告与已发布三位小数表不符：{row['name']}")
-        chapter = (CHAPTERS / "13_appendix-guide.md").read_text(encoding="utf-8")
+        chapter = (CHAPTERS / "15_appendix-guide.md").read_text(encoding="utf-8")
         for label, distance, azimuth, t60, drr, estimate, error in published_rows:
             # The publication table is checked by its six rounded numeric columns,
             # not by position-only labels that might be edited independently.
@@ -1936,7 +1964,7 @@ def check_room_audio(errors):
             if (record["channels"] != channels or record["frames"] < 16000 or
                     np.max(np.abs(pcm)) > 26215):
                 raise ValueError(f"房间 WAV 通道、长度或峰值不符：{path.name}")
-        appendix = (SITE / "13_appendix-guide.html").read_text(encoding="utf-8")
+        appendix = (SITE / "15_appendix-guide.html").read_text(encoding="utf-8")
         if ('src="room_audio/ROOM_RESULTS.png"' not in appendix or
                 'href="room_audio/MANIFEST.json"' not in appendix):
             raise ValueError("附录站点未发布房间图或音频清单")
@@ -2920,7 +2948,7 @@ def check_weighted_audio(errors):
             row = manifest['pcm_analysis']['candidates'][filename]
             for field, expected in measured.items():
                 _compare_selection_report(row[field], expected, 'weighted PCM/' + filename + '/' + field)
-        for page, prefix in ((SITE / '12_appendix-symbols-math.html', ''),
+        for page, prefix in ((SITE / '14_appendix-symbols-math.html', ''),
                              (SITE / 'research/05_exercises_and_audio.html', '../')):
             _check_visible_audio(page, prefix, 'weighted_audio', WEIGHTED_AUDIO_WAVS, {'MANIFEST.json'})
     except (OSError, ValueError, KeyError, TypeError, struct.error, wave.Error) as exc:
@@ -3003,7 +3031,7 @@ def check_response_audio(errors):
             for field, expected in measured.items():
                 _compare_selection_report(manifest['pcm_analysis']['candidates'][name][field], expected,
                                           'response PCM/'+name+'/'+field)
-        for page, prefix in ((SITE/'13_appendix-guide.html', ''),
+        for page, prefix in ((SITE/'15_appendix-guide.html', ''),
                              (SITE/'research/05_exercises_and_audio.html', '../')):
             _check_visible_audio(page, prefix, 'response_audio', RESPONSE_AUDIO_WAVS, {'MANIFEST.json'})
     except (OSError, ValueError, KeyError, TypeError, struct.error, wave.Error) as error:
@@ -3601,7 +3629,7 @@ def check_css_figure(errors):
 def check_distributed_audio(errors):
     """Exact member/copy checks, current-source replay and independent integer E/D."""
     try:
-        from codes.chapters.ch15.examples.generate_distributed_audio import check_assets
+        from codes.chapters.ch13.examples.generate_distributed_audio import check_assets
         source, published = DISTRIBUTED_AUDIO_ROOT, SITE / 'distributed_audio'
         manifest = check_assets(source)
         members = set(DISTRIBUTED_AUDIO_CHANNELS) | {'MANIFEST.json'}
@@ -3622,7 +3650,7 @@ def check_distributed_audio(errors):
                 for field, value in row.items():
                     _compare_selection_report(declared['windows'][label][field], value,
                                               'distributed PCM/' + key + '/' + label + '/' + field)
-        for page, prefix in ((SITE/'15_distributed-enhancement.html', ''),
+        for page, prefix in ((SITE/'13_distributed-enhancement.html', ''),
                              (SITE/'research/05_exercises_and_audio.html', '../')):
             _check_visible_audio(page, prefix, 'distributed_audio', set(DISTRIBUTED_AUDIO_CHANNELS), {'MANIFEST.json'})
     except (OSError, ValueError, KeyError, TypeError, wave.Error) as error:
@@ -3640,7 +3668,7 @@ def _check_distributed_figure_report(path, number):
         raise ValueError('distributed figure fields/execution scope differ')
     expected_sources = set(DISTRIBUTED_AUDIO_SOURCES) | {'scripts/make_figures.py'}
     if number == 71:
-        expected_sources = {'scripts/make_figures.py', 'codes/chapters/ch15/core/distributed.py',
+        expected_sources = {'scripts/make_figures.py', 'codes/chapters/ch13/core/distributed.py',
                             'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch04/core/covariance.py',
                             'codes/chapters/ch00/io_contracts.py'}
     if type(report['schema_version']) is not int or report['schema_version'] != 1 or set(report['source_sha256']) != expected_sources:
@@ -3804,21 +3832,21 @@ def _check_distributed_figure_report(path, number):
 def check_distributed_figures(errors):
     for number, name in {70:'compression',71:'updates',72:'transport'}.items():
         try:
-            _check_distributed_figure_report(ROOT/f'codes/chapters/ch15/reports/figure{number}_distributed_{name}.json',number)
+            _check_distributed_figure_report(ROOT/f'codes/chapters/ch13/reports/figure{number}_distributed_{name}.json',number)
         except (OSError, ValueError, KeyError, TypeError, IndexError, wave.Error) as error:
             fail(errors, f'图{number}分布式协同报告：{error}')
 
 
 def _verify_distributed_statistics_control(result):
-    """Independent E15-25 rational baseline, scored in the current physical input."""
+    """Independent E13-25 rational baseline, scored in the current physical input."""
     import numpy as np
     def close(actual, expected, label):
         a, b = np.asarray(actual), np.asarray(expected)
         if (a.dtype.kind not in 'iufc' or a.shape != b.shape
                 or not np.all(np.isfinite(a)) or not np.allclose(a, b, rtol=0, atol=1e-12)):
-            raise ValueError('E15-25 independent baseline differs: '+label)
-    if result['exercise_id'] != 'E15-25':
-        raise ValueError('E15-25 identity differs')
+            raise ValueError('E13-25 independent baseline differs: '+label)
+    if result['exercise_id'] != 'E13-25':
+        raise ValueError('E13-25 identity differs')
     close(result['coordinate_map'], [[1, 0], [0, 2]], 'broadcast coordinates')
     close(result['physical_target_covariance'], [[1, 1], [1, 1]], 'physical target')
     close(result['physical_noise_covariance'], [[1, 0], [0, 1]], 'physical noise')
@@ -3836,7 +3864,7 @@ def _verify_distributed_statistics_control(result):
         'converted_mixture': ([1/3, 1/6], [1/3, 1/3], 1/9, 2/9, 1/3),
     }
     if set(result['cases']) != set(expected):
-        raise ValueError('E15-25 physical cases differ')
+        raise ValueError('E13-25 physical cases differ')
     for name, (h, w, distortion, noise, total) in expected.items():
         case = result['cases'][name]
         close(case['receiver_weights'], h, name+' receiver')
@@ -3846,7 +3874,7 @@ def _verify_distributed_statistics_control(result):
                              'normalized_mse': total, 'target_noise_cross_term': 0.}.items():
             close(case['physical_components'][field], value, name+'/'+field)
     if result['scope'] != 'exact two-channel ensemble statistics; equal mixture of versions, not finite-data online estimation':
-        raise ValueError('E15-25 ensemble/estimation scope differs')
+        raise ValueError('E13-25 ensemble/estimation scope differs')
 
 
 def check_distributed_numerical_controls(errors):
@@ -3854,7 +3882,7 @@ def check_distributed_numerical_controls(errors):
     try:
         import math
         import numpy as np
-        from codes.chapters.ch15.core.distributed import (
+        from codes.chapters.ch13.core.distributed import (
             broadcast_statistics_control, mse_components, distributed_updates,
         )
         _verify_distributed_statistics_control(broadcast_statistics_control())
@@ -3890,7 +3918,7 @@ def check_imaging_audio(errors):
     """Check published bytes and independently recover single-tone PCM CSMs."""
     try:
         import numpy as np
-        from codes.chapters.ch14.examples.generate_imaging_audio import check_assets
+        from codes.chapters.ch12.examples.generate_imaging_audio import check_assets
         names = {'source_1.wav': 1, 'source_2_phase_code.wav': 1,
                  'source_2_coherent.wav': 1, 'array_phase_code.wav': 2,
                  'array_coherent.wav': 2}
@@ -3928,7 +3956,7 @@ def check_imaging_audio(errors):
             actual = csm(pcm[name])
             if np.max(np.abs(actual - reference)) > error_bound:
                 raise ValueError('imaging actual PCM CSM exceeds quantization bound: ' + name)
-        for page, prefix in ((SITE / '14_acoustic-imaging.html', ''),
+        for page, prefix in ((SITE / '12_acoustic-imaging.html', ''),
                              (SITE / 'research/05_exercises_and_audio.html', '../')):
             _check_visible_audio(page, prefix, 'imaging_audio', set(names), {'MANIFEST.json'})
     except (OSError, ValueError, KeyError, TypeError, wave.Error) as error:

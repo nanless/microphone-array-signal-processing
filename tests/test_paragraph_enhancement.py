@@ -193,7 +193,7 @@ class EnhancementParagraphTest(unittest.TestCase):
             self.assertNotIn(r"\tag{8-16}", item["text"])
 
     def test_eight_research_directions_preserve_arraydps(self):
-        source, path = self.passage("13_appendix-guide.md", "### 13.3", "#### 专题：神经网络前端")
+        source, path = self.passage("15_appendix-guide.md", "### 15.3", "#### 专题：神经网络前端")
         headings = re.findall(r"(?m)^#### (研究方向[一二三四五六七八]：[^\n]+)$", source)
         sections = re.split(r"(?m)^#### 研究方向[一二三四五六七八]：[^\n]+\n", source)[1:]
         labels = ["预训练模型", "阵列无关", "目标说话人提取", "生成式语音增强",
@@ -211,7 +211,7 @@ class EnhancementParagraphTest(unittest.TestCase):
         self.assertIn("最小复现", sections[7])
 
     def test_eight_debugging_cases_and_continuations(self):
-        source, path = self.passage("13_appendix-guide.md", "### 13.4", "### 13.5")
+        source, path = self.passage("15_appendix-guide.md", "### 15.4", "### 15.5")
         items = self.render_items(source, path)
         self.assert_labels(items, ["MUSIC", "GCC-PHAT", "波束形成后", "超指向", "AEC", "SRP-PHAT", "多麦录音", "仿真很好"])
         for cause in ('几何不可辨识', '空间混叠', '多径反射'):

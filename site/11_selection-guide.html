@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 11 章 · 总结与选型指南 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -302,10 +305,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="11_selection-guide.html#sec-u-da90b31f09">题 27：最低噪声的波束为何不能直接通过选型（E11-27）</a></li>
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -360,8 +363,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="11_selection-guide.html#sec-11-7">11.7 后续阅读</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 11 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
-<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a> ｜ 下一篇：<a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></p>
+<p>⚠️ 本篇是教程正文第 11 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a> ｜ 下一篇：<a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></p>
 </blockquote>
 <hr />
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-ecf5494b60">11. 总结与选型指南</h1>
@@ -1646,13 +1649,13 @@ P_{\rm target\ error}&=\varepsilon_H^2,\\
 <p>运行E11-27可核对导向矢量、两种统计矩阵、权重、名义/实际响应与三态结果。解析手算用于独立核查；程序调用<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch05/core/beamforming.py">第5章唯一波束核</a>，不复制求解器。第5章的加载与失配练习、第10章E10-34的<a href="10_engineering-practice.html#e10-34">已知坏麦PCM</a>可用于理解相应边界，但它们不是本题这组R与方向的音频实测。</p>
 <p>本题只检查一个给定5°偏差，不保证整个扰动区间鲁棒；也没有求解最坏情况WNG约束优化。单频复权重还不能直接当成因果宽带滤波器，实际设备需规定频带、共轭对称、实现延迟及切换状态，再测资源与有效场景。</p>
 <span id="sec-15" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-11-7">11.7 后续阅读</h2>
-<p>需要估计工业噪声源的空间贡献时，继续阅读<a href="14_acoustic-imaging.html">扩展专题Ⅰ：声学成像</a>，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。</p>
-<p>多个设备在受限通信下共同增强波形时，继续阅读<a href="15_distributed-enhancement.html">扩展专题Ⅱ：分布式协同增强</a>，先核对第5章的参考目标和第10章的同步条件。仅将同步麦克风接到一台处理器，并不要求运行DANSE。</p>
-<p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="12_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="13_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
+<p>需要估计工业噪声源的空间贡献时，继续阅读<a href="12_acoustic-imaging.html">扩展专题Ⅰ：声学成像</a>，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。</p>
+<p>多个设备在受限通信下共同增强波形时，继续阅读<a href="13_distributed-enhancement.html">扩展专题Ⅱ：分布式协同增强</a>，先核对第5章的参考目标和第10章的同步条件。仅将同步麦克风接到一台处理器，并不要求运行DANSE。</p>
+<p>要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见<a href="10_engineering-practice.html">第 10 章</a>。<a href="14_appendix-symbols-math.html">附录 A</a>汇总符号与数学工具，<a href="15_appendix-guide.html">附录 B</a>给出进一步阅读、练习和排错入口。</p>
 <hr />
 <blockquote>
 <p>📄 <a href="index.html">回首页</a></p>
-</blockquote><div class="pn"><span><a href="10_engineering-practice.html">← 上一篇</a></span><span><a href="14_acoustic-imaging.html">下一篇 →</a></span></div>
+</blockquote><div class="pn"><span><a href="10_engineering-practice.html">← 上一篇</a></span><span><a href="12_acoustic-imaging.html">下一篇 →</a></span></div>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>
 <script>if(!navigator.onLine)document.getElementById('offnote').style.display='block';</script>

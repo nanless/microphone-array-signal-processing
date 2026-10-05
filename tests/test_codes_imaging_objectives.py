@@ -3,7 +3,7 @@ from fractions import Fraction
 import unittest
 import numpy as np
 
-from codes.chapters.ch14.core.imaging import (
+from codes.chapters.ch12.core.imaging import (
     csm_from_amplitudes, csm_residual, damas_csm_objective_experiment,
     distinct_column_ambiguity_experiment, clean_sc_full_csm,
 )

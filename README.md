@@ -38,11 +38,11 @@
 
 English version: [README_EN.md](README_EN.md)
 
-扩展专题Ⅱ另有[17份分布式增强WAV](codes/chapters/ch15/distributed_audio/MANIFEST.json)：同一四麦已知即时混合比较本地、集中式、压缩方向、已知采样率校正与两种缺口策略。解析、浮点分量与实际整数PCM评分分开；不是盲DANSE或联网硬件运行。
+扩展专题Ⅱ另有[17份分布式增强WAV](codes/chapters/ch13/distributed_audio/MANIFEST.json)：同一四麦已知即时混合比较本地、集中式、压缩方向、已知采样率校正与两种缺口策略。解析、浮点分量与实际整数PCM评分分开；不是盲DANSE或联网硬件运行。
 
-扩展专题Ⅰ另有[五份成像快拍WAV](codes/chapters/ch14/imaging_audio/MANIFEST.json)：同源、共同增益1、完整4点传播尾，比较指定快拍集交叉项抵消与完全相干。实际PCM、浮点和解析CSM分开；播放混合不能证明源强反演正确。
+扩展专题Ⅰ另有[五份成像快拍WAV](codes/chapters/ch12/imaging_audio/MANIFEST.json)：同源、共同增益1、完整4点传播尾，比较指定快拍集交叉项抵消与完全相干。实际PCM、浮点和解析CSM分开；播放混合不能证明源强反演正确。
 
-扩展专题Ⅰ新增[E14-17/18](chapters/14_acoustic-imaging.md#e14-17)：逐项推导DAMAS与完整CSM拟合的联系，并用不同传播列展示整体不可辨识。图80在同一输入下比较两种目标；固定作者原模块九个控制保留8数值吻合与1原异常，源码取得和完整工业实验分开。
+扩展专题Ⅰ新增[E12-17/18](chapters/12_acoustic-imaging.md#e12-17)：逐项推导DAMAS与完整CSM拟合的联系，并用不同传播列展示整体不可辨识。图80在同一输入下比较两种目标；固定作者原模块九个控制保留8数值吻合与1原异常，源码取得和完整工业实验分开。
 
 第8章新增[四份既定槽位极性与增益音频](codes/chapters/ch08/css_audio/MANIFEST.json)，配合E08-30～32与图76，分别核对一致性顺序、PCA目标丢失和重叠回归。音频没有执行盲CSS。
 
@@ -54,7 +54,7 @@ English version: [README_EN.md](README_EN.md)
 
 | 目录/文件 | 说明 |
 |---|---|
-| `chapters/` | 教程正文 16 篇 Markdown（`00_overview.md` 是入口，`01`～`11` 是 11 章正文，`14`/`15` 是扩展专题Ⅰ/Ⅱ，`12`/`13` 是附录 A/B；阅读顺序以导航为准） |
+| `chapters/` | 教程正文 16 篇 Markdown（`00_overview.md` 是入口，`01`～`13` 是 13 章正文（第12、13章为扩展专题Ⅰ/Ⅱ），`14`/`15` 是附录 A/B；阅读顺序以导航为准） |
 | `figures/` | 80 张编号图（`fig01`～`fig80_*.png`），房间题补充图另存于 `codes/chapters/appendix_b/room_audio/ROOM_RESULTS.png`；全部由脚本生成、可复现 |
 | `codes/chapters/` | 导读、第 1～11 章、扩展专题Ⅰ/Ⅱ及附录 A/B 的源码、实验、报告和资产；逐章目录与命令见[代码地图](codes/chapters/README.md) |
 | `codes/chapters/ch10/channel_audio/` | 六个已知坏麦数学合成WAV，8真实源、共同增益1；分开解析、浮点与27200点实际PCM整数评分 |
@@ -74,15 +74,15 @@ English version: [README_EN.md](README_EN.md)
 | `codes/chapters/appendix_b/response_audio/` | 五份同DRR已知短FIR频响对照WAV；四真实生成源、完整尾部、共同增益与实际PCM整数评分 |
 | `codes/chapters/ch08/mask_audio/`、`codes/chapters/ch10/noise_audio/` | 两套独立数学合成实验，各6个WAV；已知掩码表示与固定噪声估计失配分别记录解析、浮点和实际PCM评分 |
 | `codes/chapters/ch11/scenario_audio/`、`codes/chapters/appendix_a/weighted_audio/` | 选型场景8个WAV与已知噪声加权5个WAV；各有独立清单、共同增益、评分窗和整数分母 |
-| `codes/chapters/ch15/distributed_audio/` | 17份独立16kHz数学WAV，共同增益1；28800点稳窗与800点缺口窗分别评分，绑定九个真实源 |
-| `codes/chapters/ch14/imaging_audio/` | 五份独立24kHz成像快拍WAV，真实源摘要、48004点完整记录及38160点评分快拍集随清单保存 |
+| `codes/chapters/ch13/distributed_audio/` | 17份独立16kHz数学WAV，共同增益1；28800点稳窗与800点缺口窗分别评分，绑定九个真实源 |
+| `codes/chapters/ch12/imaging_audio/` | 五份独立24kHz成像快拍WAV，真实源摘要、48004点完整记录及38160点评分快拍集随清单保存 |
 | `codes/chapters/ch00/io_contracts.py` | 生成器和源码获取工具共用的文件路径、普通成员、严格JSON及报告写入检查；数值模型和各资产清单仍由所属章维护 |
 | `codes/chapters/ch02/real_audio/` | DEMAND 真实同步录音摘录、派生均值、独立清单与数据许可；不是合成数据 |
 | `codes/chapters/ch00/research/` | 详细源码研究手册：算法步骤、状态与配置、代码入口、失败实验和工业复现 |
 | `codes/chapters/ch00/upstream/_downloads/` | 本机按需取得的第三方源码缓存，已被 Git 忽略；可能含本地修改，不属于本书提交的文档或教学代码，取得与核验方法见[源码获取说明](codes/chapters/ch00/upstream/README.md) |
 | `codes/chapters/*/reports/` | 随算法所属章保存的小规模运行报告；与源码获取状态、论文全量评测分开 |
 | `scripts/` | 绘图与构建脚本（`make_figures.py`、`make_aec_figures.py`、`make_beamforming_figures.py`、`make_reference_figures.py`、`make_delay_figures.py`、`make_css_figures.py`、`make_tracking_figures.py`、`make_channel_figures.py`、`make_selection_figures.py`、`build_site.py`、`build_pdf.py`，说明见 `scripts/README.md`） |
-| `site/` | 22 个网页：16 个教程页（含首页）及 `research/` 下 6 个研究手册页；构建产物，可再生 |
+| `site/` | 26 个网页：16 个当前教程页（含首页）、4 个旧路径兼容页面及 `research/` 下 6 个研究手册页；构建产物，可再生 |
 | `dist/` | [当前合订 PDF](dist/microphone-array-tutorial.pdf) 与可再生的合订 HTML；PDF 含 16 个顶级、151 个二级、740 个三级书签，共 907 个 |
 
 ## 章节导览
@@ -101,10 +101,10 @@ English version: [README_EN.md](README_EN.md)
 | 第 9 章 | `chapters/09_source-tracking.md` | KF 手算、粒子滤波、PHD 多目标、定位—追踪—波束接口 | 进阶 |
 | 第 10 章 | `chapters/10_engineering-practice.md` | 参考链路、关键路径延迟、SRO/标定、资源预算与评测 | 进阶 |
 | 第 11 章 | `chapters/11_selection-guide.md` | 条件化选型、场景约束、可验证规格与练习 | 入门 |
-| 专题Ⅰ | `chapters/14_acoustic-imaging.md` | CSM、球面扫描、PSF、DAMAS/CLEAN-SC/简化CMF、校准与区域量；18道逐步代码题 | 较难 |
-| 扩展专题Ⅱ | `chapters/15_distributed-enhancement.md` | 节点特定MWF、任务相关压缩、DANSE条件、树拓扑、GEVD、时钟与缺口；25题与17个独立音频 | 较难 |
-| 附录 A | `chapters/12_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
-| 附录 B | `chapters/13_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E13-01～15 代码题、复现说明 | 查阅 |
+| 第 12 章（专题Ⅰ） | `chapters/12_acoustic-imaging.md` | CSM、球面扫描、PSF、DAMAS/CLEAN-SC/简化CMF、校准与区域量；18道逐步代码题 | 较难 |
+| 第 13 章（专题Ⅱ） | `chapters/13_distributed-enhancement.md` | 节点特定MWF、任务相关压缩、DANSE条件、树拓扑、GEVD、时钟与缺口；25题与17个独立音频 | 较难 |
+| 第 14 章（附录 A） | `chapters/14_appendix-symbols-math.md` | 符号表、术语定义、预备数学速览 | 查阅 |
+| 第 15 章（附录 B） | `chapters/15_appendix-guide.md` | 学习路径、领域地图、研究前沿、排错、17 道综合书面题与 E15-01～15 代码题、复现说明 | 查阅 |
 
 ## 快速开始
 
@@ -137,8 +137,8 @@ python3 -m venv .venv
 .venv/bin/python -m codes.chapters.ch11.examples.generate_selection_audio  # 8 份独立场景 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_a.examples.generate_weighted_audio  # 5 份独立已知噪声权重 WAV；--check 只核对
 .venv/bin/python -m codes.chapters.appendix_b.examples.generate_response_audio  # 5 份独立同DRR频响对照 WAV；--check 只核对
-.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio  # 五份快拍WAV；--check只读
-.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio  # 17 independent WAVs; --check只读
+.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio  # 五份快拍WAV；--check只读
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio  # 17 independent WAVs; --check只读
 .venv/bin/python -m codes.chapters.ch05.examples.generate_phase_audio  # E05-23; --check is read-only
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/make_aec_figures.py

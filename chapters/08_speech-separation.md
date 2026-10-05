@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 8 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[07_wpe-dereverberation.md](07_wpe-dereverberation.md) ｜ 下一篇：[09_source-tracking.md](09_source-tracking.md)
 
@@ -1019,7 +1019,7 @@ $${\mathbf B}=\begin{bmatrix}1&0.2\\0.5&1\end{bmatrix},\qquad
 运行 `.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises`；[原创代码](../codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py)和[独立测试](../tests/test_codes_enhancement_structure.py)检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。
 
 
-以下E08-12～29的确定性输入与步骤由本书推导；运行 `.venv/bin/python -m codes.chapters.ch08.chapter08_experiments`，入口为[chapter08_experiments.py](../codes/chapters/ch08/chapter08_experiments.py)的 `run_experiments()`。其中矩阵题只验证指定数学步骤，E08-23使用人为给定的输出槽位检验连续拼接，E08-28使用真值构造掩码能力对照，均不冒充新训练的分离网络。音频检查读取已经发布的文件，失败时明确报错，不通过重生覆盖坏资产。
+以下E08-12～32的确定性输入与步骤由本书推导；运行 `.venv/bin/python -m codes.chapters.ch08.chapter08_experiments`，入口为[chapter08_experiments.py](../codes/chapters/ch08/chapter08_experiments.py)的 `run_experiments()`。其中矩阵题只验证指定数学步骤，E08-23使用人为给定的输出槽位检验连续拼接，E08-28使用真值构造掩码能力对照，均不冒充新训练的分离网络。音频检查读取已经发布的文件，失败时明确报错，不通过重生覆盖坏资产。
 
 <a id="e08-12"></a>
 

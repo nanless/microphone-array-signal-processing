@@ -238,7 +238,7 @@ HARK 的传递函数文件也需要分开检查结构与复数数值。固定 HA
 
 附录 B 第 16 题已经用锁定 pyroomacoustics 0.10.0 在隔离环境中实际运行[六位置房间脚本](../../appendix_b/examples/room_srp_exercise.py)，保存[18 个合成白噪声 WAV 与参数清单](../../appendix_b/room_audio/MANIFEST.json)。该版本逐条 RIR 默认使用 10 Hz 零相位高通；若用较短的零阶直达 RIR 补零后去减高阶完整 RIR，高通边界差会混入“反射能量”。脚本以相同镜像阶数和长度，令直达对照房间墙面完全吸收，并用原始单直达镜像源及同长度滤波独立核对。
 
-六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测混响时间或跨房间定位准确率。图、逐麦 DRR 和阶数收敛检查见[附录题目](../../../../chapters/13_appendix-guide.md)。
+六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测混响时间或跨房间定位准确率。图、逐麦 DRR 和阶数收敛检查见[附录题目](../../../../chapters/15_appendix-guide.md)。
 
 `experimental/rt60.py::measure_rt60` 对实 RIR 平方后反向累加，得到 Schroeder 剩余能量曲线，再拟合衰减斜率并外推 60 dB。`decay_db` 控制拟合跨度，默认值是 60；要使用 20 dB 跨度需显式设定。它还接受 `energy_thres` 和线性域拟合选项，改变这些参数会改变评分口径。[固定版测量代码](https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/experimental/rt60.py)。
 
@@ -1386,7 +1386,7 @@ LOCATA 官方 [I/O 框架](https://github.com/cevers/sap_locata_io)与[评价框
 | [E02-08：单边谱与功率](../../../../chapters/02_basics-signal-model.md) | 实样本、未缩放正向 FFT、无窗、无去均值 | 五组 DC、Nyquist、内部频点、奇数长度与补零输入；频域均方值与直接时域平方和相符 | 奇偶端点分别处理；补零保留原统计长度；PSD 还需乘 Hz 频率间距，不能与平方幅度混用 |
 | [E04-11：有色噪声 MUSIC](../../../../chapters/04_doa-estimation.md) | 精确已知正定噪声协方差、一个目标、三元半波距阵 | 普通、只白化协方差、完整白化三条链的峰为 29.1°、−4.8°、0.0°；用秩一投影解析式独立核对白化矩阵 | 白化矩阵必须用于全部候选导向；噪声估计不含目标、通道和频点对应；不能把此题精确结果当作估计噪声协方差后的性能 |
 | [E05-07：由 WNG 预算反推加载](../../../../chapters/05_beamforming.md) | 指定二通道协方差、无失真响应、线性 WNG 至少 1.6 | 最小绝对加载为 9，相对加载为 9/11；现有 `mvdr_weights` 与解析权重一致 | 记录加载参数的单位和尺度；用未加载协方差评分，分别报告干扰残留与白噪声增益 |
-| [E12-05：奇异协方差反例](../../../../chapters/12_appendix-symbols-math.md) | 明确的 $\mathbf R=\operatorname{diag}(0,1)$、$\vec a=[1,1]^\top$ | 机械伪逆替换给出可行但非最优的 $[0,1]^\top$；直接约束解及加载极限为 $[1,0]^\top$ | 不能从“可计算且满足响应”推出最优；须检查零空间与目标导向的关系，不泛化成“伪逆均失效” |
+| [E14-05：奇异协方差反例](../../../../chapters/14_appendix-symbols-math.md) | 明确的 $\mathbf R=\operatorname{diag}(0,1)$、$\vec a=[1,1]^\top$ | 机械伪逆替换给出可行但非最优的 $[0,1]^\top$；直接约束解及加载极限为 $[1,0]^\top$ | 不能从“可计算且满足响应”推出最优；须检查零空间与目标导向的关系，不泛化成“伪逆均失效” |
 
 复查代码时，特别留意行向量接口：本例候选表每一行存的是列导向的转置，所以变换写作 `dictionary @ whitener.T`。若误写成 `whitener.conj().T`，对非对角复白化矩阵会得到另一组导向。后续 MUSIC 投影再按定义共轭，不能提前多取一次共轭。
 
@@ -1401,7 +1401,7 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 ## 声学成像：原始方法、固定源码与实际执行边界
 
-对应[扩展专题Ⅰ](../../../../chapters/14_acoustic-imaging.md)，完整输入、推导和18道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。
+对应[扩展专题Ⅰ](../../../../chapters/12_acoustic-imaging.md)，完整输入、推导和18道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。
 
 ### 原始资料怎样连接到实现
 
@@ -1418,15 +1418,15 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 原项目为[Acoular](https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652)，固定提交 `13d3d7df74ac1a8135c7ec71da098cbbc03d8652`，BSD-3-Clause。已有下载缓存位于 `codes/chapters/ch00/upstream/_downloads/acoular/`，由来源锁表管理，不把忽略缓存重复提交到本书树。许可文件SHA-256为 `b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f`。
 
-[本轮合同工具](../../ch14/examples/audit_upstream_imaging_contracts.py)在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。`fbeamform.py`、`fastFuncs.py`、`spectra.py`、`version.py`和LICENSE逐项身份随[当前实际报告](../../ch14/reports/upstream_imaging_contracts_current.json)保存。完整来源选集仍为 `source_selection_mismatch`，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。
+[本轮合同工具](../../ch12/examples/audit_upstream_imaging_contracts.py)在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。`fbeamform.py`、`fastFuncs.py`、`spectra.py`、`version.py`和LICENSE逐项身份随[当前实际报告](../../ch12/reports/upstream_imaging_contracts_current.json)保存。完整来源选集仍为 `source_selection_mismatch`，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。
 
-历史[2026-10-03原报告](../../ch14/reports/upstream_imaging_contracts.json)保留当时执行字节；该历史报告对应的旧工具来自提交`ba622a6a2999cc30e15efe3e77a15c30d99cb51d`，不能用现在的工具摘要替换。当前工具另核锁表和当前获取状态的真实字节、执行前后的本地依赖与原源码、ignored成员边界；完整选集仍不匹配，有限原方法执行与获取状态分栏。报告路径拒绝覆盖旧历史报告，默认终端输出。
+历史[2026-10-03原报告](../../ch12/reports/upstream_imaging_contracts.json)保留当时执行字节；该历史报告对应的旧工具来自提交`ba622a6a2999cc30e15efe3e77a15c30d99cb51d`，不能用现在的工具摘要替换。当前工具另核锁表和当前获取状态的真实字节、执行前后的本地依赖与原源码、ignored成员边界；完整选集仍不匹配，有限原方法执行与获取状态分栏。报告路径拒绝覆盖旧历史报告，默认终端输出。
 
 本轮有限调用采用原AST方法体，移除JIT装饰器，以协议对象代替Traits构造，自定义网格驱动代替原JIT分派，NumPy FFT代替SciPy FFT。原数学方法体没有修补；这些调用没有覆盖完整包、Numba并行、HDF5缓存、完整风洞数据链或CMF估计器。工具默认只读stdout，显式 `--report` 才写当前报告。
 
 ```bash
-.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
-.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts_current.json
+.venv/bin/python -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts
+.venv/bin/python -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts --report codes/chapters/ch12/reports/upstream_imaging_contracts_current.json
 .venv/bin/python -m unittest tests.test_codes_imaging_contracts -v
 ```
 
@@ -1449,9 +1449,9 @@ FFT 接口约定由 [NumPy `rfft`](https://numpy.org/doc/stable/reference/genera
 
 ### 同一合法CSM的目标对照与作者原模块
 
-新Acoular报告的`additional_valid_csm_controls`另记录一份合法秩一CSM，经原Base与PSF方法形成扫描输入，再调用原DAMAS类；它不是把旧`b=(1,0)`与任意矩阵拼成一条运行。原结果`(1,0)`的完整CSM平方残差为`28/9`，扫描NNLS点`(16/17,0)`的完整CSM残差为`8128/2601`；原21项控制的次序与13/8计数保持不变。详细手算、归一化与成立条件见[E14-17](../../../../chapters/14_acoustic-imaging.md#e14-17)。
+新Acoular报告的`additional_valid_csm_controls`另记录一份合法秩一CSM，经原Base与PSF方法形成扫描输入，再调用原DAMAS类；它不是把旧`b=(1,0)`与任意矩阵拼成一条运行。原结果`(1,0)`的完整CSM平方残差为`28/9`，扫描NNLS点`(16/17,0)`的完整CSM残差为`8128/2601`；原21项控制的次序与13/8计数保持不变。详细手算、归一化与成立条件见[E12-17](../../../../chapters/12_acoustic-imaging.md#e12-17)。
 
-[固定作者DAMAS/CMF原模块](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")已有独立[限定工具](../../ch14/examples/audit_damas_author_contracts.py)与[真实当前报告](../../ch14/reports/damas_author_contracts_current.json)。完整原模块字节及原imports在隔离进程执行，9个控制中8项数值吻合独立期望，1项零CSM保留原`NameError`。四原求解入口分别针对完整CSM、完整扫描残差、去对角CSM、去对角扫描残差；相同输入下得到`(1,0)`、`(16/17,0)`、`(2/3,0)`、`(16/15,0)`。不能将它们排成声学性能榜。
+[固定作者DAMAS/CMF原模块](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")已有独立[限定工具](../../ch12/examples/audit_damas_author_contracts.py)与[真实当前报告](../../ch12/reports/damas_author_contracts_current.json)。完整原模块字节及原imports在隔离进程执行，9个控制中8项数值吻合独立期望，1项零CSM保留原`NameError`。四原求解入口分别针对完整CSM、完整扫描残差、去对角CSM、去对角扫描残差；相同输入下得到`(1,0)`、`(16/17,0)`、`(2/3,0)`、`(16/15,0)`。不能将它们排成声学性能榜。
 
 重复列控制中原`unique=True`只来自已激活支持的正定Gram；另一个非负解`(0,1)`仍产生相同观测。作者单源full CLEAN-SC两步得到`1.68`，与其显式原公式一致；该限定点不覆盖任意双源或DR支路。取得的21个GPL文本与实际使用的LICENSE及一个Python文件分开，三份数据、MATLAB、MEX和论文大规模实验未执行。原NumPy、SciPy与matplotlib三个直接模块入口的前后SHA和版本已记录，未宣称核验这些库全部转依赖或二进制闭包。
 

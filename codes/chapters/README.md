@@ -18,10 +18,10 @@
 | [ch09](ch09/) | `ch09.chapter09_experiments`、`ch09.tracking_crossing_dropout_demo` | E09-10～26；轨迹交叉、缺测、模式密度、双时钟生命周期与球面方向的限定例 |
 | [ch10](ch10/) | `ch10.chapter10_experiments`、`ch10.spectral_subtraction_demo`、`ch10.sro_closed_loop_demo` | E10-13、E10-18～34；合成时间戳及有状态插值，不是声卡实时实测 |
 | [ch11](ch11/) | `ch11.chapter11_experiments` | E11-10～27；硬约束、评分和 FIR 取舍，示意分数不代表产品测量 |
-| [ch14](ch14/) | `ch14.chapter14_exercises`、`ch14.examples.generate_imaging_audio`、`ch14.examples.audit_upstream_imaging_contracts` | E14-01～18；球面CSM/PSF、DAMAS前/双向、有限小矩阵NNLS、作者full-CSM CLEAN-SC及目标失配；五独立PCM及固定原方法差异分开 |
-| [ch15](ch15/) | `ch15.chapter15_exercises`、`ch15.examples.generate_distributed_audio`、`ch15.examples.audit_upstream_distributed_contracts` | E15-01～25；指定MWF任务与压缩、真实广播后接收状态、GEVD/树控制；17独立PCM及限定原helper合同分开 |
-| [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E12-06～20；复投影、已知噪声加权、截断与正则、相关共轭、EVD前提、实际PCM及完整相关噪声GLS/同步白化；旧01～05仍复用跨章唯一实现 |
-| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E13-02～15；E13-02 读回主音频 PCM，E13-03～15 核查房间结果、PCM、来源证据、TAC共享结构、能量尺度、时间条件化与同DRR输出，不重跑房间仿真 |
+| [ch12](ch12/) | `ch12.chapter12_exercises`、`ch12.examples.generate_imaging_audio`、`ch12.examples.audit_upstream_imaging_contracts` | E12-01～18；球面CSM/PSF、DAMAS前/双向、有限小矩阵NNLS、作者full-CSM CLEAN-SC及目标失配；五独立PCM及固定原方法差异分开 |
+| [ch13](ch13/) | `ch13.chapter13_exercises`、`ch13.examples.generate_distributed_audio`、`ch13.examples.audit_upstream_distributed_contracts` | E13-01～25；指定MWF任务与压缩、真实广播后接收状态、GEVD/树控制；17独立PCM及限定原helper合同分开 |
+| [appendix_a](appendix_a/) | `appendix_a.appendix_a_experiments` | E14-06～20；复投影、已知噪声加权、截断与正则、相关共轭、EVD前提、实际PCM及完整相关噪声GLS/同步白化；旧01～05仍复用跨章唯一实现 |
+| [appendix_b](appendix_b/) | `appendix_b.appendix_b_experiments`、`appendix_b.interpolation_exercise` | E15-02～15；E15-02 读回主音频 PCM，E15-03～15 核查房间结果、PCM、来源证据、TAC共享结构、能量尺度、时间条件化与同DRR输出，不重跑房间仿真 |
 
 从仓库根目录使用模块形式运行，例如：
 
@@ -103,14 +103,14 @@ E08-30沿用第2章唯一STFT核，逐共享样本核对两个一致性次序；
 
 第11章 E11-10～27 从题设与正式文件计算：E19先只读核主清单真实源和四WAV，再按已知延迟作整数误差评分；E25使用 `ch11.examples.generate_selection_audio` 的八个独立两场景WAV，完整尾部与共同增益0.8保留，不并入主109个。`--check`完整回放且不修复资产。`ch11.examples.audit_meeting_kernel_contracts` 只执行固定MeetEval的两个原C++核，默认输出到终端，显式 `--report 路径` 才写当前报告，仓内仅接受 `reports/meeting_kernel_contracts_current.json`，仓外仅接受普通文件。当前13例是历史9例加4个点时间控制，不覆盖完整Python评分器；两历史报告保留。评分接口工具另执行32原模块导入与限定函数，缺扩展和完整选集不匹配如实保留。E26实际记录空输出、缺失、格式异常和回调异常；E27复用第5章波束核计算同阵列候选的噪声与硬条件，未提供设备延迟或宽带音频。
 
-附录A共20题。E12-08通过 `appendix_a.examples.check_main_math_audio` 核当前20个真实源与主清单，再读三个正式脉冲WAV；内存浮点模型分开列出。E12-19的[五个独立已知噪声权重WAV](appendix_a/weighted_audio/MANIFEST.json)由 `appendix_a.examples.generate_weighted_audio` 管理，`--check`只读完整回放，不并入主109。目标和两个不同频率干扰共同包络/增益1，OLS/GLS/反权用同一双通道输入，三权重和均1；稳态28800点的解析、浮点分量和实际PCM整数评分分开。E12-20另用已知完整协方差复算相关噪声下的负权重与同步白化，不借用这五个互正交纯音WAV证明随机相关模型。`appendix_a.examples.audit_upstream_solver_contracts` 从已核原源码字节执行完整模块，保留原四例、另列四个形状/复数批次控制和两个独立NumPy例。仓内显式 `--report` 仅可写 `reports/upstream_solver_contracts_current.json`，历史报告保留原字节。
+附录A共20题。E14-08通过 `appendix_a.examples.check_main_math_audio` 核当前20个真实源与主清单，再读三个正式脉冲WAV；内存浮点模型分开列出。E14-19的[五个独立已知噪声权重WAV](appendix_a/weighted_audio/MANIFEST.json)由 `appendix_a.examples.generate_weighted_audio` 管理，`--check`只读完整回放，不并入主109。目标和两个不同频率干扰共同包络/增益1，OLS/GLS/反权用同一双通道输入，三权重和均1；稳态28800点的解析、浮点分量和实际PCM整数评分分开。E14-20另用已知完整协方差复算相关噪声下的负权重与同步白化，不借用这五个互正交纯音WAV证明随机相关模型。`appendix_a.examples.audit_upstream_solver_contracts` 从已核原源码字节执行完整模块，保留原四例、另列四个形状/复数批次控制和两个独立NumPy例。仓内显式 `--report` 仅可写 `reports/upstream_solver_contracts_current.json`，历史报告保留原字节。
 
-附录B共15题。E15以固定指数模型比较有限尾部与无限衰减，复用唯一房间指标核，不生成新WAV。E13-03～15入口统一为 `appendix_b.appendix_b_experiments`；主插值四WAV先核20真实源与完整PCM回放。E11～13分别拆解TAC共享聚合、安全能量尺度和T20时间条件化，E14使用[五个独立同DRR对照WAV](appendix_b/response_audio/MANIFEST.json)，四真实源、共同增益1及完整两点尾。`appendix_b.examples.generate_response_audio --check`只读核全部清单/字节/实际整数评分；不并入主109。房间资产的 `appendix_b.examples.check_room_assets` 核21普通成员、七真实源、固定DOA和81抽头/40点延迟声明、报告绑定和18PCM；`--replay`需隔离PRA环境真实重跑。`appendix_b.examples.audit_tac_contracts`默认stdout核固定原源的10个静态合同和当前完整选集，四项直接执行源前后绑定；显式报告仅仓内新`tac_contracts_current.json`或仓外普通路径，不导入Torch或执行原网络。
+附录B共15题。E15-15以固定指数模型比较有限尾部与无限衰减，复用唯一房间指标核，不生成新WAV。E15-03～15入口统一为 `appendix_b.appendix_b_experiments`；主插值四WAV先核20真实源与完整PCM回放。E15-11～13分别拆解TAC共享聚合、安全能量尺度和T20时间条件化，E15-14使用[五个独立同DRR对照WAV](appendix_b/response_audio/MANIFEST.json)，四真实源、共同增益1及完整两点尾。`appendix_b.examples.generate_response_audio --check`只读核全部清单/字节/实际整数评分；不并入主109。房间资产的 `appendix_b.examples.check_room_assets` 核21普通成员、七真实源、固定DOA和81抽头/40点延迟声明、报告绑定和18PCM；`--replay`需隔离PRA环境真实重跑。`appendix_b.examples.audit_tac_contracts`默认stdout核固定原源的10个静态合同和当前完整选集，四项直接执行源前后绑定；显式报告仅仓内新`tac_contracts_current.json`或仓外普通路径，不导入Torch或执行原网络。
 
-扩展专题Ⅰ采用文件/代码身份14，阅读时放在第11章后、附录前，不改附录身份12/13。`ch14.chapter14_exercises`只读复算18题；`ch14.examples.generate_imaging_audio --check`严格核六普通成员及当前真实源、完整PCM回放，五份WAV不并入主109。`ch14.examples.audit_upstream_imaging_contracts`默认终端，只在显式`--report`时写当前合同；固定Acoular源码身份、整选集不匹配、方法相符/已确认差异/未执行分开。没有运行完整Acoular包、JIT/HDF5或风洞录音。
+第12章为扩展专题Ⅰ，接第11章后；第13章为扩展专题Ⅱ，附录A/B分别为第14、15章。`ch12.chapter12_exercises`只读复算18题；`ch12.examples.generate_imaging_audio --check`严格核六普通成员及当前真实源、完整PCM回放，五份WAV不并入主109。`ch12.examples.audit_upstream_imaging_contracts`默认终端，只在显式`--report`时写当前合同；固定Acoular源码身份、整选集不匹配、方法相符/已确认差异/未执行分开。没有运行完整Acoular包、JIT/HDF5或风洞录音。
 
-扩展专题Ⅱ采用稳定身份15，接专题Ⅰ后。25题入口只读；17个16kHz数学WAV共同增益1、32000点即时混合，评分窗1600:30400及缺包窗16000:16800分开；九真实源与整数E/D随清单保存，`--check`严格核18普通成员并完整只读重放。已知100ppm线性SRC改变频响与噪声统计，不是盲时钟估计。当前原合同仅执行paderwasn三个AST原helper和MATLAB静态审读；没有原MATLAB、完整DWACD或无线设备成绩。
+第13章扩展专题Ⅱ接第12章后。25题入口只读；17个16kHz数学WAV共同增益1、32000点即时混合，评分窗1600:30400及缺包窗16000:16800分开；九真实源与整数E/D随清单保存，`--check`严格核18普通成员并完整只读重放。已知100ppm线性SRC改变频响与噪声统计，不是盲时钟估计。当前原合同仅执行paderwasn三个AST原helper和MATLAB静态审读；没有原MATLAB、完整DWACD或无线设备成绩。
 
 E10-34的[通道选集核](ch10/core/channel_selection.py)同时处理观测轴、目标响应与协方差双轴，复用第5章唯一MVDR；[六WAV独立清单](ch10/channel_audio/MANIFEST.json)使用确定性正交音与固定实权重。[生成入口](ch10/examples/generate_channel_audio.py)的`--check`完整只读重放。图78和手册分开目标损伤、噪声与真实PCM总误差，不把失效后的两项解析NMSE相同写成PCM严格相同。
 
-扩展专题Ⅰ新增E14-17/18，分别检查完整CSM Gram目标与扫描目标、不同传播列的集体不可辨识性。图80保存全部151×101局部网格的真实计算。作者DAMAS原模块的[限定入口](ch14/examples/audit_damas_author_contracts.py)完整执行固定Python原模块的9个小控制；8项数值吻合、零CSM保留原NameError。21个GPL文本已取得，但MATLAB、MEX、数据和大规模实验未运行。当前报告与旧报告分开。
+扩展专题Ⅰ新增E12-17/18，分别检查完整CSM Gram目标与扫描目标、不同传播列的集体不可辨识性。图80保存全部151×101局部网格的真实计算。作者DAMAS原模块的[限定入口](ch12/examples/audit_damas_author_contracts.py)完整执行固定Python原模块的9个小控制；8项数值吻合、零CSM保留原NameError。21个GPL文本已取得，但MATLAB、MEX、数据和大规模实验未运行。当前报告与旧报告分开。

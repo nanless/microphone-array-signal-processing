@@ -43,7 +43,7 @@ class TACGuardTests(unittest.TestCase):
 
     def test_repo_whitelist_and_protected_paths_before_execution(self):
         forbidden = (audit.HISTORICAL_REPORT, audit.ROOT / 'AGENTS.md', Path(audit.__file__),
-                     audit.ROOT / 'chapters/13_appendix-guide.md', audit.LOCK, audit.STATUS,
+                     audit.ROOT / 'chapters/15_appendix-guide.md', audit.LOCK, audit.STATUS,
                      audit.ROOT / 'codes/chapters/ch00/source_snapshots/new.json',
                      audit.ROOT / 'reviews/new.json', audit.CACHE / 'new.json',
                      self.cache / 'new.json', audit.CURRENT_REPORT.with_name('tac_contracts_current2.json'))

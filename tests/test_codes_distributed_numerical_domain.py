@@ -1,7 +1,7 @@
-"""Independent extreme-scale and versioned-SCM controls for Chapter 15."""
+"""Independent extreme-scale and versioned-SCM controls for Chapter 13."""
 import unittest
 import numpy as np
-from codes.chapters.ch15.core.distributed import (
+from codes.chapters.ch13.core.distributed import (
     mwf_weights, mse_components, compressed_mwf, distributed_updates,
     broadcast_statistics_control,
 )

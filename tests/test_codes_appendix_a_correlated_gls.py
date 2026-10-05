@@ -96,7 +96,7 @@ class CorrelatedGLSTests(unittest.TestCase):
             self.assertAlmostEqual(self.row['cases'][name]['fixed_observation_estimate'],
                                    value, places=14)
         self.assertAlmostEqual(self.row['whitened_lstsq_solution'][0], -.5, places=14)
-        self.assertEqual(self.row['exercise_id'], 'E12-20')
+        self.assertEqual(self.row['exercise_id'], 'E14-20')
         json.dumps(self.row, allow_nan=False)
 
 

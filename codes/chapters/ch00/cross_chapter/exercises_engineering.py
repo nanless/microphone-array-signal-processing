@@ -219,7 +219,7 @@ def run_exercises() -> dict:
                          "maximum_interval_s": .0001 / 80e-6,
                          "scope": "known constant SRO, no dropped samples or timestamp noise"}
     x, h = np.array([1., 2.]), np.array([1., .5])
-    results["E12-01"] = {
+    results["E14-01"] = {
         "linear": np.convolve(x, h).tolist(),
         "fft_length_2": np.fft.irfft(np.fft.rfft(x, 2) * np.fft.rfft(h, 2), 2).tolist(),
         "fft_length_3": np.fft.irfft(np.fft.rfft(x, 3) * np.fft.rfft(h, 3), 3).tolist(),
@@ -227,7 +227,7 @@ def run_exercises() -> dict:
     spectra = np.array([[1, 1], [1j, -1j]], dtype=complex)[:, None, :]
     moment = spatial_covariance(spectra)[0]
     covariance = spatial_covariance(spectra, demean=True)[0]
-    results["E12-02"] = {
+    results["E14-02"] = {
         "second_moment_real": moment.real.tolist(),
         "second_moment_imag": moment.imag.tolist(),
         "centered_covariance_real": covariance.real.tolist(),
@@ -235,7 +235,7 @@ def run_exercises() -> dict:
     }
     a, b = np.array([[1., 1.], [2., 2.]]), np.array([2., 4.])
     solution, _, rank, singular_values = np.linalg.lstsq(a, b, rcond=None)
-    results["E12-03"] = {
+    results["E14-03"] = {
         "solution": solution.tolist(), "rank": int(rank),
         "singular_values": singular_values.tolist(),
         "residual_norm": float(np.linalg.norm(a @ solution - b)),
@@ -250,7 +250,7 @@ def run_exercises() -> dict:
     steering = np.ones(2)
     whitened_covariance = whitening @ noise_covariance @ whitening.conj().T
     cross_spectrum = (2 + 0j) * (1 + 0j).conjugate()
-    results["E12-04"] = {
+    results["E14-04"] = {
         "noise_covariance": noise_covariance.tolist(),
         "whitening_matrix": whitening.tolist(),
         "whitened_covariance": whitened_covariance.tolist(),
@@ -262,7 +262,7 @@ def run_exercises() -> dict:
     }
     first, second = np.array([0., .4, -.4, 0.]), np.array([0., .2, -.2, 0.])
     common_gain = .8 / max(np.max(np.abs(first)), np.max(np.abs(second)))
-    results["E13-01"] = {
+    results["E15-01"] = {
         "common_gain": float(common_gain),
         "common_peaks": [float(np.max(np.abs(v * common_gain))) for v in (first, second)],
         "amplitude_difference_db": float(20 * np.log10(2.)),

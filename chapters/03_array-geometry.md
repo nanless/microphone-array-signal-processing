@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 3 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 3 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[02_basics-signal-model.md](02_basics-signal-model.md) ｜ 下一篇：[04_doa-estimation.md](04_doa-estimation.md)
 
@@ -12,7 +12,7 @@
 |---|---|
 | $\vec r_m$、$\vec u$ | 第 $m$ 只麦的位置，单位 m；从阵列指向声源的单位方向向量，无量纲 |
 | $c,f,\lambda$ | 声速 m/s、频率 Hz、波长 $\lambda=c/f$，单位 m；算例取 $c=343$ m/s |
-| $\theta,\varphi$ | 方位角从 $+y$ 朝 $+x$ 为正；俯仰角从水平面向 $+z$ 为正；三角函数代入弧度 |
+| $\theta,\phi_{\mathrm{el}}$ | 方位角从 $+y$ 朝 $+x$ 为正；俯仰角从水平面向 $+z$ 为正；三角函数代入弧度 |
 | 延迟求和（Delay-and-Sum Beamforming，DSB） | 按目标方向补偿相位后平均多路信号 |
 | 白噪声增益（White Noise Gain，WNG） | 目标响应平方除以权重平方和，描述独立同方差通道噪声下的信噪比倍率 |
 | 到达时间差（Time Difference of Arrival，TDOA） | 两麦到达时刻的有向差，单位 s；$\tau_{ij}=t_i-t_j$ |
@@ -45,15 +45,15 @@
 
 $$\begin{aligned}
 \vec u&=\begin{bmatrix}
-\sin\theta\cos\varphi\\
-\cos\theta\cos\varphi\\
-\sin\varphi
+\sin\theta\cos\phi_{\mathrm{el}}\\
+\cos\theta\cos\phi_{\mathrm{el}}\\
+\sin\phi_{\mathrm{el}}
 \end{bmatrix},\\
 \tau_{m0}&=-\frac{(\vec r_m-\vec r_0)^\top\vec u}{c},\\
 a_m(f,\vec u)&=e^{-\mathrm j2\pi f\tau_{m0}}.
 \end{aligned}\tag{3-1}$$
 
-$\vec r_0$ 是参考麦，故 $\tau_{00}=0$、$a_0=1$。投影为正表示该麦更靠近声源、到达更早，因此相对时延为负，导向相位为正。例如 ULA 的 $d=4$ cm、$\theta=30°$、$\varphi=0°$，第二麦的投影路程为 $0.04\sin30°=0.02$ m，得到 $\tau_{10}=-58.31$ μs；1 kHz 相位为 $+20.99°$。这是坐标与相位符号的自检，非定位算法输出。
+$\vec r_0$ 是参考麦，故 $\tau_{00}=0$、$a_0=1$。投影为正表示该麦更靠近声源、到达更早，因此相对时延为负，导向相位为正。例如 ULA 的 $d=4$ cm、$\theta=30°$、$\phi_{\mathrm{el}}=0°$，第二麦的投影路程为 $0.04\sin30°=0.02$ m，得到 $\tau_{10}=-58.31$ μs；1 kHz 相位为 $+20.99°$。这是坐标与相位符号的自检，非定位算法输出。
 
 坐标整体平移后，$\vec r_m-\vec r_0$ 不变，远场相对导向不变。改变参考麦只会给同一方向的全部分量乘共同相位，也不增加可观测信息。几何的作用在于形成不同基线，波束还需要指定权重；同一阵列可以产生多种响应。
 
@@ -364,11 +364,11 @@ $$\begin{aligned}
 
 #### 3.3.2 物理协方差怎样给出虚拟滞后
 
-考虑一个固定频点：远场源两两不相关、均值为零；所有通道使用相同理想响应；传感器噪声与源不相关，跨通道独立且方差同为 $\sigma_n^2$。令 $P_k$ 是第 $k$ 个源在参考麦的功率，$\vec b_{ij}=\vec r_i-\vec r_j$ 是基线，$k_f=2\pi f/c$ 是波数、单位 rad/m，则
+考虑一个固定频点：远场源两两不相关、均值为零；所有通道使用相同理想响应；传感器噪声与源不相关，跨通道独立且方差同为 $\sigma_n^2$。令 $P_k$ 是第 $k$ 个源在参考麦的功率，$\vec b_{ij}=\vec r_i-\vec r_j$ 是基线，$\kappa_f=2\pi f/c$ 是波数、单位 rad/m，则
 
 $$\begin{aligned}
 R_{ij}&=\sum_{k=1}^{K}P_k
- e^{\mathrm j k_f\vec b_{ij}^\top\vec u_k}\\
+ e^{\mathrm j \kappa_f\vec b_{ij}^\top\vec u_k}\\
  &\quad+\sigma_n^2\delta_{ij},\\
 \hat r[\ell]&=\frac1{N_\ell}
  \sum_{(i,j):p_i-p_j=\ell}\hat R_{ij}.
@@ -434,20 +434,20 @@ $\Delta g_m$ 是相对幅度误差、无量纲，且此参数化要求 $1+\Delta
 
 仅由观测，公共源幅度与全部 $g_m$ 的共同复尺度不能分开。相对标定通常选择参考通道，令 $g_0=1$；这表示以参考通道为基准，不表示它已具备绝对声压校准。
 
-**固定参考麦仍不能消除线阵的方向—相位斜率歧义。** 对间距 $d$ 的均匀线阵，本书以正横为 $0°$ 的导向约定给出 $a_m(\theta)=e^{\mathrm j kmd\sin\theta}$，其中 $k=2\pi f/c$。任选一个使所有新方向仍在可用角域内的共同偏移 $\delta$，令
+**固定参考麦仍不能消除线阵的方向—相位斜率歧义。** 对间距 $d$ 的均匀线阵，本书以正横为 $0°$ 的导向约定给出 $a_m(\theta)=e^{\mathrm j \kappa md\sin\theta}$，其中 $\kappa=2\pi f/c$。任选一个使所有新方向仍在可用角域内的共同偏移 $\delta$，令
 
 $$\begin{aligned}
 \sin\theta'_q&=\sin\theta_q+\delta,\\
-g'_m&=g_m e^{-\mathrm j kmd\delta},\\
+g'_m&=g_m e^{-\mathrm j \kappa md\delta},\\
 g'_ma_m(\theta'_q)
-&=g_m e^{-\mathrm j kmd\delta}\\
-&\quad\times e^{\mathrm j kmd(\sin\theta_q+\delta)}\\
+&=g_m e^{-\mathrm j \kappa md\delta}\\
+&\quad\times e^{\mathrm j \kappa md(\sin\theta_q+\delta)}\\
 &=g_ma_m(\theta_q).
 \end{aligned}$$
 
 这里改动的是每个方向的**正弦值**，不是把每个角度简单加上同一个度数；$m=0$ 时仍有 $g'_0=g_0=1$。因此，即使录到多个不同的未知方向，只要任意复增益的相位斜率也未知，这两套参数仍会逐帧产生完全相同的无噪声观测。
 
-可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j kmd(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。
+可用下面的四麦小例子检查：$d=4$ cm、$f=1$ kHz、$c=343$ m/s，原方向是 $[-40°,0°,35°]$，令 $\delta=0.15$，新方向约为 $[-29.524°,8.627°,46.351°]$，均处于 $[-60°,60°]$。同时给第 $m$ 路增益乘上 $e^{-\mathrm j \kappa md(0.15)}$，第 1 路相位就相对原值改变约 $-6.297°$；两套模型逐样本预测的最大差在本书双精度合成中约为 $7.0\times10^{-16}$。这个差是浮点舍入量级，不是定位误差，也不说明哪一套方向是真值。
 
 **跨频约束是否能解除这项歧义，取决于通道模型。** 若每个频点都允许任意未知的 $g_m(f)$，则每频都能乘上 $e^{-\mathrm j2\pi fmd\delta/c}$，共同的方向正弦偏移仍能被吸收。增加频点本身没有限制这项自由度。
 
@@ -619,7 +619,7 @@ $$\Delta\phi_m=\frac{2\pi f}{c}\,\delta\vec b_m^\top\vec u.
 
 已知方向单位向量 $\vec u=[-1/2,-1/\sqrt2,1/2]^\top$。按本书约定——方位角零点为 $+y$、正角转向 $+x$——反算方位角与俯仰角，并将角度重新代回方向向量。再与从 $+x$ 朝 $+y$ 计角的常见数学约定比较。
 
-**参考答案**：本书使用 $u_x=\sin\theta\cos\varphi$、$u_y=\cos\theta\cos\varphi$、$u_z=\sin\varphi$，因此 $\theta=\operatorname{atan2}(u_x,u_y)\approx-144.74^\circ$，$\varphi=\arcsin(1/2)=30^\circ$。代回后恢复原来的三个分量，双精度程序的最大绝对误差小于 $10^{-14}$。
+**参考答案**：本书使用 $u_x=\sin\theta\cos\phi_{\mathrm{el}}$、$u_y=\cos\theta\cos\phi_{\mathrm{el}}$、$u_z=\sin\phi_{\mathrm{el}}$，因此 $\theta=\operatorname{atan2}(u_x,u_y)\approx-144.74^\circ$，$\phi_{\mathrm{el}}=\arcsin(1/2)=30^\circ$。代回后恢复原来的三个分量，双精度程序的最大绝对误差小于 $10^{-14}$。
 
 从 $+x$ 计角时，$\alpha=\operatorname{atan2}(u_y,u_x)\approx-125.26^\circ$；它与本书的关系是 $\theta=90^\circ-\alpha$，再将角度折回选定的 $360^\circ$ 区间。两者描述同一方向，不能混用数值与导向模型。[NumPy 的 atan2 文档](https://numpy.org/doc/2.0/reference/generated/numpy.atan2.html "citation")明确规定第一个参数通常对应纵坐标、第二个对应横坐标；函数不会替调用者选择本书的角度零点。
 

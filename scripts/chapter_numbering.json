@@ -1,0 +1,424 @@
+{
+  "schema_version": 1,
+  "captured_from_commit": "09d08ad68abf0b964d07833e786588811f72caa5",
+  "scope": "Chapter numbers changed by topic; original sequential snapshot and historical reports retain their original identities.",
+  "chapters": [
+    {
+      "original_source": "14_acoustic-imaging.md",
+      "source": "12_acoustic-imaging.md",
+      "number": 12,
+      "pdf_identity": 14,
+      "original_sha256": "b32c412daf8b581757cbacce5cceaf15465ef5ad44bc98c121374bc9178dec23"
+    },
+    {
+      "original_source": "15_distributed-enhancement.md",
+      "source": "13_distributed-enhancement.md",
+      "number": 13,
+      "pdf_identity": 15,
+      "original_sha256": "6fe9cb2e4e42bf589e10b1fb6e63a1fc5b8f9d529c6aea1cf970ce2eb8f6ce72"
+    },
+    {
+      "original_source": "12_appendix-symbols-math.md",
+      "source": "14_appendix-symbols-math.md",
+      "number": 14,
+      "pdf_identity": 12,
+      "original_sha256": "8fc5e1806186301d2a89ce514051202ff2091a4159c0a5d41a03354eb96d269c"
+    },
+    {
+      "original_source": "13_appendix-guide.md",
+      "source": "15_appendix-guide.md",
+      "number": 15,
+      "pdf_identity": 13,
+      "original_sha256": "b365d9cb245bdd8053b231406aec1ab092278afe681958c4bc8be2de8c8b429e"
+    }
+  ],
+  "heading_aliases": {
+    "00_overview.md": {
+      "sec-u-58e340bcdc": "sec-u-3998a41808",
+      "sec-u-2d4b4b193b": "sec-u-ed573e6015",
+      "sec-u-01420ec5a6": "sec-u-69afa9f448",
+      "sec-u-ec7064739f": "sec-u-df0df6b6aa"
+    },
+    "14_appendix-symbols-math.md": {
+      "sec-u-78b6668a18": "sec-u-2bfed502b9",
+      "sec-12-1": "sec-14-1",
+      "sec-12-2": "sec-14-2",
+      "sec-12-3": "sec-14-3",
+      "sec-12-3-1": "sec-14-3-1",
+      "sec-12-3-2": "sec-14-3-2",
+      "sec-12-3-3": "sec-14-3-3",
+      "sec-12-3-4": "sec-14-3-4",
+      "sec-12-3-5": "sec-14-3-5",
+      "sec-12-3-6": "sec-14-3-6",
+      "sec-12-3-7": "sec-14-3-7",
+      "sec-12-3-8": "sec-14-3-8",
+      "sec-12-3-9": "sec-14-3-9",
+      "sec-12-3-10": "sec-14-3-10",
+      "sec-12-4": "sec-14-4",
+      "sec-u-a894d7ee57": "sec-u-28b8343a11",
+      "sec-u-152b8861e4": "sec-u-b7d691e5ef",
+      "sec-u-3899a8c1b7": "sec-u-2e0ba2b3e6",
+      "sec-u-9c73a9ff7c": "sec-u-3d25e3aac5",
+      "sec-u-935c1036ea": "sec-u-84ef8c9584",
+      "sec-u-99706c9759": "sec-u-53cdc056b8",
+      "sec-u-601bb171ef": "sec-u-26323254d5",
+      "sec-u-af429c1fb4": "sec-u-058974ea15",
+      "sec-u-84f5f318d2": "sec-u-a43cc286e7",
+      "sec-u-f444abd308": "sec-u-9002f4999c",
+      "sec-u-7b57cb80a9": "sec-u-b24d0eb12a",
+      "sec-u-f2a35d6e39": "sec-u-2a6196d983",
+      "sec-u-9ad8275b24": "sec-u-3335e1dd38",
+      "sec-u-9df103a899": "sec-u-c5006e2461",
+      "sec-u-b4090abdbf": "sec-u-a9e3cd8d47",
+      "sec-u-8b58184472": "sec-u-97d3fa9bb1",
+      "sec-u-0e9dab8b8b": "sec-u-e05d86e60e",
+      "sec-u-b849e6d52a": "sec-u-e87d05bc4d",
+      "sec-u-333ee075d5": "sec-u-2870269265",
+      "sec-u-97f33585ea": "sec-u-28d6db2836"
+    },
+    "15_appendix-guide.md": {
+      "sec-u-636d9cd65b": "sec-u-46e4e43b0d",
+      "sec-13-1": "sec-15-1",
+      "sec-13-2": "sec-15-2",
+      "sec-13-3": "sec-15-3",
+      "sec-13-4": "sec-15-4",
+      "sec-13-5": "sec-15-5",
+      "sec-13-6": "sec-15-6",
+      "sec-13-6-1": "sec-15-6-1",
+      "sec-13-6-2": "sec-15-6-2",
+      "sec-13-6-3": "sec-15-6-3",
+      "sec-13-6-4": "sec-15-6-4",
+      "sec-13-6-5": "sec-15-6-5",
+      "sec-13-6-6": "sec-15-6-6",
+      "sec-13-6-7": "sec-15-6-7",
+      "sec-13-6-8": "sec-15-6-8",
+      "sec-u-aeab2c07bf": "sec-u-b49c593bd2",
+      "sec-u-060a92560a": "sec-u-e00531ea3b",
+      "sec-u-199b14fd60": "sec-u-d48fc3234f",
+      "sec-u-ed97781131": "sec-u-b371f71f02",
+      "sec-u-15b2b5a118": "sec-u-14fddc2280",
+      "sec-u-7325fcb112": "sec-u-8ddb3293a1",
+      "sec-u-abe16bf972": "sec-u-98a1d69c6e",
+      "sec-u-35e4061f5e": "sec-u-ddac2aaf91",
+      "sec-u-25ccd9c48f": "sec-u-cf3e54e982",
+      "sec-u-21c0740952": "sec-u-f7006880c9",
+      "sec-u-6bac564963": "sec-u-f5745ca938",
+      "sec-u-0c2386925c": "sec-u-be757ffdfa",
+      "sec-u-68046aa090": "sec-u-0be34c7472",
+      "sec-13-7": "sec-15-7"
+    },
+    "12_acoustic-imaging.md": {
+      "sec-u-a92e514598": "sec-u-ab429db433",
+      "sec-14-1": "sec-12-1",
+      "sec-14-2": "sec-12-2",
+      "sec-14-3": "sec-12-3",
+      "sec-14-4": "sec-12-4",
+      "sec-14-5": "sec-12-5",
+      "sec-14-6": "sec-12-6",
+      "sec-14-7": "sec-12-7",
+      "sec-14-8": "sec-12-8",
+      "sec-14-9": "sec-12-9",
+      "sec-14-10": "sec-12-10",
+      "sec-14-11": "sec-12-11",
+      "sec-14-12": "sec-12-12",
+      "sec-14-13": "sec-12-13",
+      "sec-u-813d6e11ac": "sec-u-99b7bb34d6",
+      "sec-u-49095438be": "sec-u-f0f86235ee",
+      "sec-u-6c96807a5e": "sec-u-1844251c9d",
+      "sec-u-e515878ce9": "sec-u-ab20495b47",
+      "sec-u-977742d93b": "sec-u-2fcef4767e",
+      "sec-u-8523691e41": "sec-u-cdd0dc66e7",
+      "sec-u-7b455416cd": "sec-u-e1197de104",
+      "sec-u-5e29150686": "sec-u-864e5d6a6f",
+      "sec-u-c4ac7e60a3": "sec-u-7731a0181a",
+      "sec-u-7e62131a27": "sec-u-c1484bb4f1",
+      "sec-u-0601a344c4": "sec-u-ce6e25be4f",
+      "sec-u-95fd4aa0c7": "sec-u-f72f530d8f",
+      "sec-u-83271345e6": "sec-u-54ce6bf1ed",
+      "sec-u-abb9f41705": "sec-u-c010f17b9c",
+      "sec-u-596f3ec930": "sec-u-ca5815de33",
+      "sec-u-a3a4304578": "sec-u-3a315b135c",
+      "sec-u-8666ed1826": "sec-u-35150a13e5",
+      "sec-u-5ec4086bb5": "sec-u-21b3677ebd",
+      "sec-14-14": "sec-12-14"
+    },
+    "13_distributed-enhancement.md": {
+      "sec-u-0d79586b40": "sec-u-232577b03e",
+      "sec-15-1": "sec-13-1",
+      "sec-15-2": "sec-13-2",
+      "sec-15-3": "sec-13-3",
+      "sec-15-4": "sec-13-4",
+      "sec-15-5": "sec-13-5",
+      "sec-15-6": "sec-13-6",
+      "sec-15-7": "sec-13-7",
+      "sec-15-8": "sec-13-8",
+      "sec-15-9": "sec-13-9",
+      "sec-15-10": "sec-13-10",
+      "sec-15-11": "sec-13-11",
+      "sec-15-12": "sec-13-12",
+      "sec-15-13": "sec-13-13",
+      "sec-15-14": "sec-13-14",
+      "sec-15-15": "sec-13-15",
+      "sec-15-16": "sec-13-16",
+      "sec-u-2fb9fa91dc": "sec-u-ae60fe614c",
+      "sec-u-a558204011": "sec-u-d2277f09c0",
+      "sec-u-6159884015": "sec-u-990fd59df5",
+      "sec-u-d99ad75e5b": "sec-u-9493aad880",
+      "sec-u-0f67d6decb": "sec-u-a123bcf090",
+      "sec-u-f2c5e4265b": "sec-u-b7dac779da",
+      "sec-u-ad5858492f": "sec-u-9bcc32b7fe",
+      "sec-u-ae1fbf2731": "sec-u-40ecac23db",
+      "sec-u-6d504d7edf": "sec-u-15a9194ba1",
+      "sec-u-17942b7cf5": "sec-u-ecaa4b04e4",
+      "sec-u-cbe6d25b1f": "sec-u-5159378837",
+      "sec-u-d9e3267345": "sec-u-481fa3de3e",
+      "sec-u-eeff13f4d6": "sec-u-43c36175b8",
+      "sec-u-2bdfab7371": "sec-u-478a33071c",
+      "sec-u-403370e969": "sec-u-4bad0eb87f",
+      "sec-u-cd640dc247": "sec-u-d6bfdb5b5e",
+      "sec-u-067a79a0ca": "sec-u-270f9db859",
+      "sec-u-1251e3d462": "sec-u-4e97b65795",
+      "sec-u-907902a486": "sec-u-0c9a031714",
+      "sec-u-ad154b1e6b": "sec-u-5bc0cc2c13",
+      "sec-u-32f96cea50": "sec-u-9e15aaffec",
+      "sec-u-35fc515c3d": "sec-u-4db262b2cd",
+      "sec-u-1d70029682": "sec-u-0b8e41071b",
+      "sec-u-e427641230": "sec-u-7e45f79bb0",
+      "sec-u-2c78c71398": "sec-u-632be6e3e5"
+    }
+  },
+  "exercise_aliases": {
+    "14_appendix-symbols-math.md": {
+      "e14-14": {
+        "original_id": "e12-14",
+        "heading_id": "sec-u-c5006e2461"
+      },
+      "e14-15": {
+        "original_id": "e12-15",
+        "heading_id": "sec-u-a9e3cd8d47"
+      },
+      "e14-16": {
+        "original_id": "e12-16",
+        "heading_id": "sec-u-97d3fa9bb1"
+      },
+      "e14-17": {
+        "original_id": "e12-17",
+        "heading_id": "sec-u-e05d86e60e"
+      },
+      "e14-18": {
+        "original_id": "e12-18",
+        "heading_id": "sec-u-e87d05bc4d"
+      },
+      "e14-19": {
+        "original_id": "e12-19",
+        "heading_id": "sec-u-2870269265"
+      },
+      "e14-20": {
+        "original_id": "e12-20",
+        "heading_id": "sec-u-28d6db2836"
+      }
+    },
+    "15_appendix-guide.md": {
+      "e15-02": {
+        "original_id": "e13-02",
+        "heading_id": "sec-15-6-8"
+      },
+      "e15-11": {
+        "original_id": "e13-11",
+        "heading_id": "sec-u-cf3e54e982"
+      },
+      "e15-12": {
+        "original_id": "e13-12",
+        "heading_id": "sec-u-f7006880c9"
+      },
+      "e15-13": {
+        "original_id": "e13-13",
+        "heading_id": "sec-u-f5745ca938"
+      },
+      "e15-14": {
+        "original_id": "e13-14",
+        "heading_id": "sec-u-be757ffdfa"
+      },
+      "e15-15": {
+        "original_id": "e13-15",
+        "heading_id": "sec-u-0be34c7472"
+      }
+    },
+    "12_acoustic-imaging.md": {
+      "e12-01": {
+        "original_id": "e14-01",
+        "heading_id": "sec-u-99b7bb34d6"
+      },
+      "e12-02": {
+        "original_id": "e14-02",
+        "heading_id": "sec-u-f0f86235ee"
+      },
+      "e12-03": {
+        "original_id": "e14-03",
+        "heading_id": "sec-u-1844251c9d"
+      },
+      "e12-04": {
+        "original_id": "e14-04",
+        "heading_id": "sec-u-ab20495b47"
+      },
+      "e12-05": {
+        "original_id": "e14-05",
+        "heading_id": "sec-u-2fcef4767e"
+      },
+      "e12-06": {
+        "original_id": "e14-06",
+        "heading_id": "sec-u-cdd0dc66e7"
+      },
+      "e12-07": {
+        "original_id": "e14-07",
+        "heading_id": "sec-u-e1197de104"
+      },
+      "e12-08": {
+        "original_id": "e14-08",
+        "heading_id": "sec-u-864e5d6a6f"
+      },
+      "e12-09": {
+        "original_id": "e14-09",
+        "heading_id": "sec-u-7731a0181a"
+      },
+      "e12-10": {
+        "original_id": "e14-10",
+        "heading_id": "sec-u-c1484bb4f1"
+      },
+      "e12-11": {
+        "original_id": "e14-11",
+        "heading_id": "sec-u-ce6e25be4f"
+      },
+      "e12-12": {
+        "original_id": "e14-12",
+        "heading_id": "sec-u-f72f530d8f"
+      },
+      "e12-13": {
+        "original_id": "e14-13",
+        "heading_id": "sec-u-54ce6bf1ed"
+      },
+      "e12-14": {
+        "original_id": "e14-14",
+        "heading_id": "sec-u-c010f17b9c"
+      },
+      "e12-15": {
+        "original_id": "e14-15",
+        "heading_id": "sec-u-ca5815de33"
+      },
+      "e12-16": {
+        "original_id": "e14-16",
+        "heading_id": "sec-u-3a315b135c"
+      },
+      "e12-17": {
+        "original_id": "e14-17",
+        "heading_id": "sec-u-35150a13e5"
+      },
+      "e12-18": {
+        "original_id": "e14-18",
+        "heading_id": "sec-u-21b3677ebd"
+      }
+    },
+    "13_distributed-enhancement.md": {
+      "e13-01": {
+        "original_id": "e15-01",
+        "heading_id": "sec-u-ae60fe614c"
+      },
+      "e13-02": {
+        "original_id": "e15-02",
+        "heading_id": "sec-u-d2277f09c0"
+      },
+      "e13-03": {
+        "original_id": "e15-03",
+        "heading_id": "sec-u-990fd59df5"
+      },
+      "e13-04": {
+        "original_id": "e15-04",
+        "heading_id": "sec-u-9493aad880"
+      },
+      "e13-05": {
+        "original_id": "e15-05",
+        "heading_id": "sec-u-a123bcf090"
+      },
+      "e13-06": {
+        "original_id": "e15-06",
+        "heading_id": "sec-u-b7dac779da"
+      },
+      "e13-07": {
+        "original_id": "e15-07",
+        "heading_id": "sec-u-9bcc32b7fe"
+      },
+      "e13-08": {
+        "original_id": "e15-08",
+        "heading_id": "sec-u-40ecac23db"
+      },
+      "e13-09": {
+        "original_id": "e15-09",
+        "heading_id": "sec-u-15a9194ba1"
+      },
+      "e13-10": {
+        "original_id": "e15-10",
+        "heading_id": "sec-u-ecaa4b04e4"
+      },
+      "e13-11": {
+        "original_id": "e15-11",
+        "heading_id": "sec-u-5159378837"
+      },
+      "e13-12": {
+        "original_id": "e15-12",
+        "heading_id": "sec-u-481fa3de3e"
+      },
+      "e13-13": {
+        "original_id": "e15-13",
+        "heading_id": "sec-u-43c36175b8"
+      },
+      "e13-14": {
+        "original_id": "e15-14",
+        "heading_id": "sec-u-478a33071c"
+      },
+      "e13-15": {
+        "original_id": "e15-15",
+        "heading_id": "sec-u-4bad0eb87f"
+      },
+      "e13-16": {
+        "original_id": "e15-16",
+        "heading_id": "sec-u-d6bfdb5b5e"
+      },
+      "e13-17": {
+        "original_id": "e15-17",
+        "heading_id": "sec-u-270f9db859"
+      },
+      "e13-18": {
+        "original_id": "e15-18",
+        "heading_id": "sec-u-4e97b65795"
+      },
+      "e13-19": {
+        "original_id": "e15-19",
+        "heading_id": "sec-u-0c9a031714"
+      },
+      "e13-20": {
+        "original_id": "e15-20",
+        "heading_id": "sec-u-5bc0cc2c13"
+      },
+      "e13-21": {
+        "original_id": "e15-21",
+        "heading_id": "sec-u-9e15aaffec"
+      },
+      "e13-22": {
+        "original_id": "e15-22",
+        "heading_id": "sec-u-4db262b2cd"
+      },
+      "e13-23": {
+        "original_id": "e15-23",
+        "heading_id": "sec-u-0b8e41071b"
+      },
+      "e13-24": {
+        "original_id": "e15-24",
+        "heading_id": "sec-u-7e45f79bb0"
+      },
+      "e13-25": {
+        "original_id": "e15-25",
+        "heading_id": "sec-u-632be6e3e5"
+      }
+    }
+  }
+}

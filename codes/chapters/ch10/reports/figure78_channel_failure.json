@@ -10,7 +10,7 @@
     "codes/chapters/ch05/core/beamforming.py": "481f79a66fcc4c1f232704ee3a516b596d28ebc89d9045c494b71f6206b77216",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "input_sha256": {
@@ -20,7 +20,7 @@
     "channel_healthy_output.wav": "1a95e19a4a455ae4dfe4f990d0c697e9f5e2453fb657eb6228ff3b33aaa843b0",
     "channel_stale_output.wav": "99689f241f4d4f81cf2c19355cb2da7a10fa64cd317ba305d1ed4ad5acd9f6f9",
     "channel_recomputed_output.wav": "35285ba307f92e4928efc4d1225a87f65b3afec8f2ab389ab1d52392870f9d27",
-    "MANIFEST.json": "51245c0bd402601a9bbfa00df28930c913b84f6c87df3f0d7639d2a5cdabc975"
+    "MANIFEST.json": "dd9afa4daf1d8f0a66bfa0e6a72b4a33a692fd570bd232dd27b04fb814fa77df"
   },
   "parameters": {
     "exercise_id": "E10-34",

@@ -1,4 +1,4 @@
-"""Independent algebra, real PCM and strict asset-contract tests for E14."""
+"""Independent algebra, real PCM and strict asset-contract tests for E12."""
 from __future__ import annotations
 
 import hashlib
@@ -12,19 +12,19 @@ import numpy as np
 
 from codes.chapters.ch02.core.spectral import stft, periodic_hann
 from codes.chapters.ch00.core.audio_samples import pcm16_bytes, read_pcm16
-from codes.chapters.ch14.core.imaging import (
+from codes.chapters.ch12.core.imaging import (
     spherical_steering, conventional_weights, source_power_csm, csm_from_amplitudes,
     scan_power, point_spread_function, damas_gauss_seidel, finite_nnls,
     clean_sc_full_csm, hermitian_real_vector, csm_residual, single_source_csm_fit,
     one_sided_csm_density, integrate_psd, region_power, two_cell_experiment,
     spherical_scan_experiment,
 )
-from codes.chapters.ch14.core.imaging_audio import (
+from codes.chapters.ch12.core.imaging_audio import (
     make_signals, extract_snapshot_amplitudes, measure_signal, measure_source_pairs,
     SAMPLE_RATE, SAMPLES, POWER_SCALE, FILE_NAMES,
 )
-from codes.chapters.ch14.examples.generate_imaging_audio import prepare_assets, generate_assets, check_assets
-from codes.chapters.ch14.chapter14_exercises import run_experiments
+from codes.chapters.ch12.examples.generate_imaging_audio import prepare_assets, generate_assets, check_assets
+from codes.chapters.ch12.chapter12_exercises import run_experiments
 
 
 class ImagingAlgebraTests(unittest.TestCase):
@@ -92,7 +92,7 @@ class ImagingAlgebraTests(unittest.TestCase):
             clean_sc_full_csm(removed, self.w)
 
     def test_exercise_07_unequal_amplitude_dr_compensation(self):
-        control = run_experiments()['exercises']['E14-07']['unequal_amplitude_control']
+        control = run_experiments()['exercises']['E12-07']['unequal_amplitude_control']
         full = np.asarray(control['full_csm_real_imag'])
         removed = np.asarray(control['diagonal_removed_csm_real_imag'])
         # Independent a=(1,2) outer product, with both retained off-diagonals 2.
@@ -227,10 +227,10 @@ class ImagingAudioTests(unittest.TestCase):
 
     def test_all_eighteen_ids_and_finite_json(self):
         results=run_experiments()
-        self.assertEqual(set(results['exercises']),{'E14-'+str(i).zfill(2) for i in range(1,19)})
+        self.assertEqual(set(results['exercises']),{'E12-'+str(i).zfill(2) for i in range(1,19)})
         json.dumps(results,allow_nan=False)
-        self.assertFalse(results['exercises']['E14-12']['sklearn_executed'])
-        self.assertAlmostEqual(results['exercises']['E14-12']['affine_math_q'],87/35)
+        self.assertFalse(results['exercises']['E12-12']['sklearn_executed'])
+        self.assertAlmostEqual(results['exercises']['E12-12']['affine_math_q'],87/35)
 
 
 class ImagingAssetContractTests(unittest.TestCase):
@@ -288,7 +288,7 @@ class ImagingAssetContractTests(unittest.TestCase):
         for mutation in ['bool','duplicate','nan','sha','score']:
             value=json.loads(original)
             if mutation=='bool':value['samples_per_channel']=True
-            elif mutation=='sha':value['source_sha256']['codes/chapters/ch14/core/imaging.py']='0'*64
+            elif mutation=='sha':value['source_sha256']['codes/chapters/ch12/core/imaging.py']='0'*64
             elif mutation=='score':value['samples']['array_coherent']['pcm_measurements']['normalized_scan_mean_square'][0]+=1.
             if mutation=='duplicate':blob=b'{"schema_version":1,"schema_version":1}'
             elif mutation=='nan':blob=b'{"schema_version":NaN}'

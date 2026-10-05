@@ -4641,7 +4641,7 @@ def fig_equal_drr_response():
 def _imaging_report(name, data):
     """Bind current teaching and drawing sources; never infer provenance."""
     from codes.chapters.ch00.io_contracts import write_json_report
-    sources = ('scripts/make_figures.py', 'codes/chapters/ch14/core/imaging.py',
+    sources = ('scripts/make_figures.py', 'codes/chapters/ch12/core/imaging.py',
                'codes/chapters/ch02/core/conventions.py',
                'codes/chapters/ch00/io_contracts.py')
     def plain(value):
@@ -4659,11 +4659,11 @@ def _imaging_report(name, data):
     report = {'schema_version': 1, 'scope': 'deterministic teaching controls; no industrial measurement',
               'source_sha256': {path: hashlib.sha256((REPOSITORY_ROOT / path).read_bytes()).hexdigest()
                                 for path in sources}, 'results': plain(data)}
-    write_json_report(CODE_CHAPTERS / 'ch14' / 'reports' / name, report)
+    write_json_report(CODE_CHAPTERS / 'ch12' / 'reports' / name, report)
 
 
 def fig_imaging_psf():
-    from codes.chapters.ch14.core.imaging import two_cell_experiment, spherical_scan_experiment
+    from codes.chapters.ch12.core.imaging import two_cell_experiment, spherical_scan_experiment
     small, spatial = two_cell_experiment(), spherical_scan_experiment()
     _imaging_report('figure67_imaging_psf.json', {'two_cell': small, 'spherical_scan': spatial})
     fig, axes = plt.subplots(3, 2, figsize=(9.5, 10.2))
@@ -4720,7 +4720,7 @@ def fig_imaging_psf():
 
 
 def fig_imaging_model_checks():
-    from codes.chapters.ch14.core.imaging import two_cell_experiment, damas_gauss_seidel, clean_sc_full_csm
+    from codes.chapters.ch12.core.imaging import two_cell_experiment, damas_gauss_seidel, clean_sc_full_csm
     small = two_cell_experiment(); independent = small['cases']['independent']; coherent = small['cases']['coherent']
     iterations = 8
     forward = damas_gauss_seidel(small['P'], independent['b'], iterations=iterations)
@@ -4813,7 +4813,7 @@ def fig_imaging_calibration():
 
 def fig_imaging_objectives():
     """Same nonnegative two-cell domain; two genuinely different objectives."""
-    from codes.chapters.ch14.core.imaging import damas_csm_objective_experiment
+    from codes.chapters.ch12.core.imaging import damas_csm_objective_experiment
     experiment = damas_csm_objective_experiment()
     q1 = np.linspace(.8, 1.1, 151)
     q2 = np.linspace(0., .2, 101)
@@ -4830,7 +4830,7 @@ def fig_imaging_objectives():
         'plotted': {'q1': q1, 'q2': q2, 'scan_squared': scan_squared,
                     'csm_squared': csm_squared, 'axis_range': [[.8, 1.1], [0., .2]],
                     'view': 'local nonnegative domain; not full domain'}})
-    report_digest = hashlib.sha256((CODE_CHAPTERS/'ch14/reports'/report_name).read_bytes()).hexdigest()
+    report_digest = hashlib.sha256((CODE_CHAPTERS/'ch12/reports'/report_name).read_bytes()).hexdigest()
     fig, axes = plt.subplots(1, 2, figsize=(9., 4.8))
     configurations = (
         (axes[0], scan_squared, [0.065, .085, .12, .17, .22],
@@ -4871,8 +4871,8 @@ def fig_imaging_objectives():
 def _distributed_audio_control():
     """Replay the frozen fixture and independently read its real PCM integers."""
     import wave
-    from codes.chapters.ch15.examples.generate_distributed_audio import check_assets
-    folder = CODE_CHAPTERS / 'ch15/distributed_audio'
+    from codes.chapters.ch13.examples.generate_distributed_audio import check_assets
+    folder = CODE_CHAPTERS / 'ch13/distributed_audio'
     check_assets(folder)
     manifest = json.loads((folder / 'MANIFEST.json').read_text())
     pcm = {}
@@ -4900,9 +4900,9 @@ def _distributed_audio_control():
 
 def _distributed_report(name, data, manifest=None):
     from codes.chapters.ch00.io_contracts import write_json_report
-    from codes.chapters.ch15.examples.generate_distributed_audio import SOURCE_PATHS
+    from codes.chapters.ch13.examples.generate_distributed_audio import SOURCE_PATHS
     sources = (('scripts/make_figures.py', *SOURCE_PATHS) if manifest is not None else
-               ('scripts/make_figures.py', 'codes/chapters/ch15/core/distributed.py',
+               ('scripts/make_figures.py', 'codes/chapters/ch13/core/distributed.py',
                 'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch04/core/covariance.py',
                 'codes/chapters/ch00/io_contracts.py'))
     def plain(value):
@@ -4919,8 +4919,8 @@ def _distributed_report(name, data, manifest=None):
               'source_sha256': {p: hashlib.sha256((REPOSITORY_ROOT/p).read_bytes()).hexdigest() for p in sources},
               'results': plain(data)}
     if manifest is not None:
-        report['audio_manifest_sha256'] = hashlib.sha256((CODE_CHAPTERS/'ch15/distributed_audio/MANIFEST.json').read_bytes()).hexdigest()
-    write_json_report(CODE_CHAPTERS/'ch15/reports'/name, report)
+        report['audio_manifest_sha256'] = hashlib.sha256((CODE_CHAPTERS/'ch13/distributed_audio/MANIFEST.json').read_bytes()).hexdigest()
+    write_json_report(CODE_CHAPTERS/'ch13/reports'/name, report)
     return report
 
 
@@ -4958,7 +4958,7 @@ def fig_distributed_compression():
 
 
 def fig_distributed_updates():
-    from codes.chapters.ch15.core.distributed import run_covariance_experiments
+    from codes.chapters.ch13.core.distributed import run_covariance_experiments
     result = run_covariance_experiments()
     names = [('round_robin', '轮转', C_BLUE, '-'), ('simultaneous', '同时', C_RED, '--'),
              ('simultaneous_half', '同时 + 0.5混合', C_GREEN, '-.')]

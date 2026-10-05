@@ -9,11 +9,11 @@ from unittest.mock import patch
 import wave
 import numpy as np
 from codes.chapters.ch00.core.audio_samples import pcm16_bytes, read_pcm16
-from codes.chapters.ch15.core.distributed_audio import (
+from codes.chapters.ch13.core.distributed_audio import (
     FILE_NAMES, OUTPUT_REFERENCES, SAMPLE_RATE, SAMPLES, SCORING_SAMPLES,
     POWER, run_experiment, measure_signal, generate_components, continuous_components,
 )
-from codes.chapters.ch15.examples.generate_distributed_audio import (
+from codes.chapters.ch13.examples.generate_distributed_audio import (
     prepare_assets, check_assets, generate_assets, source_digests, SOURCE_PATHS, ROOT,
 )
 
@@ -145,8 +145,8 @@ class DistributedAudioTests(unittest.TestCase):
                 continuous_components(times)
 
     def test_every_executed_dependency_has_current_real_sha(self):
-        expected = {'codes/chapters/ch15/core/distributed.py', 'codes/chapters/ch15/core/distributed_audio.py',
-                    'codes/chapters/ch15/examples/generate_distributed_audio.py', 'codes/chapters/ch02/core/conventions.py',
+        expected = {'codes/chapters/ch13/core/distributed.py', 'codes/chapters/ch13/core/distributed_audio.py',
+                    'codes/chapters/ch13/examples/generate_distributed_audio.py', 'codes/chapters/ch02/core/conventions.py',
                     'codes/chapters/ch04/core/covariance.py', 'codes/chapters/ch10/sro_closed_loop_demo.py',
                     'codes/chapters/ch10/core/engineering.py', 'codes/chapters/ch00/core/audio_samples.py',
                     'codes/chapters/ch00/io_contracts.py'}
@@ -187,7 +187,7 @@ class DistributedAudioTests(unittest.TestCase):
             before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in directory.iterdir()}
             parameters = json.loads(json.dumps(self.manifest['parameters']))
             parameters['target_frequencies_hz'][0] = 701
-            with (patch('codes.chapters.ch15.examples.generate_distributed_audio.parameters', return_value=parameters),
+            with (patch('codes.chapters.ch13.examples.generate_distributed_audio.parameters', return_value=parameters),
                   patch.object(Path, 'write_bytes', side_effect=AssertionError('preflight attempted overwrite')) as writer,
                   patch.object(Path, 'mkdir', side_effect=AssertionError('preflight attempted mkdir')) as mkdir):
                 with self.assertRaises(ValueError):
@@ -201,7 +201,7 @@ class DistributedAudioTests(unittest.TestCase):
             (directory/'extra').write_text('extra')
             with self.assertRaises(ValueError):
                 check_assets(directory)
-            with patch('codes.chapters.ch15.examples.generate_distributed_audio.prepare_assets', side_effect=AssertionError('preflight missing')):
+            with patch('codes.chapters.ch13.examples.generate_distributed_audio.prepare_assets', side_effect=AssertionError('preflight missing')):
                 with self.assertRaises(ValueError):
                     generate_assets(directory)
             (directory/'extra').unlink(); (directory/'central_white.wav').unlink()

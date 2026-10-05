@@ -1,12 +1,12 @@
-"""Independent algebra, input boundaries and update-time contracts for ch15."""
+"""Independent algebra, input boundaries and update-time contracts for ch13."""
 import json
 import unittest
 import numpy as np
-from codes.chapters.ch15.core.distributed import (
+from codes.chapters.ch13.core.distributed import (
     known_models, mwf_weights, mse_components, compressed_mwf, distributed_updates,
     jacobi_control, step_size_control, tree_sum_control, gevd_control,
 )
-from codes.chapters.ch15.chapter15_exercises import run_experiments, resource_control
+from codes.chapters.ch13.chapter13_exercises import run_experiments, resource_control
 
 
 class DistributedTests(unittest.TestCase):
@@ -230,7 +230,7 @@ class DistributedTests(unittest.TestCase):
 
     def test_independent_exercise_id_set_and_finite_json(self):
         result = run_experiments()
-        expected = {'E15-'+str(i).zfill(2) for i in range(1, 26)}
+        expected = {'E13-'+str(i).zfill(2) for i in range(1, 26)}
         self.assertEqual(set(result['exercises']), expected)
         self.assertNotIn('schema_version', result['exercises'])
         json.dumps(result, allow_nan=False)

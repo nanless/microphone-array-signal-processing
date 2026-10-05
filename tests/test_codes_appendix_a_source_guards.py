@@ -34,7 +34,7 @@ class SolverGuardTests(unittest.TestCase):
 
     def test_all_in_repo_targets_except_new_current_rejected_before_calls(self):
         forbidden = (audit.HISTORICAL_REPORT, audit.ROOT / 'AGENTS.md',
-                     audit.ROOT / 'chapters/12_appendix-symbols-math.md',
+                     audit.ROOT / 'chapters/14_appendix-symbols-math.md',
                      Path(audit.__file__), audit.LOCK, audit.STATUS,
                      audit.ROOT / 'codes/chapters/ch00/source_snapshots/fake.json',
                      audit.ROOT / 'reviews/forbidden.json', audit.CACHE / 'forbidden.json')

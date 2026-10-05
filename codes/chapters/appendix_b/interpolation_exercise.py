@@ -1,4 +1,4 @@
-"""E13-02: fractional-delay amplitudes in regenerated and published PCM.
+"""E15-02: fractional-delay amplitudes in regenerated and published PCM.
 
 No files, network, randomness or experiments on import. Run as a module.
 The ideal output is evaluated from a known continuous signal, not reconstructed.
@@ -76,7 +76,7 @@ def run_exercises() -> dict:
         published_ratios[output] = (
             np.array(published_amplitudes['interpolation_' + output]) /
             published_amplitudes['interpolation_' + reference]).tolist()
-    return {'E13-02': {
+    return {'E15-02': {
         'frequencies_hz': frequencies.tolist(), 'sample_rate_hz': fs,
         'scoring_interval_samples': [start, stop],
         'common_export_gain': groups['interpolation']['common_export_gain'],

@@ -908,7 +908,7 @@ def math_block_case() -> dict:
     return {
         'signals': signals, 'export_gain_override': 1.,
         'parameters': {
-            'exercise_id': 'E12-08', 'sample_rate_hz': SAMPLE_RATE,
+            'exercise_id': 'E14-08', 'sample_rate_hz': SAMPLE_RATE,
             'duration_s': count / SAMPLE_RATE, 'samples': count,
             'channels': 1, 'seed': None, 'pulse_amplitude': .3,
             'pulse_positions_samples': pulses.tolist(),

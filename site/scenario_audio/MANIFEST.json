@@ -400,7 +400,7 @@
   "source_sha256": {
     "codes/chapters/ch11/core/selection_audio.py": "963555975ad159d104bcb8044c4243b46d87ab858acdf5634248206c28075eac",
     "codes/chapters/ch11/examples/generate_selection_audio.py": "d6539554d237b83e8c0f89206c937ca0deef3dd584ecddf57978bebb1014b8ec",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {

@@ -5,8 +5,8 @@ import re
 import unittest
 from pathlib import Path
 
-from codes.chapters.ch14 import chapter14_exercises
-from codes.chapters.ch15 import chapter15_exercises
+from codes.chapters.ch12 import chapter12_exercises
+from codes.chapters.ch13 import chapter13_exercises
 from codes.chapters.ch06 import aec_advanced_exercises
 from codes.chapters.ch06 import aec_algorithm_minicases
 from codes.chapters.ch00.cross_chapter import exercises_engineering
@@ -44,13 +44,13 @@ from codes.chapters.appendix_b import interpolation_exercise
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
-    "distributed": {f"E15-{n:02d}" for n in range(1, 26)},
-    "imaging": {f"E14-{n:02d}" for n in range(1, 19)},
+    "distributed": {f"E13-{n:02d}" for n in range(1, 26)},
+    "imaging": {f"E12-{n:02d}" for n in range(1, 19)},
     "apa": {f"E06-{n:02d}" for n in range(34, 39)},
     "apa_audio": {"E06-39"},
     "reference_audio": {"E06-42"},
-    "appendix_b": {f"E13-{n:02d}" for n in range(3, 16)},
-    "appendix_a": {f"E12-{n:02d}" for n in range(6, 21)},
+    "appendix_b": {f"E15-{n:02d}" for n in range(3, 16)},
+    "appendix_a": {f"E14-{n:02d}" for n in range(6, 21)},
     "chapter11": {f"E11-{n:02d}" for n in range(10, 28)},
     "chapter10": {f"E10-{n:02d}" for n in range(18, 35)},
     "chapter09": {f"E09-{n:02d}" for n in range(10, 27)},
@@ -62,10 +62,10 @@ EXPECTED = {
     "chapter03": {f"E03-{n:02d}" for n in range(8, 19)},
     "chapter02": {f"E02-{n:02d}" for n in range(9, 21)},
     "chapter01": {"E01-04", "E01-05", "E01-06", "E01-07", "E01-08", "E01-09", "E01-10"},
-    "spatial_model": {"E02-08", "E04-11", "E05-07", "E12-05"},
+    "spatial_model": {"E02-08", "E04-11", "E05-07", "E14-05"},
     "enhancement_structure": {"E07-07", "E08-11", "E09-09"},
     "engineering_boundary": {"E10-16", "E10-17", "E11-09"},
-    "interpolation": {"E13-02"},
+    "interpolation": {"E15-02"},
     "spatial_precision": {"E02-07", "E04-10", "E05-06"},
     "enhancement_steps": {"E06-21", "E07-06", "E08-08", "E08-09", "E08-10"},
     "time_state": {"E09-07", "E09-08", "E10-15", "E11-08"},
@@ -88,15 +88,15 @@ EXPECTED = {
     "doa_resolution": {"E04-08"},
     "engineering": {
         "E10-01", "E10-02", "E10-03", "E10-04", "E10-05", "E10-06",
-        "E11-01", "E11-02", "E12-01", "E12-02", "E12-03", "E13-01",
+        "E11-01", "E11-02", "E14-01", "E14-02", "E14-03", "E15-01",
         "E10-07", "E10-08", "E10-09", "E10-10", "E10-11", "E10-12", "E10-14",
-        "E11-03", "E11-04", "E11-05", "E11-06", "E11-07", "E12-04",
+        "E11-03", "E11-04", "E11-05", "E11-06", "E11-07", "E14-04",
     },
     "spectral_subtraction": {"E10-13"},
 }
 AEC_CASE_KEYS = {"E06-07": "overlap_save", "E06-08": "ipnlms",
                  "E06-09": "geigel", "E06-10": "delay_polarity"}
-RUNNERS = {"distributed": lambda: chapter15_exercises.run_experiments()["exercises"], "imaging": lambda: chapter14_exercises.run_experiments()["exercises"], "apa": lambda: {k: v for k, v in apa_demo().items() if k != "scope"}, "apa_audio": lambda: {"E06-39": apa_audio_experiment()[1]}, "reference_audio": lambda: {"E06-42": reference_audio_assets()[1]}, "appendix_b": appendix_b_experiments.run_exercises,
+RUNNERS = {"distributed": lambda: chapter13_exercises.run_experiments()["exercises"], "imaging": lambda: chapter12_exercises.run_experiments()["exercises"], "apa": lambda: {k: v for k, v in apa_demo().items() if k != "scope"}, "apa_audio": lambda: {"E06-39": apa_audio_experiment()[1]}, "reference_audio": lambda: {"E06-42": reference_audio_assets()[1]}, "appendix_b": appendix_b_experiments.run_exercises,
            "appendix_a": appendix_a_experiments.run_experiments,
            "chapter11": chapter11_experiments.run_experiments,
            "chapter09": chapter09_experiments.run_experiments,
@@ -179,8 +179,8 @@ class ExerciseCatalogTest(unittest.TestCase):
         self.assertEqual(documented_ids(research), ALL_IDS)
 
     def test_range_parser_does_not_invent_ids_from_partial_labels(self):
-        self.assertEqual(documented_ids("E01-01～02、E13-01；E09 章"),
-                         {"E01-01", "E01-02", "E13-01"})
+        self.assertEqual(documented_ids("E01-01～02、E15-01；E09 章"),
+                         {"E01-01", "E01-02", "E15-01"})
         self.assertEqual(documented_ids("E01-010、xE01-01、E01-01x"), set())
         with self.assertRaises(ValueError):
             documented_ids("E01-03～01")

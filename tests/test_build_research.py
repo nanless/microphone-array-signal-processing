@@ -198,10 +198,13 @@ class ResearchBuildTest(unittest.TestCase):
         for width in (22, 3, 18):
             self.assertEqual(table.group(2).count(f'--tutorial-column-width:{width}em'), 6)
 
-    def test_explicit_page_map_has_16_tutorial_and_6_research_pages(self):
+    def test_explicit_page_map_has_16_tutorial_4_legacy_and_6_research_pages(self):
         paths = list(build_site.source_outputs().values())
-        self.assertEqual(len(paths), 22)
+        self.assertEqual(len(paths), 26)
         self.assertEqual(sum(path.startswith("research/") for path in paths), 6)
+        self.assertTrue({"14_acoustic-imaging.html", "15_distributed-enhancement.html",
+                         "12_appendix-symbols-math.html", "13_appendix-guide.html"}
+                        <= set(paths))
         self.assertEqual(build_site.source_outputs()[RESEARCH / "README.md"], "research/index.html")
 
     def test_chapter_links_to_research_and_source_documents(self):
@@ -440,7 +443,7 @@ class ResearchBuildTest(unittest.TestCase):
                 with self.subTest(mint_asset=name):
                     self.assertEqual((output / "mint_audio" / name).read_bytes(),
                                      (mint_source / name).read_bytes())
-            imaging_source = ROOT / "codes/chapters/ch14/imaging_audio"
+            imaging_source = ROOT / "codes/chapters/ch12/imaging_audio"
             imaging_names = {"source_1.wav", "source_2_phase_code.wav", "source_2_coherent.wav",
                              "array_phase_code.wav", "array_coherent.wav", "MANIFEST.json"}
             self.assertEqual({path.name for path in imaging_source.iterdir()}, imaging_names)
@@ -454,7 +457,7 @@ class ResearchBuildTest(unittest.TestCase):
                 parser = Links()
                 parser.feed(path.read_text(encoding="utf-8"))
                 pages[path.resolve()] = parser
-            self.assertEqual(len(pages), 22)
+            self.assertEqual(len(pages), 26)
             room_links = set()
             room_images = set()
             apa_links = set()
@@ -533,7 +536,7 @@ class ResearchBuildTest(unittest.TestCase):
                                      "apa_audio": "ch06", "reference_audio": "ch06", "delay_audio": "ch07", "css_audio": "ch08", "mint_audio": "ch07", "mask_audio": "ch08",
                                      "noise_audio": "ch10", "channel_audio": "ch10", "scenario_audio": "ch11",
                                      "weighted_audio": "appendix_a", "response_audio": "appendix_b",
-                                     "distributed_audio": "ch15"}[target.parent.name]
+                                     "distributed_audio": "ch13"}[target.parent.name]
                             if target.parent.name == "apa_audio":
                                 self.assertIn(target.name, apa_names)
                                 apa_links.add(target.name)

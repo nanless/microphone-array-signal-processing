@@ -10,7 +10,7 @@
   "source_sha256": {
     "codes/chapters/ch01/core/spectral_cues.py": "606f1eafdd111e15b2906afb17230c5539f44414a65b36ae617b7e516d0d6504",
     "codes/chapters/ch01/examples/generate_spectral_cues.py": "aac7b1914a38531c25dd608c4522beda8304f23acbce35b6d425945cedb9a000",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {

@@ -7,6 +7,11 @@
 import json
 from pathlib import Path
 
+try:
+    from scripts.chapter_identity import historical_source, numbering_heading_aliases
+except ModuleNotFoundError:
+    from chapter_identity import historical_source, numbering_heading_aliases
+
 
 # 改版前发布过的 sec-N 指向当时第 N 个标题。新标题增删后不能把
 # 它机械地重新指向当前第 N 个标题，故固定旧版逐标题映射。
@@ -98,14 +103,15 @@ HISTORICAL_SECTION_IDS = {
 
 
 def historical_aliases(source_name: str, current_id: str) -> tuple[str, ...]:
+    original_name = historical_source(source_name)
+    renames = dict(HISTORICAL_SECTION_IDS.get(original_name, {}))
+    renames.update(numbering_heading_aliases(source_name))
     aliases = {}
-    for mapping in (HISTORICAL_SECTION_IDS.get(source_name, {}),
-                    HISTORICAL_SEQUENTIAL_IDS.get(source_name, {})):
+    for mapping in (renames, HISTORICAL_SEQUENTIAL_IDS.get(original_name, {})):
         for old_id, target in mapping.items():
             # The immutable original sequential map may name a subsequently
             # renamed semantic anchor. Follow that rename without rewriting
             # the old map or assigning its number to a different topic.
-            renames = HISTORICAL_SECTION_IDS.get(source_name, {})
             visited = set()
             while target in renames:
                 if target in visited:
@@ -118,4 +124,4 @@ def historical_aliases(source_name: str, current_id: str) -> tuple[str, ...]:
 
 
 def has_historical_sequential_aliases(source_name: str) -> bool:
-    return source_name in HISTORICAL_SEQUENTIAL_IDS
+    return historical_source(source_name) in HISTORICAL_SEQUENTIAL_IDS

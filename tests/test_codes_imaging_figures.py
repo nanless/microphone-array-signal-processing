@@ -32,13 +32,13 @@ class ImagingFigureGateTests(unittest.TestCase):
         for number, filename in gate.IMAGING_FIGURE_REPORTS.items():
             # Actual recorded data is the subject under test; numerical expected
             # values come from independent algebra in the gate, not this report.
-            report = strict_json_loads((gate.ROOT/'codes/chapters/ch14/reports'/filename).read_bytes())
+            report = strict_json_loads((gate.ROOT/'codes/chapters/ch12/reports'/filename).read_bytes())
             report['source_sha256'] = self.sources.copy()
             self.reports[number] = report
             self.write(number)
 
     def path(self, number):
-        return self.root/'codes/chapters/ch14/reports'/gate.IMAGING_FIGURE_REPORTS[number]
+        return self.root/'codes/chapters/ch12/reports'/gate.IMAGING_FIGURE_REPORTS[number]
 
     def write(self, number):
         path = self.path(number)

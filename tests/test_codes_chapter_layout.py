@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CODES = ROOT / "codes"
 CHAPTERS = CODES / "chapters"
 EXPECTED_DIRS = {*(f"ch{number:02d}" for number in range(12)),
-                 "appendix_a", "appendix_b", "ch14", "ch15"}
+                 "appendix_a", "appendix_b", "ch12", "ch13"}
 
 
 class ChapterLayoutTest(unittest.TestCase):

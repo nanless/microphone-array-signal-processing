@@ -1,4 +1,4 @@
-> ⚠️ 本篇是教程正文第 6 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 6 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
 > 🏠 首页导读：[`00_overview.md`](00_overview.md) ｜ 上一篇：[05_beamforming.md](05_beamforming.md) ｜ 下一篇：[07_wpe-dereverberation.md](07_wpe-dereverberation.md)
 
@@ -1124,7 +1124,7 @@ Seidel et al. 的综述发表于 *IEEE Signal Processing Magazine*, vol. 41, no.
 
 注册语音时长、延迟和评分条件应按该报告的对应规则复现，不能写成所有 pAEC 产品的通用标准。
 
-系统从注册语音提取声纹嵌入，并把它作为网络条件。这一思路与目标说话人提取（Target Speaker Extraction，TSE；见 §8.6，研究延伸见 §13.3）相近。[GTCNN, Interspeech 2022](https://www.isca-archive.org/interspeech_2022/zhang22t_interspeech.pdf "citation")。合规与验收细节见 §6.13。
+系统从注册语音提取声纹嵌入，并把它作为网络条件。这一思路与目标说话人提取（Target Speaker Extraction，TSE；见 §8.6，研究延伸见 §15.3）相近。[GTCNN, Interspeech 2022](https://www.isca-archive.org/interspeech_2022/zhang22t_interspeech.pdf "citation")。合规与验收细节见 §6.13。
 
 **pAEC 门限例子。** 设非零的实数注册嵌入为 $\vec e_{\mathrm{enroll}}$，非零逐帧嵌入为 $\vec e_t$。余弦相似度为
 

@@ -35,7 +35,7 @@
   "generator_inputs": {
     "codes/chapters/ch10/core/engineering.py": "22f5fcbbfdaedc399b5de1eb4c718c4f0c692dcb5dd1bdf49c7ef4569e43ae1b",
     "codes/chapters/ch00/examples/generate_audio_samples.py": "0f99886ae5b3d9aaa87ac8dbc7dabdc6476f50772e53900ae315bba599c8559e",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch06/core/aec.py": "6f534c06a0e3a0376b9052a70eda7da776ad25eaf1eeae960be094d4d9037e37",
     "codes/chapters/ch06/core/aec_numeric.py": "23e0251d4c161cfe757606156f8b1a7472cc33e729544096eb8ce76255108236",
     "codes/chapters/ch06/core/aec_ipnlms.py": "d7d72097340ebee9bbc3a6e8e45725f0afd77e8189d110e737da67248863f774",
@@ -4219,7 +4219,7 @@
     "math_block": {
       "export_gain_override": 1.0,
       "parameters": {
-        "exercise_id": "E12-08",
+        "exercise_id": "E14-08",
         "sample_rate_hz": 16000,
         "duration_s": 2.0,
         "samples": 32000,

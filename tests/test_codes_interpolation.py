@@ -1,4 +1,4 @@
-"""Independent sinusoidal/impulse checks for E13-02 and its PCM assets."""
+"""Independent sinusoidal/impulse checks for E15-02 and its PCM assets."""
 import math
 import unittest
 import numpy as np
@@ -29,7 +29,7 @@ class InterpolationTest(unittest.TestCase):
                                    np.r_[0., x[:-1]], atol=2e-12)
 
     def test_pcm_projection_matches_independent_radical_high_frequency(self):
-        r = run_exercises()['E13-02']
+        r = run_exercises()['E15-02']
         expected = math.sqrt(2-math.sqrt(2))/2  # cos(3*pi/8)
         self.assertAlmostEqual(r['analytic_one_pass_amplitude'][1], expected, places=14)
         self.assertAlmostEqual(r['analytic_two_pass_amplitude'][1], (2-math.sqrt(2))/4, places=14)
@@ -52,7 +52,7 @@ class InterpolationTest(unittest.TestCase):
             self.assertEqual(pcm[0, 0], 0.)
 
     def test_published_pcm_has_fixed_hashes_and_independent_amplitudes(self):
-        published = run_exercises()['E13-02']['published_pcm']
+        published = run_exercises()['E15-02']['published_pcm']
         self.assertEqual(published['file_sha256'], {
             'interpolation_ideal_half.wav':
                 'b7f00ce83904e20ff0a528ab614d65335b3f1fe4634808fa25ef91311be78573',

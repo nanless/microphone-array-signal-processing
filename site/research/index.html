@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>源码研究导读 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -261,10 +264,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="../09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="../10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="../11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="../14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="../15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="../12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="../13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="../12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="../13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="../14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="../15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="index.html#sec-u-32dc3845c0">从一个问题开始阅读</a></li>
@@ -297,7 +300,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tbody>
 <tr>
 <td><a href="01_spatial_and_tracking.html">空间处理与声源追踪</a></td>
-<td>第 1～5、9 章</td>
+<td>第 1～5、9、12 章</td>
 <td>宽带定位、稳健波束、球阵、工业声源成像、数据关联和多目标状态</td>
 </tr>
 <tr>
@@ -307,7 +310,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 <tr>
 <td><a href="03_industrial_deployment.html">工业部署与评测</a></td>
-<td>第 10～11 章、附录 B</td>
+<td>第 10～11、13 章、附录 B</td>
 <td>设备回调、时钟与重采样、嵌入式处理、推理运行时和评分</td>
 </tr>
 <tr>
@@ -318,7 +321,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <tr>
 <td><a href="05_exercises_and_audio.html">练习与音频实验</a></td>
 <td>第 1～11 章、扩展专题Ⅰ/Ⅱ、附录 A/B</td>
-<td>355 道代码练习、主109个合成WAV、27套独立合成154个WAV与4个真实录音摘录/派生的复算、许可和边界；逐套入口见<a href="../index.html#audio-assets">导读完整音频表</a></td>
+<td>360 道代码练习、主109个合成WAV、27套独立合成154个WAV与4个真实录音摘录/派生的复算、许可和边界；逐套入口见<a href="../index.html#audio-assets">导读完整音频表</a></td>
 </tr>
 </tbody>
 </table></div>
@@ -377,8 +380,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>本地取得源码的状态由获取工具生成，见 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/upstream/README.md">源码获取说明</a>。
 许可与依赖属于各上游项目；本手册不把不同项目的源码合并成一个重新授权的软件包。</p>
 <p>第4章另有 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/doatools_esprit_reference.json">doatools ESPRIT 固定接口对照</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch04/reports/figure13_gcc_reverb.json">图13的逐次统计</a>。默认加权的原版偏差、取消加权与独立参考分开记录；完整数字、适用范围与源码入口见空间篇第14节。</p>
-<p>扩展专题Ⅰ新增<a href="../14_acoustic-imaging.html">声学成像正文</a>、<a href="01_spatial_and_tracking.html#imaging-contract-audit">逐层源码合同</a>和<a href="05_exercises_and_audio.html#sec-47-1">18题及五WAV实验</a>。输出是参考声压贡献及区域量；原算法、教学控制和工业条件分别核对。</p>
-<p>分布式专题Ⅱ将<a href="../15_distributed-enhancement.html">节点目标与压缩条件</a>、<a href="03_industrial_deployment.html#distributed-network-deployment">原论文与工业网络</a>、<a href="04_source_reproduction.html#distributed-reproduction">固定源码合同</a>和<a href="05_exercises_and_audio.html#sec-48-1">25题及17WAV</a>互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。</p>
+<p>扩展专题Ⅰ新增<a href="../12_acoustic-imaging.html">声学成像正文</a>、<a href="01_spatial_and_tracking.html#imaging-contract-audit">逐层源码合同</a>和<a href="05_exercises_and_audio.html#sec-47-1">18题及五WAV实验</a>。输出是参考声压贡献及区域量；原算法、教学控制和工业条件分别核对。</p>
+<p>分布式专题Ⅱ将<a href="../13_distributed-enhancement.html">节点目标与压缩条件</a>、<a href="03_industrial_deployment.html#distributed-network-deployment">原论文与工业网络</a>、<a href="04_source_reproduction.html#distributed-reproduction">固定源码合同</a>和<a href="05_exercises_and_audio.html#sec-48-1">25题及17WAV</a>互链。原统计算法、已知真值音频、源码获取与完整设备执行分别记录。</p>
 <p>导读推荐的<a href="04_source_reproduction.html#overview-source-entrypoints">WASN同步与LibriCSS公开评测源码</a>现已按固定提交取得限定选集。代码身份核验、原接口静态观察与未执行的依赖/评分/设备边界分别保留，不能用源码文件数代表工业验收。</p>
 <footer class="foot">麦克风阵列信号处理教程 · 静态站由 scripts/build_site.py 生成</footer>
 </main></div><a class="topbtn" href="#top" title="回顶部" aria-label="回到页面顶部">↑</a>

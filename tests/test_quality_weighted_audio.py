@@ -38,7 +38,7 @@ class WeightedPublicationTests(unittest.TestCase):
         script = self.root / 'scripts/make_figures.py'
         script.parent.mkdir()
         script.write_text('# independent fixture\n')
-        self.pages = [(self.site / '12_appendix-symbols-math.html', ''),
+        self.pages = [(self.site / '14_appendix-symbols-math.html', ''),
                       (self.site / 'research/05_exercises_and_audio.html', '../')]
         for page, prefix in self.pages:
             page.write_text(self.html(prefix))
@@ -138,7 +138,7 @@ class WeightedPublicationTests(unittest.TestCase):
         self.assertEqual(self.issues(), [])
 
     def test_only_owned_links_get_players(self):
-        source = ROOT / 'chapters/12_appendix-symbols-math.md'
+        source = ROOT / 'chapters/14_appendix-symbols-math.md'
         valid = '../codes/chapters/appendix_a/weighted_audio/weighted_gls.wav'
         self.assertIn('src="weighted_audio/weighted_gls.wav"',
                       build_site.rewrite_site_links(f'<a href="{valid}">sample</a>', source))

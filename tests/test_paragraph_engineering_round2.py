@@ -23,7 +23,7 @@ class EngineeringRoundTwoParagraphTest(unittest.TestCase):
 
     def test_symbol_reuse_and_stft_grid_are_distinct_paragraphs(self):
         start = "**字母复用**"
-        source, path = chapter_fragment("12_appendix-symbols-math.md", start, "| 符号")
+        source, path = chapter_fragment("14_appendix-symbols-math.md", start, "| 符号")
         html, lists = rendered_lists(start + source, path)
         paragraphs = re.findall(r"<p>(.*?)</p>", html, re.S)
         self.assertEqual(lists, [])

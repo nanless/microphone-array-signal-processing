@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 2 章 · 声音到达阵列时发生了什么 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -311,10 +314,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -378,7 +381,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="02_basics-signal-model.html#sec-u-9fc99c5f2f">E02-20：每帧都能逆变换，为何仍不是一致的 STFT？</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 2 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 2 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="01_problem-definition.html">第 1 章 · 问题定义与双耳启示</a> ｜ 下一篇：<a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a></p>
 </blockquote>
 <hr />
@@ -436,7 +439,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>再认几枚上标：$^H$ 是共轭转置（频域复数用）、$^\top$ 是转置（时域实数用）、$^*$ 是共轭、$^{-1}$ 是逆；$\hat{\ }$ 表示估计值，$\|\cdot\|$ 为范数、$|\cdot|$ 为幅度。</p>
 <p><strong>标量上标星号与向量上标 H</strong>：单个复数取共轭用上标星号（如 $X_2^*$），整列向量先转置再共轭用上标 H（如 $\vec{x}^H$）。读后面的公式时，先确认所操作的是单个复数还是整列向量。</p>
 <p><strong>大写谱值仍可为标量</strong>：语音文献习惯用 $X(f)$、$X(f_k,\ell)$ 这类大写字母表示某一物理频率或时频点上的复数谱值。它们是标量，不是矩阵；本书沿用这一惯例，并在首次出现处注明。</p>
-<p><strong>字母复用</strong>：受文献惯例所限，$k$ 可表示频点索引或 WPE 的滞后帧号；附录符号表和第5章球谐推导用 $\kappa=2\pi f/c$ 表示波数（单位 rad/m），部分局部推导和文献仍用 $k$ 或 $k_f$，须按所在定义与无量纲频点索引区分；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。每个符号以所在公式的定义为准，完整对照见<a href="12_appendix-symbols-math.html#sec-12-1">附录A符号表</a>。</p>
+<p><strong>字母复用</strong>：受文献惯例所限，$k$ 可表示频点索引或 WPE 的滞后帧号；附录符号表和第5章球谐推导用 $\kappa=2\pi f/c$ 表示波数（单位 rad/m），部分局部推导和文献仍用 $k$ 或 $k_f$，须按所在定义与无量纲频点索引区分；$D$ 可表示阵列孔径或 PHD 强度函数；$\lambda$ 可表示波长、WPE 功率谱或矩阵特征值；$K$ 可表示声源数或 WPE 预测阶数；$s$ 可表示源信号或追踪状态。每个符号以所在公式的定义为准，完整对照见<a href="14_appendix-symbols-math.html#sec-14-1">附录A符号表</a>。</p>
 <p><strong>频率与帧索引</strong>：本章的连续频率统一记作 $f$，单位 Hz；DFT/STFT 的频点索引记作 $k$。实信号单边谱的 $0\le k\le\lfloor N/2\rfloor$ 对应 $f_k=kf_s/N$；完整 DFT 的高半区 $k>N/2$ 对应有符号频率 $(k-N)f_s/N$。帧索引记作 $\ell$。文献中常见的 $\vec x(f,t)$ 是简写，本书需要区分离散网格时写成 $\vec x(f_k,\ell)$。复指数 $e^{-\mathrm j2\pi f\tau}$ 中必须代入 Hz 频率 $f$ 或按频点范围正确映射的 $f_k$，不能直接代入无量纲索引 $k$。</p>
 </blockquote>
 <p>§2.1 得到了各麦到达时刻之差。下面先写每路麦克风的波形，再把时延转成频域相位，最后将多路式子合成一个向量式。</p>
@@ -880,8 +883,8 @@ G_\theta&=M(M^2-1)\eta^2(\theta),\\
 <li><strong>WNG 的 dB 值</strong>：DSB 恰好达到上限（§5.2 有证明），线性 $\mathrm{WNG}=4$，$\mathrm{WNG}_{\mathrm{dB}} = 10\log_{10}4 \approx$ <strong>6 dB</strong>；</li>
 <li>
 <p><strong>DI</strong>：把 DSB 波束图按定义式在整个球面上数值积分，得 $\mathrm{DI} \approx$ <strong>6 dB</strong>，这里采用 3D 各向同性弥散场口径。</p>
-<p>对 $\lambda/2$ 间距的线阵，DI 与 $\mathrm{WNG}_{\mathrm{dB}}$ 的数值恰好相等。相距 $q$ 个阵元间隔的两麦，其弥散场相干系数为 $\mathrm{sinc}(q\pi)$；整数 $q\ne0$ 时为 0，所以该频点的弥散噪声空间二阶矩与等功率白噪声成同比例。这里比较的是二阶空间统计量，不是声场的所有统计性质。</p>
-<p>口径注：此处 $\mathrm{sinc}$ 取 $\sin x/x$ 定义；§5.1 用归一化定义 $\sin(\pi x)/(\pi x)$，相邻麦的同一物理量在该口径下写作 $\mathrm{sinc}(1)=0$。两种写法只差自变量里的 $\pi$，对照时应先换算。</p>
+<p>对 $\lambda/2$ 间距的线阵，DI 与 $\mathrm{WNG}_{\mathrm{dB}}$ 的数值恰好相等。相距 $q$ 个阵元间隔的两麦，其弥散场相干系数为 $\mathrm{sinc}(q)$；整数 $q\ne0$ 时为 0，所以该频点的弥散噪声空间二阶矩与等功率白噪声成同比例。这里比较的是二阶空间统计量，不是声场的所有统计性质。</p>
+<p>口径注：本例与§5.1、附录A统一采用 $\mathrm{sinc}(x)=\sin(\pi x)/(\pi x)$，在 $x=0$ 处取极限值1。因此相邻麦写作 $\mathrm{sinc}(1)=0$；若文献采用 $\sin x/x$ 定义，同一物理量须写作该函数在 $q\pi$ 处的值。</p>
 </li>
 </ul>
 <p>量级结论：在本例的半波间距、三维各向同性弥散场的二阶空间统计下，4 元 DSB 的 $\mathrm{WNG}_{\mathrm{dB}}$ 和 DI 都约为 6 dB。若针对某个弥散噪声模型提高 DI，权重通常会变得更敏感，WNG 可能下降；具体上限取决于阵列几何、频率、噪声相关矩阵和稳健性约束，不能只由麦克风数给出。</p>
@@ -976,14 +979,15 @@ r_m&=r-\vec u^\top\vec q_m\\
 <p>直接把原始权重和与固定小数比较，会把第一组误判为没有数据；先除以最大权重后，三组掩码都变为 $[1,0,1]$，再累积即可。</p>
 <p>全零掩码无法执行这项归一化，也没有可用观测权重，因此本书代码拒绝计算。共同缩放保持的是这三个既定快拍的加权结果，不会增加独立样本，也不会提高源数估计的可信度。结果与独立手算逐元素比较，双精度绝对误差应小于 $10^{-14}$。</p>
 <h3 id="sec-u-9a0f5dcad3">E02-07：同一个遗忘因子，为什么换帧移后响应变慢？</h3>
-<p>每次实际更新采用 $\mathbf S_t=\alpha\mathbf S_{t-1}+(1-\alpha)\mathbf Q_t$，$\mathbf Q_t$ 是当前快拍外积。固定 $\alpha=0.98$，比较更新间隔 $H=8$ ms 和 16 ms 时，旧状态的贡献衰减到初始值 $1/e$ 所需的时间。若希望两者都具有 0.4 s 时间常数，应各取多大的 $\alpha$？</p>
-<p><strong>参考答案：先从更新次数换到时间。</strong> 经过 $k$ 次更新，旧状态系数为 $\alpha^k$。令连续时间指数包络满足 $\alpha^{t/H}=e^{-t/T}$，两边取对数并约去 $t$，得到 $T=-H/\ln\alpha$。这里 $H,T$ 都用秒，$\alpha$ 无量纲；$T$ 表示指数包络的时间常数，实际更新仍发生在离散时刻。</p>
+<p>每次实际更新采用 $\mathbf S_t=\alpha\mathbf S_{t-1}+(1-\alpha)\mathbf Q_t$，$\mathbf Q_t$ 是当前快拍外积。固定 $\alpha=0.98$，比较更新间隔 $\Delta t_{\mathrm{upd}}=8$ ms 和 16 ms 时，旧状态的贡献衰减到初始值 $1/e$ 所需的时间。若希望两者都具有 0.4 s 时间常数，应各取多大的 $\alpha$？</p>
+<p><strong>间隔单位。</strong> $\Delta t_{\mathrm{upd}}$ 是两次统计更新之间的秒数；STFT 帧移 $H$ 是采样点数。仅当每帧更新一次时，二者才满足 $\Delta t_{\mathrm{upd}}=H/f_s$。若跳帧或暂停更新，应按实际更新时间计算间隔。</p>
+<p><strong>参考答案：先从更新次数换到时间。</strong> 经过 $k$ 次更新，旧状态系数为 $\alpha^k$。令连续时间指数包络满足 $\alpha^{t/(\Delta t_{\mathrm{upd}})}=e^{-t/T}$，两边取对数并约去 $t$，得到 $T=-\Delta t_{\mathrm{upd}}/\ln\alpha$。这里 $\Delta t_{\mathrm{upd}},T$ 都用秒，$\alpha$ 无量纲；$T$ 表示指数包络的时间常数，实际更新仍发生在离散时刻。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
 <tr>
-<th scope="col" style="text-align: right;">实际更新间隔 $H$</th>
+<th scope="col" style="text-align: right;">实际更新间隔 $\Delta t_{\mathrm{upd}}$</th>
 <th scope="col" style="text-align: right;">固定 $\alpha=0.98$ 的时间常数 $T$</th>
-<th scope="col" style="text-align: right;">保持 $T=0.4$ s 所需 $\alpha=e^{-H/T}$</th>
+<th scope="col" style="text-align: right;">保持 $T=0.4$ s 所需 $\alpha=e^{-\Delta t_{\mathrm{upd}}/T}$</th>
 </tr>
 </thead>
 <tbody>

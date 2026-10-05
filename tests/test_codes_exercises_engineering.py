@@ -15,7 +15,7 @@ class EngineeringExerciseTests(unittest.TestCase):
     def test_ids_and_strict_json(self):
         expected = {f"E10-{i:02}" for i in range(1, 13)} | {"E10-14"}
         expected |= {f"E11-{i:02}" for i in range(1, 8)}
-        expected |= {"E12-01", "E12-02", "E12-03", "E12-04", "E13-01"}
+        expected |= {"E14-01", "E14-02", "E14-03", "E14-04", "E15-01"}
         self.assertEqual(set(self.results), expected)
         json.dumps(self.results, allow_nan=False)
 
@@ -82,24 +82,24 @@ class EngineeringExerciseTests(unittest.TestCase):
         self.assertEqual(vehicle["maximum_interval_s"], 1.25)
 
     def test_linear_and_circular_convolution(self):
-        result = self.results["E12-01"]
+        result = self.results["E14-01"]
         np.testing.assert_allclose(result["linear"], [1., 2.5, 1.])
         np.testing.assert_allclose(result["fft_length_2"], [2., 2.5])
         np.testing.assert_allclose(result["fft_length_3"], [1., 2.5, 1.])
 
     def test_complex_covariance_and_rank_deficiency(self):
-        result = self.results["E12-02"]
+        result = self.results["E14-02"]
         np.testing.assert_array_equal(result["second_moment_real"], [[1, 0], [0, 1]])
         np.testing.assert_array_equal(result["centered_covariance_real"], [[0, 0], [0, 1]])
         np.testing.assert_array_equal(result["second_moment_imag"], np.zeros((2, 2)))
         np.testing.assert_array_equal(result["centered_covariance_imag"], np.zeros((2, 2)))
-        result = self.results["E12-03"]
+        result = self.results["E14-03"]
         np.testing.assert_allclose(result["solution"], [1., 1.])
         self.assertEqual(result["rank"], 1)
         self.assertLess(result["residual_norm"], 1e-12)
 
     def test_rank_cutoff_diagnostics_match_the_float64_call(self):
-        result = self.results["E12-03"]
+        result = self.results["E14-03"]
         self.assertEqual(result["numpy_version"], np.__version__)
         self.assertEqual(result["input_dtype"], "float64")
         self.assertIsNone(result["requested_rcond"])
@@ -111,14 +111,14 @@ class EngineeringExerciseTests(unittest.TestCase):
                            result["singular_values"][1])
 
     def test_common_listening_gain(self):
-        result = self.results["E13-01"]
+        result = self.results["E15-01"]
         self.assertEqual(result["common_gain"], 2.)
         np.testing.assert_allclose(result["common_peaks"], [.8, .4])
         self.assertAlmostEqual(result["amplitude_difference_db"], 6.020599913279624)
         self.assertEqual(result["separately_normalized_difference"], 0.)
 
     def test_spatial_whitening_is_not_scalar_phat(self):
-        row = self.results["E12-04"]
+        row = self.results["E14-04"]
         np.testing.assert_allclose(row["noise_covariance"], [[4., 0.], [0., 1.]])
         np.testing.assert_allclose(row["whitening_matrix"], [[.5, 0.], [0., 1.]])
         np.testing.assert_allclose(row["whitened_covariance"], np.eye(2))

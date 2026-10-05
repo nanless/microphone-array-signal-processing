@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 7 章 · 去混响（WPE） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -322,10 +325,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -400,7 +403,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li><a href="07_wpe-dereverberation.html#sec-7-10">7.10 研究方向</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 7 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 7 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a> ｜ 下一篇：<a href="08_speech-separation.html">第 8 章 · 语音分离</a></p>
 </blockquote>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-4a68625d05">7. 去混响（WPE）</h1>
@@ -942,7 +945,7 @@ Z = wpe(Y, taps=10, delay=3,   # taps=K（预测阶数），delay=Δ（保护延
 </tbody>
 </table></div>
 <p>启用 WPE 前应检查可用帧数、混响强度、加性噪声和通道时延。任一条件不满足时，应调整块长、模型或旁路策略。</p>
-<p>分布式采集还要保证各通道采样时刻位于声明的共同时间轴，再按各自预测时延读取历史。采样率偏差、通信等待和缺包会改变可用观测，不能只修改预测延迟。样本与时钟同步、远端数据可用性及控制实验见<a href="15_distributed-enhancement.html#sec-15-15">扩展专题Ⅱ§15.15</a>；该专题的DANSE增强目标与本章WPE的延迟预测目标不同。</p>
+<p>分布式采集还要保证各通道采样时刻位于声明的共同时间轴，再按各自预测时延读取历史。采样率偏差、通信等待和缺包会改变可用观测，不能只修改预测延迟。样本与时钟同步、远端数据可用性及控制实验见<a href="13_distributed-enhancement.html#sec-13-15">扩展专题Ⅱ§13.15</a>；该专题的DANSE增强目标与本章WPE的延迟预测目标不同。</p>
 <h3 id="sec-u-68071716d5">分布式通道：先比较源时刻，再选预测延迟</h3>
 <p>“各通道已经同步采样”只说明它们共用一个接收时钟，不说明同一帧收到的是源的同一时刻。大间距麦克风之间的传播时差，可能抵消原本用于保护目标的预测延迟。要检查这一点，应先给源时刻编号，再比较回归量与当前参考通道。</p>
 <p><strong>只看已知整数帧的最小模型。</strong> 暂不做STFT，也不加入反射或噪声。令 $s[t]$ 为源序列，$d_m$ 为第m个通道相对于同一源时钟的整数到达延迟，单位为帧；正 $d_m$ 表示晚到。选参考通道ref，其当前观测对应源时刻 $i_{\mathrm{ref}}(t)$。第m个通道最近的历史观测对应 $i_m^{\mathrm{hist}}(t)$：</p>
@@ -964,7 +967,7 @@ b_m&=\Delta_m+d_m-d_{\mathrm{ref}},\\
 t_{\min}&=\max_m(\Delta_m+K-1),\\
 T_v&=\max(0,T-t_{\min}).
 \end{aligned}\tag{7-31}$$</p>
-<p>有更多有效帧不代表回归列独立；已知延迟修正后，两个通道也可能携带相同的历史源序列。通道数据还必须已经到达处理器。只解决源时刻的符号，不会解决第15章讨论的通信可用性或采样时钟问题。</p>
+<p>有更多有效帧不代表回归列独立；已知延迟修正后，两个通道也可能携带相同的历史源序列。通道数据还必须已经到达处理器。只解决源时刻的符号，不会解决第13章讨论的通信可用性或采样时钟问题。</p>
 <p><strong>与原论文的对应。</strong> <a href="https://arxiv.org/pdf/2301.07649v1" title="citation">Lohmann等，2023作者稿§2～4式(4)、(16)～(25)</a>从整数帧补偿进一步讨论采样点和分数延迟，以及跨频带滤波。作者写 $\tau_m^{\mathrm{int}}=\tau+\delta_m^{\mathrm{frame}}$，其中 $\delta_m^{\mathrm{frame}}$ 是补偿滤波器的帧延迟；不能不声明方向就把它替换成这里的 $d_m-d_{\mathrm{ref}}$。在本例的整数模型里，对应补偿方向为 $d_{\mathrm{ref}}-d_m$。</p>
 <p>论文的band-to-band近似仍保留同频点的时间FIR；crossband方案还混合不同频点，并可包含非因果抽头。它们不等于对一个频点乘单个相位。作者预测式直接乘其系数，本书使用 $\vec g^H\vec q$；比较同一排列的系数时，要取复共轭。下面的实数夹具检查源时刻和一次拟合，未实现盲TDOA估计、分数延迟或这些完整滤波器。</p>
 <h3 id="sec-u-0a3bc03fd4">晚期谱方差的单位：功率衰减不是幅度衰减</h3>
@@ -985,7 +988,7 @@ T_v&=\max(0,T-t_{\min}).
 10\log_{10}\rho(f)&=-60H/T_{60}(f).
 \end{aligned}\tag{7-33}$$</p>
 <p><a href="https://israelcohen.com/wp-content/uploads/2018/05/SPL_Sep2009.pdf" title="citation">Habets、Gannot与Cohen，2009§III式(10)～(12)</a>的幅度包络为 $e^{-\alpha\ell H_s}$，谱方差为 $e^{-2\alpha\ell H_s}$，$\alpha=3\ln(10)/(T_{60}f_s)$；代入即得到上述换算。<a href="#e07-23">E07-23</a>逐步复算0.6 s和8 ms，并故意比较漏掉平方因子的结果。</p>
-<p>这一指数关系没有给出晚期谱方差的初值、源仍发声时的驱动项、直混比或去混响谱增益。原论文的完整估计器还处理这些信息；不能只设一个 $\rho$ 就称已实现它。真实房间也未必在所有频带、所有时间段都呈单斜率衰减。附录<a href="13_appendix-guide.html#sec-u-199b14fd60">E13-05</a>讲倒向能量积分曲线的T20斜率外推；本节另讲给定统计模型中的幅度与谱方差换算，二者的观测对象不同。</p>
+<p>这一指数关系没有给出晚期谱方差的初值、源仍发声时的驱动项、直混比或去混响谱增益。原论文的完整估计器还处理这些信息；不能只设一个 $\rho$ 就称已实现它。真实房间也未必在所有频带、所有时间段都呈单斜率衰减。附录<a href="15_appendix-guide.html#sec-u-199b14fd60">E15-05</a>讲倒向能量积分曲线的T20斜率外推；本节另讲给定统计模型中的幅度与谱方差换算，二者的观测对象不同。</p>
 <h3 id="sec-u-884aaada8f">WPD将历史与空间约束放入同一目标</h3>
 <p>加权功率最小无失真响应（Weighted Power minimization Distortionless response，WPD；<a href="https://doi.org/10.1109/LSP.2019.2911179" title="citation">Nakatani 与 Kinoshita，IEEE Signal Processing Letters 2019</a>）把多帧、多通道滤波写进同一个无失真最小功率问题，可同时处理去混响与波束形成。它不是简单串联两个现成模块，也不能用条件不同的 WPE、MPDR 数字相加预测收益。</p>
 <p>把当前多通道帧及延迟历史堆成 $\bar{\vec x}_t=[\vec x_t^\top,\vec x_{t-\Delta}^\top,\ldots]^\top$，并把目标导向约束扩展为 $\bar{\vec v}=[\vec v^\top,\vec0^\top,\ldots]^\top$。令 $\lambda_t>0$，用同一组时帧构造加权协方差 $\bar{\mathbf R}=\sum_t\bar{\vec x}_t\bar{\vec x}_t^H/\lambda_t$。WPD 的目标是</p>

@@ -60,6 +60,8 @@ class HistoricalHeadingCompatibilityTest(unittest.TestCase):
         "codes/chapters/ch00/research/02_aec_wpe_separation.md",
     )
     OVERVIEW_RENAMES = {
+        "sec-u-01420ec5a6": "sec-u-69afa9f448",  # same Appendix A, now Chapter 14
+        "sec-u-ec7064739f": "sec-u-df0df6b6aa",  # same Appendix B, now Chapter 15
         "sec-u-d12b48e159": "sec-u-bd5fecaa8e",
         "sec-u-10c3704f3f": "sec-u-bd5fecaa8e",
         "sec-u-f96924fd43": "sec-u-bd5fecaa8e",
@@ -110,7 +112,7 @@ class HistoricalHeadingCompatibilityTest(unittest.TestCase):
         cases = (
             ('00_overview.md', 'sec-u-d12b48e159', 'sec-u-bd5fecaa8e',
              '6. 插图地图：80 张编号图在哪篇', 'ch-0-'),
-            ('14_acoustic-imaging.md', 'sec-u-c93fb52739', 'sec-u-8378eb57b1',
+            ('12_acoustic-imaging.md', 'sec-u-c93fb52739', 'sec-u-8378eb57b1',
              '噪声与源量预算怎样改变拟合目标', 'ch-14-'),
         )
         combined, _ = build_pdf.build_html(build_date='2026-10-05')

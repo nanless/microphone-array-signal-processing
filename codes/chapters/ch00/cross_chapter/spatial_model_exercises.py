@@ -1,4 +1,4 @@
-"""E02-08/E04-11/E05-07/E12-05: exact models and their implementation boundaries.
+"""E02-08/E04-11/E05-07/E14-05: exact models and their implementation boundaries.
 
 Run ``.venv/bin/python -m codes.chapters.ch00.cross_chapter.spatial_model_exercises``.
 The examples write no files and use no audio, random snapshots or measured data.
@@ -168,7 +168,7 @@ def singular_mvdr_counterexample() -> dict:
 
 def run_exercises() -> dict:
     results = {"E02-08": parseval_power(), "E04-11": colored_noise_music(),
-               "E05-07": loading_from_wng(), "E12-05": singular_mvdr_counterexample()}
+               "E05-07": loading_from_wng(), "E14-05": singular_mvdr_counterexample()}
     for result in results.values():
         result["metadata"] = {"kind": "deterministic mathematical example",
                               "numpy_version": np.__version__, "randomness": "none"}

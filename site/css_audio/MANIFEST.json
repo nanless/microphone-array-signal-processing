@@ -10,7 +10,7 @@
     "codes/chapters/ch08/examples/generate_css_audio.py": "7ea4a1d1d48d11b7ada8274db540a1b0ce993705660f31790bc75862df541329",
     "codes/chapters/ch08/core/css.py": "d5b76cdb13f6f7ec30ec29a1a3ae25cdcc5c553c8e9294b9e45c259a70bd3226",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {

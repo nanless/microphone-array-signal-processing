@@ -71,10 +71,10 @@ class ResearchQualityTests(unittest.TestCase):
         self.assertEqual(quality.EXPECTED_OUTLINE_ITEM_COUNT, 907)
         self.assertEqual(quality.EXPECTED_FIGURE_NUMBERS, set(range(1, 81)))
         self.assertEqual(quality.EXPECTED_EXERCISE_COUNT, 360)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNTS['13_appendix-guide.md'], 30)
-        self.assertEqual(quality.EXPECTED_EXERCISE_COUNTS['13_appendix-guide.md'], 15)
-        self.assertEqual(quality.EXPECTED_SECTION_COUNTS['15_distributed-enhancement.md'], 16)
-        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNTS['15_distributed-enhancement.md'], 65)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNTS['15_appendix-guide.md'], 30)
+        self.assertEqual(quality.EXPECTED_EXERCISE_COUNTS['15_appendix-guide.md'], 15)
+        self.assertEqual(quality.EXPECTED_SECTION_COUNTS['13_distributed-enhancement.md'], 16)
+        self.assertEqual(quality.EXPECTED_SUBSECTION_COUNTS['13_distributed-enhancement.md'], 65)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGE_COUNT, 6)
         self.assertEqual(quality.EXPECTED_RESEARCH_PAGES, (
             ("README.md", "index.html"),
@@ -95,16 +95,16 @@ class ResearchQualityTests(unittest.TestCase):
         documents = {name: (build_site.SRC/name).read_text(encoding='utf-8')
                      for name, _ in quality.EXPECTED_CHAPTERS}
         self.assertEqual(quality.exercise_definition_issues(documents), [])
-        key = '15_distributed-enhancement.md'
+        key = '13_distributed-enhancement.md'
         original = documents[key]
         # Keep the registry/reference mentions: removing the title still loses a definition.
-        documents[key] = original.replace('#### E15-24', '#### 控制24', 1)
+        documents[key] = original.replace('#### E13-24', '#### 控制24', 1)
         self.assertTrue(quality.exercise_definition_issues(documents))
-        documents[key] = original.replace('#### E15-24', '#### E15-23', 1)
+        documents[key] = original.replace('#### E13-24', '#### E13-23', 1)
         self.assertTrue(quality.exercise_definition_issues(documents))
         self.assertEqual(quality.exercise_ids_from_markdown(
-            '#### E15-01 题干\n\n参考 E15-02\n\n| E15-03 |\n\n'
-            '```markdown\n#### E15-04 假题干\n```\n'), ['E15-01'])
+            '#### E13-01 题干\n\n参考 E13-02\n\n| E13-03 |\n\n'
+            '```markdown\n#### E13-04 假题干\n```\n'), ['E13-01'])
 
     def test_same_count_wrong_filename_does_not_satisfy_manifest(self):
         (self.site / "research" / "04_source_reproduction.html").rename(
@@ -159,7 +159,7 @@ class ResearchQualityTests(unittest.TestCase):
 class PublishedResearchQualityTests(unittest.TestCase):
     def test_appendix_b_room_steps_keep_original_deep_links_in_both_editions(self):
         from scripts import build_pdf, build_site
-        source = quality.ROOT / "chapters/13_appendix-guide.md"
+        source = quality.ROOT / "chapters/15_appendix-guide.md"
         markdown = source.read_text(encoding="utf-8")
         site_body, _heading_count = build_site.render(markdown, source)
         combined, _outline = build_pdf.build_html(build_date="2026-09-29")

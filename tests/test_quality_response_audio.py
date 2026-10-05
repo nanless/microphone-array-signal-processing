@@ -38,7 +38,7 @@ class ResponsePublicationTests(unittest.TestCase):
         script = self.root / 'scripts/make_figures.py'
         script.parent.mkdir()
         script.write_text('# independent fixture\n')
-        self.pages = [(self.site / '13_appendix-guide.html', ''),
+        self.pages = [(self.site / '15_appendix-guide.html', ''),
                       (self.site / 'research/05_exercises_and_audio.html', '../')]
         for page, prefix in self.pages:
             page.write_text(self.html(prefix))
@@ -137,7 +137,7 @@ class ResponsePublicationTests(unittest.TestCase):
         self.assertEqual(self.issues(), [])
 
     def test_only_owned_links_get_players(self):
-        source = ROOT / 'chapters/13_appendix-guide.md'
+        source = ROOT / 'chapters/15_appendix-guide.md'
         valid = '../codes/chapters/appendix_b/response_audio/response_full_b.wav'
         self.assertIn('src="response_audio/response_full_b.wav"',
                       build_site.rewrite_site_links(f'<a href="{valid}">sample</a>', source))

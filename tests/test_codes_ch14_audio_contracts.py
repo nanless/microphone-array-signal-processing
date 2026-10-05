@@ -12,7 +12,7 @@ import wave
 
 import numpy as np
 
-from codes.chapters.ch14.examples import generate_imaging_audio as audio
+from codes.chapters.ch12.examples import generate_imaging_audio as audio
 
 
 class ImagingAudioPreflightTests(unittest.TestCase):

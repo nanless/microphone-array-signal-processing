@@ -12,7 +12,7 @@ from codes.chapters.ch00.cross_chapter.spatial_model_exercises import (
 
 class SpatialModelExercisesTest(unittest.TestCase):
     def test_ids(self):
-        self.assertEqual(set(run_exercises()), {"E02-08", "E04-11", "E05-07", "E12-05"})
+        self.assertEqual(set(run_exercises()), {"E02-08", "E04-11", "E05-07", "E14-05"})
 
     def test_parseval_endpoints_padding_and_odd_length(self):
         for row, expected in zip(parseval_power()["cases"], (0.5, 1, 1, 0.5, 2/3)):

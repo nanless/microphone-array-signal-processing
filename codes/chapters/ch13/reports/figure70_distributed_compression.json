@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "scope": "known-statistics finite teaching controls; not blind DANSE or industrial performance",
+  "source_sha256": {
+    "scripts/make_figures.py": "4eb6e4fcf9e7f26c29d61552046e1528bcfe5634758577f94798adba9e1333a4",
+    "codes/chapters/ch13/core/distributed.py": "3856695f759e02954ef86428cbb15ef885b7a2aaa70b59bd156baad0f493f077",
+    "codes/chapters/ch13/core/distributed_audio.py": "4e11d73e7465a2df516ad5ee26155ffdca548201dec7824a1943f53c3fd253fa",
+    "codes/chapters/ch13/examples/generate_distributed_audio.py": "64de7ed99e266e0076688506ba9b0f01f561d0831604efea726aae3dbf13f0d3",
+    "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
+    "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
+    "codes/chapters/ch10/sro_closed_loop_demo.py": "a572e60eaac16cdb20c378b955e2bea4590b6531d788ad72d27cce9ad9ac400a",
+    "codes/chapters/ch10/core/engineering.py": "22f5fcbbfdaedc399b5de1eb4c718c4f0c692dcb5dd1bdf49c7ef4569e43ae1b",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
+    "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
+  },
+  "results": {
+    "window": [
+      1600,
+      30400
+    ],
+    "rows": {
+      "local_node1": {
+        "analytic": {
+          "target_distortion": 0.0013432098765432101,
+          "noise_power": 0.0016790123456790125,
+          "total_mse": 0.0030222222222222226,
+          "reference_target_power": 0.0068000000000000005,
+          "normalized_mse": 0.4444444444444445,
+          "target_noise_cross_term": 0.0,
+          "cross_term_scope": "uncorrelated covariance model"
+        },
+        "float": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.0013432098765432088,
+          "noise_power": 0.0016790123456790114,
+          "other_error_power": 5.717223741820703e-35,
+          "target_noise_cross_power": 7.705485073308507e-18,
+          "target_other_cross_power": 3.3370318285637013e-19,
+          "noise_other_cross_power": 3.144988805898001e-22,
+          "total_mse": 0.0030222222222222282,
+          "normalized_mse": 0.44444444444444553,
+          "component_sum": 0.0030222222222222282,
+          "decomposition_residual": 0.0
+        },
+        "pcm": {
+          "E": 93459728160,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.444451229264712
+        }
+      },
+      "central_white": {
+        "analytic": {
+          "target_distortion": 0.0001609467455621304,
+          "noise_power": 0.0008852071005917159,
+          "total_mse": 0.0010461538461538464,
+          "reference_target_power": 0.0068000000000000005,
+          "normalized_mse": 0.15384615384615388,
+          "target_noise_cross_term": 0.0,
+          "cross_term_scope": "uncorrelated covariance model"
+        },
+        "float": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.00016094674556213034,
+          "noise_power": 0.0008852071005917132,
+          "other_error_power": 1.111085809261524e-34,
+          "target_noise_cross_power": 6.287619682240589e-19,
+          "target_other_cross_power": -1.9136484167417394e-19,
+          "noise_other_cross_power": -5.2462388147264284e-21,
+          "total_mse": 0.001046153846153844,
+          "normalized_mse": 0.1538461538461536,
+          "component_sum": 0.001046153846153844,
+          "decomposition_residual": 0.0
+        },
+        "pcm": {
+          "E": 32352145920,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.15385183871794536
+        }
+      },
+      "compressed_white": {
+        "analytic": {
+          "target_distortion": 0.00016094674556213,
+          "noise_power": 0.000885207100591716,
+          "total_mse": 0.001046153846153846,
+          "reference_target_power": 0.0068000000000000005,
+          "normalized_mse": 0.1538461538461538,
+          "target_noise_cross_term": 0.0,
+          "cross_term_scope": "uncorrelated covariance model"
+        },
+        "float": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.00016094674556212988,
+          "noise_power": 0.0008852071005917134,
+          "other_error_power": 9.312250920890247e-35,
+          "target_noise_cross_power": 6.262698090636929e-19,
+          "target_other_cross_power": 1.5949813899355966e-19,
+          "noise_other_cross_power": -3.7199815349831223e-22,
+          "total_mse": 0.001046153846153844,
+          "normalized_mse": 0.1538461538461536,
+          "component_sum": 0.001046153846153844,
+          "decomposition_residual": 0.0
+        },
+        "pcm": {
+          "E": 32352145920,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.15385183871794536
+        }
+      },
+      "central_correlated": {
+        "analytic": {
+          "target_distortion": 9.140936777987824e-05,
+          "noise_power": 0.0006969964293215712,
+          "total_mse": 0.0007884057971014495,
+          "reference_target_power": 0.0068000000000000005,
+          "normalized_mse": 0.11594202898550726,
+          "target_noise_cross_term": 0.0,
+          "cross_term_scope": "uncorrelated covariance model"
+        },
+        "float": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 9.140936777987806e-05,
+          "noise_power": 0.0006969964293215574,
+          "other_error_power": 6.58009411495669e-35,
+          "target_noise_cross_power": 5.977869144906883e-19,
+          "target_other_cross_power": -1.2017404585047948e-20,
+          "noise_other_cross_power": -1.290195012615589e-21,
+          "total_mse": 0.0007884057971014361,
+          "normalized_mse": 0.11594202898550536,
+          "component_sum": 0.0007884057971014361,
+          "decomposition_residual": 0.0
+        },
+        "pcm": {
+          "E": 24381142920,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.11594543612540108
+        }
+      },
+      "stale_correlated": {
+        "analytic": {
+          "target_distortion": 0.00016094674556213002,
+          "noise_power": 0.000885207100591716,
+          "total_mse": 0.001046153846153846,
+          "reference_target_power": 0.0068000000000000005,
+          "normalized_mse": 0.1538461538461538,
+          "target_noise_cross_term": 0.0,
+          "cross_term_scope": "uncorrelated covariance model"
+        },
+        "float": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 0.00016094674556212988,
+          "noise_power": 0.0008852071005917174,
+          "other_error_power": 9.955365578065743e-35,
+          "target_noise_cross_power": 5.505714157152952e-19,
+          "target_other_cross_power": 1.7263646926900638e-19,
+          "noise_other_cross_power": 1.9374091857705306e-22,
+          "total_mse": 0.001046153846153848,
+          "normalized_mse": 0.15384615384615416,
+          "component_sum": 0.001046153846153848,
+          "decomposition_residual": 0.0
+        },
+        "pcm": {
+          "E": 32353470360,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.15385813714185131
+        }
+      },
+      "compressed_correlated": {
+        "analytic": {
+          "target_distortion": 9.140936777987824e-05,
+          "noise_power": 0.0006969964293215709,
+          "total_mse": 0.0007884057971014491,
+          "reference_target_power": 0.0068000000000000005,
+          "normalized_mse": 0.11594202898550722,
+          "target_noise_cross_term": 0.0,
+          "cross_term_scope": "uncorrelated covariance model"
+        },
+        "float": {
+          "samples": 28800,
+          "reference_power": 0.006799999999999997,
+          "target_distortion_power": 9.140936777987824e-05,
+          "noise_power": 0.0006969964293215572,
+          "other_error_power": 6.594306943684084e-35,
+          "target_noise_cross_power": 5.997294433830581e-19,
+          "target_other_cross_power": -6.137972024700875e-21,
+          "noise_other_cross_power": 1.818345924969378e-21,
+          "total_mse": 0.0007884057971014359,
+          "normalized_mse": 0.11594202898550533,
+          "component_sum": 0.000788405797101436,
+          "decomposition_residual": -1.0842021724855044e-19
+        },
+        "pcm": {
+          "E": 24381142920,
+          "D": 210281178240,
+          "samples": 28800,
+          "nmse": 0.11594543612540108
+        }
+      }
+    },
+    "comparison_scope": "same inputs within each panel; two noise covariance models differ"
+  },
+  "audio_manifest_sha256": "b72d3ee248d79b4341e3e88827c19c99eb11ec8e9f01c317e1d502a13a8e7d2d"
+}

@@ -320,7 +320,7 @@
   "source_sha256": {
     "codes/chapters/appendix_b/core/response_audio.py": "694c1914a769a9020cd83a8810f14825881ea121e1369eff653cf1993cadd862",
     "codes/chapters/appendix_b/examples/generate_response_audio.py": "72cba34f16bf13f0b8d185778f6ea8ddf85ad74965c745b1843e3d38110cc2f6",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {

@@ -38,7 +38,7 @@ class DistributedPublicationTests(unittest.TestCase):
         return errors
 
     def test_actual_copies_visible_players_and_integer_score_contract(self):
-        source = ROOT/'codes/chapters/ch15/distributed_audio'
+        source = ROOT/'codes/chapters/ch13/distributed_audio'
         self.assertEqual({p.name for p in (self.site/'distributed_audio').iterdir()}, WAVS|{'MANIFEST.json'})
         for name in WAVS|{'MANIFEST.json'}:
             self.assertEqual((source/name).read_bytes(), (self.site/'distributed_audio'/name).read_bytes())
@@ -69,12 +69,12 @@ class DistributedPublicationTests(unittest.TestCase):
         finally: extra.unlink()
         member=folder/'central_white.wav'; original=member.read_bytes()
         try:
-            member.unlink();member.symlink_to(ROOT/'codes/chapters/ch15/distributed_audio/central_white.wav')
+            member.unlink();member.symlink_to(ROOT/'codes/chapters/ch13/distributed_audio/central_white.wav')
             self.assertTrue(self.issues())
         finally: member.unlink();member.write_bytes(original)
 
     def test_hidden_player_and_closed_details_do_not_satisfy_media_contract(self):
-        page=self.site/'15_distributed-enhancement.html';original=page.read_text()
+        page=self.site/'13_distributed-enhancement.html';original=page.read_text()
         match=re.search(r'<audio\b[^>]*src="distributed_audio/central_white.wav"[^>]*>.*?</audio>',original,re.S)
         self.assertIsNotNone(match)
         for hidden in ('<div hidden>'+match[0]+'</div>', '<details>'+match[0]+'</details>'):
@@ -97,27 +97,27 @@ class DistributedPublicationTests(unittest.TestCase):
         finally:page.write_text(original)
 
     def test_routes_and_pdf_id_follow_stable_file_identity(self):
-        chapter=ROOT/'chapters/15_distributed-enhancement.md'
+        chapter=ROOT/'chapters/13_distributed-enhancement.md'
         research=ROOT/'codes/chapters/ch00/research/05_exercises_and_audio.md'
         for source, url, expected in (
-                (chapter,'../codes/chapters/ch15/distributed_audio/central_white.wav','distributed_audio/central_white.wav'),
-                (research,'../../ch15/distributed_audio/central_white.wav','../distributed_audio/central_white.wav')):
+                (chapter,'../codes/chapters/ch13/distributed_audio/central_white.wav','distributed_audio/central_white.wav'),
+                (research,'../../ch13/distributed_audio/central_white.wav','../distributed_audio/central_white.wav')):
             html=build_site.render('[控制]('+url+')',source)[0]
             self.assertIn('src="'+expected+'"',html)
-        html=build_site.render('[清单](../codes/chapters/ch15/distributed_audio/MANIFEST.json?view=1#schema)',chapter)[0]
+        html=build_site.render('[清单](../codes/chapters/ch13/distributed_audio/MANIFEST.json?view=1#schema)',chapter)[0]
         self.assertIn('href="distributed_audio/MANIFEST.json?view=1#schema"',html)
         self.assertEqual(build_pdf.rewrite_repository_links(
-            '<a href="15_distributed-enhancement.md#e15-24">GEVD</a>'
-            '<a href="12_appendix-symbols-math.md#sec-1">附录A</a>'
-            '<a href="13_appendix-guide.md#sec-13-6">练习</a>',ROOT/'chapters/00_overview.md'),
-            '<a href="#ch-15-e15-24">GEVD</a><a href="#ch-12">附录A</a><a href="#ch-13-sec-13-6">练习</a>')
-        self.assertIn('id="e15-24"',(self.site/'15_distributed-enhancement.html').read_text())
+            '<a href="13_distributed-enhancement.md#e13-24">GEVD</a>'
+            '<a href="14_appendix-symbols-math.md#sec-1">附录A</a>'
+            '<a href="15_appendix-guide.md#sec-13-6">练习</a>',ROOT/'chapters/00_overview.md'),
+            '<a href="#ch-15-e13-24">GEVD</a><a href="#ch-12">附录A</a><a href="#ch-13-sec-13-6">练习</a>')
+        self.assertIn('id="e13-24"',(self.site/'13_distributed-enhancement.html').read_text())
 
     def test_site_digest_binds_all_eighteen_distributed_members(self):
         original_read=Path.read_bytes
         for digest in (build_site.source_digest,quality.site_source_digest):
             before=digest()
-            for changed in (ROOT/'codes/chapters/ch15/distributed_audio').iterdir():
+            for changed in (ROOT/'codes/chapters/ch13/distributed_audio').iterdir():
                 def read(path):
                     return original_read(path)+(b'changed' if path==changed else b'')
                 with self.subTest(digest=digest.__name__,member=changed.name),patch.object(Path,'read_bytes',read):
@@ -125,7 +125,7 @@ class DistributedPublicationTests(unittest.TestCase):
 
     def test_staging_rejects_parent_links_and_extra_members_before_copy(self):
         import shutil
-        source=ROOT/'codes/chapters/ch15/distributed_audio'
+        source=ROOT/'codes/chapters/ch13/distributed_audio'
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);copied=root/'source';shutil.copytree(source,copied)
             extra=copied/'unexpected.wav';extra.write_bytes(b'not a WAV')
@@ -141,7 +141,7 @@ class DistributedPublicationTests(unittest.TestCase):
 class DistributedFigureTests(unittest.TestCase):
     def report(self,number):
         name={70:'compression',71:'updates',72:'transport'}[number]
-        return ROOT/f'codes/chapters/ch15/reports/figure{number}_distributed_{name}.json'
+        return ROOT/f'codes/chapters/ch13/reports/figure{number}_distributed_{name}.json'
 
     def test_all_reports_pass_independent_arithmetic(self):
         for number in (70,71,72):

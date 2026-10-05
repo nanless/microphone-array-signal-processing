@@ -9,12 +9,12 @@
     "codes/chapters/ch07/core/delay_audio.py": "af3795222edfee34e30df460840dfb8ba31a3cef1d48a9e18a2118b69f5f1efa",
     "codes/chapters/ch07/examples/generate_delay_audio.py": "e70f1134c8c87cf05c3eed5409d83f73667eacdc4462b54c982871a00ff44cdb",
     "codes/chapters/ch07/core/prediction_delays.py": "aa20a0c8c6e6da8ad7b2bbfb9822a4fb4d85bb411c9dda4f56ad9b1596b66bb7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
-    "scripts/make_figures.py": "c7544e82e936ad283b33d7e01b6a51e41caaf047b8ced0a6d47013020b58d83f",
+    "scripts/make_figures.py": "4eb6e4fcf9e7f26c29d61552046e1528bcfe5634758577f94798adba9e1333a4",
     "scripts/make_delay_figures.py": "1fcc971669dde83e1e91e0b3aa5848a7a8fa4158460d76e04066ae24df5d3b29"
   },
-  "audio_manifest_sha256": "f31bc3430fdab6b34ae6d0bb4283ee2064b45d28f08cb3ad4b16145b0f261ab1",
+  "audio_manifest_sha256": "10f13daf44b899bcfcb6f4bc7261e464466714674d392437920b2f51a6e195f9",
   "wav_sha256": {
     "delay_reference.wav": "1f82d209964acc2309ed357f424272068881dfd4178f4524220921edd90277cd",
     "delay_array.wav": "e6efaee6e75ce6ecf326f9aef7dffcc77fa7e0305ea3593b6b5436d1028258b0",

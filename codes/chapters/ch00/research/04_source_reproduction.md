@@ -13,7 +13,7 @@
 | 论文实验 | 数据划分、权重、配置、评分版本 | 按原文统计口径报告结果和偏差 | 另一房间/阵列具有同等表现 |
 | 设备链路 | 硬件、驱动、固件、参考取点、时钟、功耗状态 | 连续运行、延迟、语音损伤、异常恢复 | 所有产品场景均已覆盖 |
 
-分布式波形增强还要固定节点参考、广播维数、滤波版本和共同样本标签。学习入口为[扩展专题Ⅱ](../../../../chapters/15_distributed-enhancement.md)，实际原源码执行范围见本篇[固定分布式合同](#distributed-reproduction)，网络时钟与码率口径见[工业部署§8](03_industrial_deployment.md#distributed-network-deployment)。
+分布式波形增强还要固定节点参考、广播维数、滤波版本和共同样本标签。学习入口为[扩展专题Ⅱ](../../../../chapters/13_distributed-enhancement.md)，实际原源码执行范围见本篇[固定分布式合同](#distributed-reproduction)，网络时钟与码率口径见[工业部署§8](03_industrial_deployment.md#distributed-network-deployment)。
 
 ## 2. 固定提交与本地文件
 
@@ -245,7 +245,7 @@ SMP-PHAT 的原版复现发现了失败：在本机 Apple clang/arm64 上，固�
 
 ### 附录 A：最小二乘回退、数值秩与物理目标
 
-矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。[附录 A 的 E12-03](../../../../chapters/12_appendix-symbols-math.md#sec-u-3899a8c1b7)说明零残差不保证参数唯一；[E12-05](../../../../chapters/12_appendix-symbols-math.md#sec-u-935c1036ea)说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。
+矩阵求解成功后还要问两个问题：结果是否满足所需的优化目标，数组类型是否保存了求解器返回的数值。[附录 A 的 E14-03](../../../../chapters/14_appendix-symbols-math.md#sec-u-3899a8c1b7)说明零残差不保证参数唯一；[E14-05](../../../../chapters/14_appendix-symbols-math.md#sec-u-935c1036ea)说明奇异协方差中的最小范数线性方程解，不自动成为约束噪声最小化的解。这两个判断分别涉及代数目标和物理目标，不能用“输出有限”替代。
 
 [旧历史报告](../../appendix_a/reports/upstream_solver_contracts.json)记录本书于2026-10-02在Python 3.13.12、NumPy 2.5.3环境中运行[当时版本的限定工具](https://github.com/nanless/microphone-array-signal-processing/blob/241513c8f35d952747f16ccbb40cf85a5363b5ae/codes/chapters/appendix_a/examples/audit_upstream_solver_contracts.py)。旧报告登记完整加载固定 `pb_bss` 提交 `10acc347fc9ea21e3d312806a0bd751d0d0af183` 的[原 `pb_bss/math/solve.py`](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/pb_bss/math/solve.py "citation")，仅调用 `stable_solve`；不做AST提取、源码补丁或算法替身，也不导入完整 `pb_bss` 包。该模块是维护者提供的通用求解助手，按原[MIT许可证](https://github.com/fgnt/pb_bss/blob/10acc347fc9ea21e3d312806a0bd751d0d0af183/LICENSE "citation")使用，不是本书自行实现的求解器。
 
@@ -264,7 +264,7 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。
 
 另外两例直接调用NumPy接口，与上游调用分栏记录。取 $\mathbf A=\operatorname{diag}(1,10^{-8})$、$\vec b=[1,10^{-8}]^\top$，显式 `rcond=1e-6` 得秩1、解 $[1,0]^\top$、残差范数 $10^{-8}$；`rcond=1e-10` 得秩2、解 $[1,1]^\top$、残差零。两次返回的残差数组都为空，因为矩阵为方阵，接口条件是 $M\leq N$。判秩和残差各自记录，依据[NumPy 2.5接口的Parameters/Returns](https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html "citation")（2026-10-02核实）。`stable_solve` 本身没有向调用者暴露这两个 `rcond` 参数。
 
-[E12-16截断与ridge](../../../../chapters/12_appendix-symbols-math.md#e12-16)进一步区分删去弱方向与连续收缩；[E12-18厄米输入检查](../../../../chapters/12_appendix-symbols-math.md#e12-18)则提醒 `eigh` 使用指定三角且忽略对角虚部，不能把分解成功当作输入协方差有效的证明。这两个练习由本书入口实现，不属于上述原函数的执行范围。[Netlib LAPACK最小二乘驱动说明](https://www.netlib.org/lapack/lug/node27.html "citation")的式(2.1)/表2.3区分满秩QR/LQ与秩亏求解，支持先说明目标、秩假设和截断策略，再选择接口；本书没有另行编译这些Fortran驱动。
+[E14-16截断与ridge](../../../../chapters/14_appendix-symbols-math.md#e14-16)进一步区分删去弱方向与连续收缩；[E14-18厄米输入检查](../../../../chapters/14_appendix-symbols-math.md#e14-18)则提醒 `eigh` 使用指定三角且忽略对角虚部，不能把分解成功当作输入协方差有效的证明。这两个练习由本书入口实现，不属于上述原函数的执行范围。[Netlib LAPACK最小二乘驱动说明](https://www.netlib.org/lapack/lug/node27.html "citation")的式(2.1)/表2.3区分满秩QR/LQ与秩亏求解，支持先说明目标、秩假设和截断策略，再选择接口；本书没有另行编译这些Fortran驱动。
 
 ```bash
 .venv/bin/python -B -m codes.chapters.appendix_a.examples.audit_upstream_solver_contracts
@@ -292,7 +292,7 @@ $\left[\begin{smallmatrix}1/10&1/5\\1/10&1/5\end{smallmatrix}\right]$。
 
 ### 附录 B：先对齐研究方向的任务与版本
 
-[附录B的研究速览](../../../../chapters/13_appendix-guide.md#sec-13-3)包含八类方向，但它们并不输出同一种结果。目标说话人提取输出音轨，DiCoW输出指定说话人的文字，CHiME-9 ECHI输出低延迟增强流；ArrayDPS的输出又有参考通道与混响源像的定义。选型前先固定目标，不能把不同任务的WER、SI-SDR或延迟写成统一排名。
+[附录B的研究速览](../../../../chapters/15_appendix-guide.md#sec-15-3)包含八类方向，但它们并不输出同一种结果。目标说话人提取输出音轨，DiCoW输出指定说话人的文字，CHiME-9 ECHI输出低延迟增强流；ArrayDPS的输出又有参考通道与混响源像的定义。选型前先固定目标，不能把不同任务的WER、SI-SDR或延迟写成统一排名。
 
 以下定位与实现边界于2026-10-02核查。论文只用实际阅读的相关节说明方法，不转引条件不齐的性能数字；各项目的完整固定提交、许可与本地选集仍以[锁表](../SOURCES.lock.json)为准。
 
@@ -333,7 +333,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ### TAC作者源：共享结构核验与未执行原网络的界线
 
-附录B的通道置换问题需要区分两个性质：通道顺序改变时，通道索引输出按相同顺序重排，这是置换等变；跨通道平均不随顺序变化，这是聚合量的置换不变。加入一个通道通常改变平均值，所以支持可变通道数不等于数值输出不随麦数变化。[TAC作者论文v3 §2.1式(1)～(4)](https://arxiv.org/html/1910.14104v3 "citation")用共享变换、平均、拼接与残差连接说明这一步；[E13-11](../../../../chapters/13_appendix-guide.md#e13-11)分别手算交换通道、只复制一路与复制全部通道。
+附录B的通道置换问题需要区分两个性质：通道顺序改变时，通道索引输出按相同顺序重排，这是置换等变；跨通道平均不随顺序变化，这是聚合量的置换不变。加入一个通道通常改变平均值，所以支持可变通道数不等于数值输出不随麦数变化。[TAC作者论文v3 §2.1式(1)～(4)](https://arxiv.org/html/1910.14104v3 "citation")用共享变换、平均、拼接与残差连接说明这一步；[E15-11](../../../../chapters/15_appendix-guide.md#e15-11)分别手算交换通道、只复制一路与复制全部通道。
 
 本书通过获取工具取得作者[固定提交 `e3373b73358a96af6f64fdbe25327def8d6bd973`](https://github.com/yluo42/TAC/tree/e3373b73358a96af6f64fdbe25327def8d6bd973 "citation")的 `README.md`、`FaSNet.py`、`utility/__init__.py`、`utility/models.py` 四个文件，独立保存在被忽略的上游工作树。README明确声明CC-BY-NC-SA-3.0-US，源代码未随本教程再分发；没有取得音频、数据、权重或另一 `iFaSNet.py` 扩展。NumPy/PyTorch是原模块的依赖，但这一审计只使用标准库解析Python语法，不导入两模块或Torch。
 
@@ -356,7 +356,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 [历史报告](../../appendix_b/reports/tac_contracts.json)保留2026-10-01实际运行时的100项目锁表与原工具身份；旧锁表原字节已登记在[来源快照](../source_snapshots/SOURCES.55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0.json)。当前报告绑定115项目锁表及其获取状态，完整选集核对与十项静态结构证据分别记录。原历史报告不换摘要、不升级成神经运行；共享核后续变化也不追溯改写先前报告的真实依赖身份。
 
-附录B的房间仿真、分数延迟和通道聚合数学例仍按各自的输入、脚本、PCM与统计窗口解释。对照时，[E13-12](../../../../chapters/13_appendix-guide.md#e13-12)复算共同尺度不变的DRR与极端数值边界，[E13-13](../../../../chapters/13_appendix-guide.md#e13-13)条件化时间原点与跨度后外推T20，[E13-14](../../../../chapters/13_appendix-guide.md#e13-14)按同源PCM与稳定评分窗比较同DRR的两条短RIR。这些独立练习不能由静态来源报告统一登记成原神经系统已运行。
+附录B的房间仿真、分数延迟和通道聚合数学例仍按各自的输入、脚本、PCM与统计窗口解释。对照时，[E15-12](../../../../chapters/15_appendix-guide.md#e15-12)复算共同尺度不变的DRR与极端数值边界，[E15-13](../../../../chapters/15_appendix-guide.md#e15-13)条件化时间原点与跨度后外推T20，[E15-14](../../../../chapters/15_appendix-guide.md#e15-14)按同源PCM与稳定评分窗比较同DRR的两条短RIR。这些独立练习不能由静态来源报告统一登记成原神经系统已运行。
 
 ## 6. 何时可以进入设备比较
 
@@ -395,7 +395,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 
 ## 8. 固定分布式源码：静态合同、原函数与完整算法
 
-2026-10-04的[历史报告](../../ch15/reports/upstream_distributed_contracts.json)保留原工具、输入和105项来源索引的身份。2026-10-05修订的[审计入口](../../ch15/examples/audit_upstream_distributed_contracts.py)只允许另写[当前报告](../../ch15/reports/upstream_distributed_contracts_current.json)，默认仅打印结果。两次均固定下表的两套独立上游工作树。
+2026-10-04的[历史报告](../../ch13/reports/upstream_distributed_contracts.json)保留原工具、输入和105项来源索引的身份。2026-10-05修订的[审计入口](../../ch13/examples/audit_upstream_distributed_contracts.py)只允许另写[当前报告](../../ch13/reports/upstream_distributed_contracts_current.json)，默认仅打印结果。两次均固定下表的两套独立上游工作树。
 
 当前工具不获取源码、不安装依赖、不改写上游。运行前后核对官方origin、完整HEAD、所用源码/许可SHA和原Git blob、普通源文件以及洁净状态；当前锁表与获取状态须同时绑定实际完整字节。完整稀疏选集与实际所用源码分别记录，忽略成员另列；少数入口可用不能使整个选集升级为通过，获取记录的`execution=not_run`也不表示方法已经运行。
 
@@ -446,8 +446,8 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 ### 复跑与尚未执行的候选
 
 ```bash
-.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
-.venv/bin/python -B -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts --report codes/chapters/ch15/reports/upstream_distributed_contracts_current.json
+.venv/bin/python -B -m codes.chapters.ch13.examples.audit_upstream_distributed_contracts
+.venv/bin/python -B -m codes.chapters.ch13.examples.audit_upstream_distributed_contracts --report codes/chapters/ch13/reports/upstream_distributed_contracts_current.json
 .venv/bin/python -B -m unittest tests.test_codes_distributed_contracts -v
 ```
 
@@ -469,7 +469,7 @@ ArrayDPS固定 `750ac2b7c75458f4ca5bad203dafda528f575e55` 的真实采样入口�
 |---|---|
 | [100项来源锁表](../source_snapshots/SOURCES.55ab323ba665633141c4864763095046f9c6161ce2d88ca2aa9332dde7ec23f0.json) | 第1～9章十份固定原实现报告所记录的锁表摘要；其中第4章DOA和SAID分为两份 |
 | [当时的获取状态](../source_snapshots/SOURCE_STATUS.e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229.json) | 第9章追踪报告记录的状态摘要；该状态中的`lock_sha256`精确指向上一行 |
-| [105项来源锁表](../source_snapshots/SOURCES.e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a.json) | 第15章分布式原函数报告运行时的完整锁表；其中所用`danse-wola`和`paderwasn`记录与当前完全一致 |
+| [105项来源锁表](../source_snapshots/SOURCES.e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a.json) | 原第15章（现第13章）分布式原函数报告运行时的完整锁表；其中所用`danse-wola`和`paderwasn`记录与当前完全一致 |
 | [105项获取状态](../source_snapshots/SOURCE_STATUS.b113b63c97767d19b76ceb44677303961ff310ce8d96f4e9e777944b44916d3c.json) | 扩充前67项通过及原22项选集不匹配、AEC失败等完整记录；绑定上一行105项锁表，不把后来取得的源码追记为当时成功 |
 
 100项锁表的完整SHA-256：
@@ -508,7 +508,7 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 
 无固定构造值时，`__call__(..., sro)`中的参数直接参与延迟递推，原方法没有再次除以一百万。因此调用参数应是无量纲相对速差：80 ppm在这个入口传$80\times10^{-6}$，而不是80。同名参数在构造与逐块调用中有不同单位，照搬数值会产生一百万倍的尺度错误。
 
-例如80 ppm表示相对采样率差$80\times10^{-6}$；按16 kHz名义时钟持续10 s，相对累计样本差的量级为$16000\times10\times80\times10^{-6}=12.8$点。这是单位换算的数学例子，不是原程序执行结果；取样率比值、延迟正负与接收端时间原点仍要在所选接口下解释。导读工程基线和[第15章](../../../../chapters/15_distributed-enhancement.md)提供可独立复算的教学入口。
+例如80 ppm表示相对采样率差$80\times10^{-6}$；按16 kHz名义时钟持续10 s，相对累计样本差的量级为$16000\times10\times80\times10^{-6}=12.8$点。这是单位换算的数学例子，不是原程序执行结果；取样率比值、延迟正负与接收端时间原点仍要在所选接口下解释。导读工程基线和[第15章](../../../../chapters/13_distributed-enhancement.md)提供可独立复算的教学入口。
 
 [`sim_sro.py`](https://github.com/CN-UPB/WASN/blob/9b2590eb104abcde2a35af52c74d64ce30bf5ae2/sync_sed/system/sim_sro.py "citation")逐块调用上述重采样器，只在返回非空时向输出管道写块。重采样器保留内部缓冲；此封装没有显式排空记录尾部的步骤。实际流还需明确块长、首次可用输出、积累状态与记录尾部；等待期间的空返回或块延迟不能直接解释为音频丢失，结束时的剩余样本则要另行处理。
 
@@ -615,7 +615,7 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 <a id="imaging-author-source"></a>
 ## 13. 成像原实现：固定作者代码与当前报告
 
-专题Ⅰ的[E14-17](../../../../chapters/14_acoustic-imaging.md#e14-17)比较同一互谱矩阵的两种目标。作者[Chardon、Picheral、Ollivier论文§3.1～3.3](https://gilleschardon.fr/papers/damascmf.pdf "citation")把DAMAS固定点与完整矩阵Frobenius拟合联系起来；扫描图的最小二乘仍是另一目标。论文参考文献[17]给出[作者代码归档DOI](https://doi.org/10.5281/zenodo.4609267 "citation")，本书实际取得的是下面的固定Git文本选集，不把Git提交与归档版本混称同一身份。
+专题Ⅰ的[E12-17](../../../../chapters/12_acoustic-imaging.md#e12-17)比较同一互谱矩阵的两种目标。作者[Chardon、Picheral、Ollivier论文§3.1～3.3](https://gilleschardon.fr/papers/damascmf.pdf "citation")把DAMAS固定点与完整矩阵Frobenius拟合联系起来；扫描图的最小二乘仍是另一目标。论文参考文献[17]给出[作者代码归档DOI](https://doi.org/10.5281/zenodo.4609267 "citation")，本书实际取得的是下面的固定Git文本选集，不把Git提交与归档版本混称同一身份。
 
 ### 13.1 实际取得的21个原文本
 
@@ -631,7 +631,7 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 | `damas.c`、`damas_rand.c` | C语言MEX的顺序/随机坐标更新源码 | 得到C源不代表已编译MEX、启动MATLAB或复现论文实验；本轮均未执行 |
 | `figures/FIGS_2D_EXP.m`、`FIGS_3D_EXP.m`、`FIGS_2D_SIM.m` | 作者实验/仿真作图流程 | 原数据与运行依赖另核；README声明仿真含非确定性，不把一次输出当普遍性能 |
 
-[原Python文件](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")的`lawson_hanson`还有具体边界：循环未进入时`Gram`没有赋值，异常处理写作`except e`；末尾唯一性判断只看当前支持的Gram。正定支持不足以证明整个非负字典只有一个解，四不同列反例见[E14-18](../../../../chapters/14_acoustic-imaging.md#e14-18)。这些静态原语句必须保留，不能先修上游再把改后成功写成原结果。
+[原Python文件](https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py "citation")的`lawson_hanson`还有具体边界：循环未进入时`Gram`没有赋值，异常处理写作`except e`；末尾唯一性判断只看当前支持的Gram。正定支持不足以证明整个非负字典只有一个解，四不同列反例见[E12-18](../../../../chapters/12_acoustic-imaging.md#e12-18)。这些静态原语句必须保留，不能先修上游再把改后成功写成原结果。
 
 ### 13.2 整表核验与历史身份
 
@@ -649,13 +649,13 @@ e3b3176d835837441224e4906b7c2befadcdc4fe2ce6163245b7d9a9ad0d9229
 
 ### 13.3 本轮实际执行的限定原方法
 
-[Acoular当前报告](../../ch14/reports/upstream_imaging_contracts_current.json)保存21个原数值控制（13匹配、8个观察到的目标差异）、1个未执行CMF估计器，另列同一合法CSM经原Base/PSF/DAMAS形成的桥接控制。完整原Traits/JIT/HDF5、工业数据链和sklearn估计器均未运行。[历史原报告](../../ch14/reports/upstream_imaging_contracts.json)字节不改；当前工具拒绝写入旧报告路径。
+[Acoular当前报告](../../ch12/reports/upstream_imaging_contracts_current.json)保存21个原数值控制（13匹配、8个观察到的目标差异）、1个未执行CMF估计器，另列同一合法CSM经原Base/PSF/DAMAS形成的桥接控制。完整原Traits/JIT/HDF5、工业数据链和sklearn估计器均未运行。[历史原报告](../../ch12/reports/upstream_imaging_contracts.json)字节不改；当前工具拒绝写入旧报告路径。
 
-[作者当前报告](../../ch14/reports/damas_author_contracts_current.json)由完整原Python模块的真实字节和imports在新的隔离进程执行。9个控制保留8项独立数值匹配与零CSM的原`NameError`，原重复列`unique=True`不当成全局可辨识证明。原Python模块没有修改；NumPy/SciPy/matplotlib直接入口的版本与前后SHA单独记录，未声称覆盖整库二进制闭包。MATLAB、MEX、原演示及作者论文数据/实验均未运行。
+[作者当前报告](../../ch12/reports/damas_author_contracts_current.json)由完整原Python模块的真实字节和imports在新的隔离进程执行。9个控制保留8项独立数值匹配与零CSM的原`NameError`，原重复列`unique=True`不当成全局可辨识证明。原Python模块没有修改；NumPy/SciPy/matplotlib直接入口的版本与前后SHA单独记录，未声称覆盖整库二进制闭包。MATLAB、MEX、原演示及作者论文数据/实验均未运行。
 
 ```bash
-.venv/bin/python -B -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts_current.json
-python -B -m codes.chapters.ch14.examples.audit_damas_author_contracts --report codes/chapters/ch14/reports/damas_author_contracts_current.json
+.venv/bin/python -B -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts --report codes/chapters/ch12/reports/upstream_imaging_contracts_current.json
+python -B -m codes.chapters.ch12.examples.audit_damas_author_contracts --report codes/chapters/ch12/reports/damas_author_contracts_current.json
 ```
 
 第二条命令需要具有NumPy、SciPy及matplotlib的既有独立环境。默认输出到终端，只有显式当前普通报告路径才写入；本轮在既有隔离环境真实执行，未安装依赖。缺依赖或进程超时会保留未完成记录，不降为替代函数成功，也不修补上游再宣称原代码通过。两工具均核官方origin、固定HEAD、原blob/许可、当前锁与获取状态、执行前后实际依赖和源码成员边界。

@@ -1,4 +1,4 @@
-"""Independent analytic and existing-PCM checks for Appendix B E13-03..10."""
+"""Independent analytic and existing-PCM checks for Appendix B E15-03..10."""
 
 from __future__ import annotations
 
@@ -113,8 +113,8 @@ class AppendixBExperimentsTest(unittest.TestCase):
 
     def test_e13_08_evidence_levels_do_not_skip_stages(self):
         result = run_exercises()
-        self.assertEqual(set(result), {f"E13-{number:02d}" for number in range(3, 16)})
-        stages = result["E13-08"]
+        self.assertEqual(set(result), {f"E15-{number:02d}" for number in range(3, 16)})
+        stages = result["E15-08"]
         self.assertTrue(stages["cases_are_hypothetical"])
         self.assertEqual([len(stages[name]) for name in "ABC"], [2, 4, 5])
         self.assertNotIn("source obtained", stages["A"])

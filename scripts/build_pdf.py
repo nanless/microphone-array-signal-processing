@@ -24,7 +24,7 @@
 或 which 回退）。PDF 公式使用仓库内固定版本 MathJax 3.2.2 与 WOFF 字体，构建不联网。
 
 已知边界（诚实写在前面）：
-  - PDF 书签与合订本 TOC 包含篇/节/子节三级；第 1～13 章的源 h4 作为第三级。
+  - PDF 书签与合订本 TOC 包含篇/节/子节三级；第 1～15 章（含附录）的源 h4 作为第三级。
   - Chrome 输出结构标签；克隆页面写书签以保留标签。仍需人工检查公式辅助文本和阅读顺序。
   - 页眉页脚关闭（--no-pdf-header-footer），PDF 内无页码——Chrome 无头打印不支持
     CSS 生成页码，要页码得换 WeasyPrint/Prince 链路。
@@ -50,11 +50,17 @@ try:
     from scripts.build_markdown_helpers import (protect_code, restore_code, validate_url_schemes,
                                                shield_math, unshield_math)
     from scripts.heading_aliases import historical_aliases, has_historical_sequential_aliases
+    from scripts.chapter_identity import (pdf_topic_number, canonical_source,
+        canonical_exercise, inject_exercise_aliases, LEGACY_HTML_ROUTES,
+        exercise_alias_records)
 except ModuleNotFoundError:  # 直接执行脚本时使用同目录模块。
     import build_site
     from build_markdown_helpers import (protect_code, restore_code, validate_url_schemes,
                                        shield_math, unshield_math)
     from heading_aliases import historical_aliases, has_historical_sequential_aliases
+    from chapter_identity import (pdf_topic_number, canonical_source,
+        canonical_exercise, inject_exercise_aliases, LEGACY_HTML_ROUTES,
+        exercise_alias_records)
 
 ROOT = Path(__file__).parent.parent
 SRC = ROOT / "chapters"
@@ -96,10 +102,10 @@ CHAPTERS = [
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
-    ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
-    ("15_distributed-enhancement.md", "扩展专题Ⅱ · 分布式麦克风协同增强"),
-    ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
-    ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
+    ("12_acoustic-imaging.md", "第 12 章 · 声学成像与噪声源诊断"),
+    ("13_distributed-enhancement.md", "第 13 章 · 分布式麦克风协同增强"),
+    ("14_appendix-symbols-math.md", "第 14 章 · 附录 A：符号术语数学"),
+    ("15_appendix-guide.md", "第 15 章 · 附录 B：路径地图与练习"),
 ]
 
 # 独立算法、工业实验与可直接练习的源 h4 纳入第三级导航。
@@ -108,23 +114,16 @@ PDF_THIRD_LEVEL_FILES = {
     "04_doa-estimation.md", "05_beamforming.md",
     "06_aec.md", "07_wpe-dereverberation.md", "08_speech-separation.md",
     "09_source-tracking.md", "10_engineering-practice.md",
-    "11_selection-guide.md", "12_appendix-symbols-math.md",
-    "13_appendix-guide.md",
-    "14_acoustic-imaging.md",
-    "15_distributed-enhancement.md",
+    "11_selection-guide.md", "14_appendix-symbols-math.md",
+    "15_appendix-guide.md",
+    "12_acoustic-imaging.md",
+    "13_distributed-enhancement.md",
 }
 
 
 def chapter_number(filename):
-    """Published identity follows the source name, independently of reading order.
-
-    Appending or inserting a topic must never reassign ch-12/ch-13, or any
-    heading/exercise destination already used by the existing appendices.
-    """
-    match = re.fullmatch(r"(\d{2})_[^/]+\.md", filename)
-    if match is None:
-        raise ValueError("chapter source requires a stable two-digit identity")
-    return int(match.group(1))
+    """Hidden published identity follows the topic, not its display number."""
+    return pdf_topic_number(filename)
 
 
 PDF_THIRD_LEVEL_CHAPTER_IDS = {
@@ -164,6 +163,8 @@ h3{font-size:16.5px}h4{font-size:15px}
 .toc .sec{font-size:12.5px;color:#333;padding-left:18px}
 .toc .subsec{font-size:11.5px;color:#555;padding-left:18px}
 .anchor-alias{display:none}
+.pdf-anchor-references{position:absolute;top:0;left:0;font-size:1px;line-height:1px;color:transparent;pointer-events:none}
+.pdf-anchor-references a{color:transparent}
 .tutorial-math-tail{display:inline-block;white-space:nowrap;overflow-wrap:normal;vertical-align:baseline;overflow:visible}
 .tutorial-math-tail mjx-assistive-mml{max-width:1px!important;min-width:0!important;white-space:normal}
 .tutorial-exercise-id{white-space:nowrap;overflow-wrap:normal}
@@ -268,6 +269,8 @@ def source_digest():
     paths += [ROOT / "scripts" / "build_site.py", ROOT / "scripts" / "build_markdown_helpers.py",
               build_site.INLINE_LAYOUT_PATH,
               ROOT / "scripts" / "heading_aliases.py",
+              ROOT / "scripts" / "chapter_identity.py",
+              ROOT / "scripts" / "chapter_numbering.json",
               ROOT / "scripts" / "legacy_sequential_anchors.json"]
     paths += sorted(path for path in MATHJAX_DIR.rglob("*") if path.is_file())
     paths += sorted((ROOT / "figures").glob("fig*.png"))
@@ -290,6 +293,7 @@ def source_digest():
 
 
 HTML_TO_CH = {fname.replace(".md", ".html"): chapter_number(fname) for fname, _ in CHAPTERS}
+HTML_TO_CH.update({old: HTML_TO_CH[current] for old, current in LEGACY_HTML_ROUTES.items()})
 REPOSITORY_BLOB_BASE = "https://github.com/nanless/microphone-array-signal-processing/blob/main/"
 
 
@@ -308,9 +312,12 @@ def is_exercise_anchor(fragment, source_path):
     """仅接受目标源文实际声明的稳定练习 ID，避免把拼错链接带入 PDF。"""
     if not re.fullmatch(r"e\d{2}-\d{2}", fragment):
         return False
+    source_path = Path(source_path)
+    name = canonical_source(source_path.name)
+    fragment = canonical_exercise(name, fragment)
     return bool(re.search(
         rf'<a\s+id=[\"\']{re.escape(fragment)}[\"\']\s*>',
-        Path(source_path).read_text(encoding="utf-8")))
+        source_path.with_name(name).read_text(encoding="utf-8")))
 
 
 def rewrite_book_links(html):
@@ -343,6 +350,8 @@ def rewrite_repository_links(html, source_path=None):
 
     def transform(href):
         parsed, target = build_site.local_link_target(href, source_path)
+        if target is not None and target.parent == SRC.resolve():
+            target = target.with_name(canonical_source(target.name))
         if (not parsed.scheme and not parsed.netloc and not parsed.path
                 and not parsed.query and parsed.fragment):
             # A chapter-local link must receive the same chapter prefix as
@@ -445,6 +454,7 @@ def build_html(build_date=None):
         html = re.sub(
             r'(<a\s+id=[\"\'])(e\d{2}-\d{2})([\"\']\s*>)',
             lambda m: f'{m.group(1)}ch-{i}-{m.group(2)}{m.group(3)}', html)
+        html = inject_exercise_aliases(html, fname, prefix=f"ch-{i}-")
         html = re.sub(r"<(h[1-4])>(.*?)</\1>", tag_source_heading, html, flags=re.S)
         html = rewrite_repository_links(html, SRC / fname)
         html = rewrite_book_links(html)
@@ -520,13 +530,22 @@ def build_html(build_date=None):
     cover = (f'<div class="cover"><h1>麦克风阵列信号处理教程</h1>'
              f'<div class="sub">深入浅出 · 从阵列摆位到工程选型（合订本）</div>'
              f'<div class="meta">构建日期 {date_s} · 源文件 sha256 {source_digest()} · '
-             f'共 {len(CHAPTERS)} 篇：导读、11 章正文、2 篇扩展专题、2 篇附录</div></div>')
+             f'共 {len(CHAPTERS)} 篇：导读、13 章正文（含两篇扩展专题）、2 篇附录</div></div>')
+    # Chrome emits named destinations for referenced anchors. A transparent,
+    # out-of-flow reference strip makes every real heading addressable without
+    # adding entries to the visible TOC or affecting pagination. Alias names are
+    # then copied from these exact real destinations after printing.
+    real_ids = re.findall(r'<(?:h[1-4]|div|a)\b[^>]*\bid="([^"]+)"',
+                          "\n".join(body_parts))
+    references = ('<div class="pdf-anchor-references" aria-hidden="true">'
+                  + ''.join(f'<a href="#{identity}">.</a>' for identity in real_ids)
+                  + '</div>')
     page = ("<!DOCTYPE html><html lang=\"zh-CN\" data-tutorial-print-layout=\"a4\"><head><meta charset=\"utf-8\">"
             f"<title>麦克风阵列信号处理教程（合订本）</title><style>{CSS}</style>"
             "<script>\n" + build_site.INLINE_LAYOUT_PATH.read_text(encoding="utf-8") +
             "\nwindow.MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$']]}, chtml: {fontURL: '../scripts/vendor/mathjax-3.2.2/output/chtml/fonts/woff-v2'}, startup: {pageReady: () => MathJax.startup.defaultPageReady().then(() => document.fonts.ready).then(() => ArrayTutorialLayout.apply())}};\n</script>"
             "<script defer src=\"../scripts/vendor/mathjax-3.2.2/tex-mml-chtml.js\"></script>"
-            "</head><body>" + cover + "\n".join(toc) + "\n".join(body_parts)
+            "</head><body>" + references + cover + "\n".join(toc) + "\n".join(body_parts)
             + '</body></html>')
     n_secs = sum(len(s) for _, _, s in outline)
     n_subsecs = sum(len(subsecs) for _, _, secs in outline
@@ -613,7 +632,70 @@ def heading_destination(reader, heading_id):
     return matches[0]
 
 
-def add_bookmarks(pdf_path, outline):
+def pdf_alias_targets():
+    """Bind historical fragments to actual current headings of the same topic."""
+    aliases = {}
+
+    def bind(alias, target):
+        if alias == target:
+            return
+        if alias in aliases and aliases[alias] != target:
+            raise ValueError(f"PDF 历史目标冲突：{alias}")
+        aliases[alias] = target
+
+    for name, _label in CHAPTERS:
+        prefix = f"ch-{chapter_number(name)}-"
+        records = build_site.heading_records(build_site.parse_headings(
+            (SRC / name).read_text(encoding="utf-8")))
+        for index, (_level, _title, primary, legacy) in enumerate(records):
+            target = prefix + primary if index else prefix[:-1]
+            bind(prefix + primary, target)
+            if not has_historical_sequential_aliases(name):
+                bind(prefix + legacy, target)
+            for old in historical_aliases(name, primary):
+                bind(prefix + old, target)
+        for current, record in exercise_alias_records(name).items():
+            # An exercise can begin with a bold block label instead of an h4.
+            # Keep its real explicit anchor, including its original offset from
+            # the heading, and copy that exact destination to the old ID.
+            bind(prefix + record["original_id"], prefix + current)
+    return aliases
+
+
+def add_pdf_named_aliases(reader, writer, aliases):
+    """Copy an exact destination, including its page coordinates, to each alias."""
+    from pypdf.generic import ArrayObject, NameObject
+    for alias, target in aliases.items():
+        destination = heading_destination(reader, target)
+        page = reader.get_destination_page_number(destination)
+        existing = [reader.named_destinations[key] for key in (alias, "/" + alias)
+                    if key in reader.named_destinations]
+        if existing:
+            if any((reader.get_destination_page_number(item), tuple(item.dest_array[1:]))
+                   != (page, tuple(destination.dest_array[1:])) for item in existing):
+                raise SystemExit(f"PDF 历史目标已有不同定位：{alias}")
+            continue
+        copied = ArrayObject([writer.pages[page].indirect_reference,
+                              *[item.clone(writer) for item in destination.dest_array[1:]]])
+        if "/Dests" in writer.root_object:
+            # Chrome uses the catalog's original /Dests dictionary. Adding a
+            # second /Names tree would leave aliases invisible to readers that
+            # prefer /Dests; preserve that existing representation and its keys.
+            writer.root_object["/Dests"][NameObject("/" + alias)] = copied
+        else:
+            writer.add_named_destination_array("/" + alias, copied)
+
+
+def validate_pdf_named_aliases(reader, aliases):
+    for alias, target in aliases.items():
+        actual = heading_destination(reader, alias)
+        expected = heading_destination(reader, target)
+        if (reader.get_destination_page_number(actual), tuple(actual.dest_array[1:])) != (
+                reader.get_destination_page_number(expected), tuple(expected.dest_array[1:])):
+            raise SystemExit(f"PDF 历史目标偏离当前主题定位：{alias}")
+
+
+def add_bookmarks(pdf_path, outline, aliases=None):
     """按 outline 写三级大纲（篇 + 节 + 指定子节），校验后原子替换 PDF。"""
     try:
         from pypdf import PdfReader, PdfWriter
@@ -631,6 +713,8 @@ def add_bookmarks(pdf_path, outline):
     })
     from pypdf.generic import NameObject, TextStringObject
     writer._root_object.update({NameObject("/Lang"): TextStringObject("zh-CN")})
+    if aliases is not None:
+        add_pdf_named_aliases(reader, writer, aliases)
     n_ch, n_sec, n_subsec = 0, 0, 0
 
     def add_heading(title, heading_id, parent=None):
@@ -666,6 +750,8 @@ def add_bookmarks(pdf_path, outline):
             writer.write(f)
         tagged = PdfReader(str(tmp_path))
         validate_pdf_structure_tags(tagged)
+        if aliases is not None:
+            validate_pdf_named_aliases(tagged, aliases)
         os.replace(tmp_path, pdf_path)
     finally:
         tmp_path.unlink(missing_ok=True)
@@ -955,7 +1041,7 @@ def main(argv=None):
         # 临时 HTML 与正式 HTML 同目录，图片相对路径保持一致。
         print_pdf(tmp_html or combined, tmp_pdf, args.min_pages)
         if not args.no_bookmarks:
-            add_bookmarks(tmp_pdf, outline)
+            add_bookmarks(tmp_pdf, outline, pdf_alias_targets())
         validate_pdf_links(tmp_pdf)
         replacements = [] if tmp_html is None else [(tmp_html, combined)]
         replacements.append((tmp_pdf, pdf))

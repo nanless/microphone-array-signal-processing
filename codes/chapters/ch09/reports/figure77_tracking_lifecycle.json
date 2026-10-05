@@ -13,7 +13,7 @@
     "codes/chapters/ch04/core/doa.py": "33582d40ec9030537709d79bf13f4a904d2246f388e628aada7f66e8fb6dec04",
     "codes/chapters/ch04/core/covariance.py": "d704be037100ee53caf6e2130fbabbe14ce6eeff9e3d11dde389fd368d271249",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974"
   },
   "environment": {
@@ -24,7 +24,7 @@
   "input_sha256": {
     "source.wav": "a0720d594ebcd089305c83dcad5da694a8c82134592b02de4eabf0fd464b8d5e",
     "array_noisy.wav": "5b53f0f4e44df1ef62f86a540bd423a375ba15c7215f60bcada3e8e53a2fcf12",
-    "MANIFEST.json": "797aed77088cafc5a5d37976c6c8544587426c4b43f3c9b52e2e562017ff7cb4"
+    "MANIFEST.json": "6d78395496a2f510d7dd6614bd24da4652197aea9b59ce1afabe798ae65b57a5"
   },
   "analysis_scores": {
     "frame_count": 197,

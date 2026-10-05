@@ -5,12 +5,12 @@
     "codes/chapters/ch05/core/phase_audio.py": "a232668481a58afad162ae5c01a338796893bb6faf6cb3a9ab046689d2b6fec4",
     "codes/chapters/ch05/examples/generate_phase_audio.py": "5b83fd7cb6128e1522a2d737058c226ddfca192863db3dda341806c0b26c5036",
     "codes/chapters/ch02/core/conventions.py": "4e80a27490f05ddd5f4826361420c0c8d0b331464d1e5629c5def492da47b1d7",
-    "codes/chapters/ch00/core/audio_samples.py": "872239951c90a01b682c5918b6511b6a1830e2e60eda42cb9f35b5572aee9ef8",
+    "codes/chapters/ch00/core/audio_samples.py": "8fb4e9e822129d0019ef047299effd53b4f02f90ff68b5198016d04ddad31cf8",
     "codes/chapters/ch00/io_contracts.py": "0b366f123b9c1fe125f30e0b4ff99e7669db9a0c2f29bbfb692f97b7d9ae5974",
-    "scripts/make_figures.py": "c7544e82e936ad283b33d7e01b6a51e41caaf047b8ced0a6d47013020b58d83f",
+    "scripts/make_figures.py": "4eb6e4fcf9e7f26c29d61552046e1528bcfe5634758577f94798adba9e1333a4",
     "scripts/make_beamforming_figures.py": "fe0bd0d181a1f51db0d012e9e71f156f06d4a796a924b9d707d63ac8e17012cf"
   },
-  "audio_manifest_sha256": "8a6bafd510b5a0e14e0b3994e88193adc02f4d2c36bf1ee5a2cdde022f3e58dc",
+  "audio_manifest_sha256": "1543515d0a23cf15dce8d429f0f255517ae007bf5982b64cee4cfeb728b9e5c4",
   "wav_sha256": {
     "phase_reference.wav": "06e2e84fdf729fee17eecd8191d84a11d585ffb821404d0b6e9471f9a0d02d01",
     "phase_flip.wav": "a87c7abf8dc06d3ee2acbce4ac5447a9568c2e4ce9354eeb5a4acc4eed0a0645",

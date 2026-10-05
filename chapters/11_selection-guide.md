@@ -1,6 +1,6 @@
-> ⚠️ 本篇是教程正文第 11 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。
+> ⚠️ 本篇是教程正文第 11 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。
 >
-> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[10_engineering-practice.md](10_engineering-practice.md) ｜ 下一篇：[14_acoustic-imaging.md](14_acoustic-imaging.md)
+> 🏠 首页导读：[00_overview.md](00_overview.md) ｜ 上一篇：[10_engineering-practice.md](10_engineering-practice.md) ｜ 下一篇：[12_acoustic-imaging.md](12_acoustic-imaging.md)
 
 ---
 
@@ -1032,11 +1032,11 @@ $\varepsilon_H$ 是复响应相对1的幅差，不是误差平方，也不是 $|
 
 ### 11.7 后续阅读
 
-需要估计工业噪声源的空间贡献时，继续阅读[扩展专题Ⅰ：声学成像](14_acoustic-imaging.md)，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。
+需要估计工业噪声源的空间贡献时，继续阅读[扩展专题Ⅰ：声学成像](12_acoustic-imaging.md)，分别核对扫描图、源强反演、校准、频带与区域量。它的输出和本章语音增强音频不同。
 
-多个设备在受限通信下共同增强波形时，继续阅读[扩展专题Ⅱ：分布式协同增强](15_distributed-enhancement.md)，先核对第5章的参考目标和第10章的同步条件。仅将同步麦克风接到一台处理器，并不要求运行DANSE。
+多个设备在受限通信下共同增强波形时，继续阅读[扩展专题Ⅱ：分布式协同增强](13_distributed-enhancement.md)，先核对第5章的参考目标和第10章的同步条件。仅将同步麦克风接到一台处理器，并不要求运行DANSE。
 
-要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见[第 10 章](10_engineering-practice.md)。[附录 A](12_appendix-symbols-math.md)汇总符号与数学工具，[附录 B](13_appendix-guide.md)给出进一步阅读、练习和排错入口。
+要实现算法，可回到第 4～9 章查看定位、波束、AEC、WPE、分离和追踪。要制定整机预算和验收计划，见[第 10 章](10_engineering-practice.md)。[附录 A](14_appendix-symbols-math.md)汇总符号与数学工具，[附录 B](15_appendix-guide.md)给出进一步阅读、练习和排错入口。
 
 ---
 

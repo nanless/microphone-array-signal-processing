@@ -1,7 +1,7 @@
-"""Appendix B E13-03..15: fixed-room calculations and evidence boundaries.
+"""Appendix B E15-03..15: fixed-room calculations and evidence boundaries.
 
-This module does not execute pyroomacoustics or create assets. E13-03,
-E13-07 and E13-09 read checked-in synthetic room results or PCM; the other
+This module does not execute pyroomacoustics or create assets. E15-03,
+E15-07 and E15-09 read checked-in synthetic room results or PCM; the other
 exercises use small analytic fixtures with independent answers.
 """
 
@@ -321,7 +321,7 @@ def response_audio_anchor(directory=None) -> dict:
 
 
 def truncated_edc_fixture() -> dict:
-    """E13-15: fixed noiseless exponential tails, not a room measurement.
+    """E15-15: fixed noiseless exponential tails, not a room measurement.
 
     Reuse the unique RIR metric implementation for every T60. The explicit
     reverse sum here exposes the exact sample interval consumed by that
@@ -392,25 +392,25 @@ def run_exercises() -> dict:
     edc = t20_from_edc_points([0.05, 0.15, 0.25], [-5.0, -15.0, -25.0])
     shifted = t20_from_edc_points([0.15, 0.25, 0.35], [-5.0, -15.0, -25.0])
     return {
-        "E13-03": paired_room_comparison(results["results"]),
-        "E13-04": four_mic_drr_and_convolution(),
-        "E13-05": {**edc, "shifted_time_t60_s": shifted["t60_extrapolated_s"]},
-        "E13-06": two_mic_srp_phase(),
-        "E13-07": room_pcm_readback(manifest, results),
-        "E13-08": {"cases_are_hypothetical": True,
+        "E15-03": paired_room_comparison(results["results"]),
+        "E15-04": four_mic_drr_and_convolution(),
+        "E15-05": {**edc, "shifted_time_t60_s": shifted["t60_extrapolated_s"]},
+        "E15-06": two_mic_srp_phase(),
+        "E15-07": room_pcm_readback(manifest, results),
+        "E15-08": {"cases_are_hypothetical": True,
                     "A": evidence_claims(locked=True, license_checked=True,
                                          obtained=False, executed=False, scored=False),
                     "B": evidence_claims(locked=True, license_checked=True,
                                          obtained=True, executed=True, scored=False),
                     "C": evidence_claims(locked=True, license_checked=True,
                                          obtained=True, executed=True, scored=True)},
-        "E13-09": room_pcm_srp_windows(manifest, results),
-        "E13-10": equal_drr_different_spectra(),
-        "E13-11": shared_tac_fixture(),
-        "E13-12": scaled_rir_metrics(),
-        "E13-13": conditioned_t20_times(),
-        "E13-14": response_audio_anchor(),
-        "E13-15": truncated_edc_fixture(),
+        "E15-09": room_pcm_srp_windows(manifest, results),
+        "E15-10": equal_drr_different_spectra(),
+        "E15-11": shared_tac_fixture(),
+        "E15-12": scaled_rir_metrics(),
+        "E15-13": conditioned_t20_times(),
+        "E15-14": response_audio_anchor(),
+        "E15-15": truncated_edc_fixture(),
     }
 
 

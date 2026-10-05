@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 5 章 · 波束形成 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -311,10 +314,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -378,7 +381,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="05_beamforming.html#sec-u-9dcb5dc891">E05-24：逐通道掩码为什么可能改变协方差的秩？</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 5 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 5 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="04_doa-estimation.html">第 4 章 · 声源定位（DOA 估计）</a> ｜ 下一篇：<a href="06_aec.html">第 6 章 · 声学回声消除（AEC）</a></p>
 </blockquote>
 <hr />
@@ -621,7 +624,7 @@ w_2^*a_2&\approx0.5000-2.3559j,\\
 <p><strong>四项诊断量</strong>：超指向或 MVDR 权重求出后，应检查以下指标，再进入录音评估。</p>
 <ol>
 <li><strong>白噪声增益余量</strong>：算 $G_{\mathrm{WNG}}=1/\|\vec{w}\|^2$（精确无失真约束下），再按式(5-3)换成 $\mathrm{WNG}_{\mathrm{dB}}$。最低允许值应由本机自噪声、增益/相位公差和目标输出余量共同确定，不能用一个固定 dB 数覆盖所有设备；</li>
-<li><strong>条件数</strong>：算 $\mathbf{\Gamma}$ 或 $\hat{\mathbf{R}}_{nn}$ 的条件数 $\kappa=\lambda_{\max}/\lambda_{\min}$。条件数增大表示求逆对协方差估计误差更敏感；可通过对角加载（§5.4）、降阶或减少约束改善。可接受上限应由浮点精度、快拍数和失配仿真共同确定；</li>
+<li><strong>条件数</strong>：算 $\mathbf{\Gamma}$ 或 $\hat{\mathbf{R}}_{nn}$ 的二范数条件数 $\kappa_2$；对厄米正定矩阵，$\kappa_2=\lambda_{\max}/\lambda_{\min}$。这里 $\kappa_2$ 无量纲，不是前文单位为 rad/m 的波数 $\kappa$；奇异矩阵的二范数条件数为无穷。条件数增大表示求逆对协方差估计误差更敏感；可通过对角加载（§5.4）、降阶或减少约束改善。可接受上限应由浮点精度、快拍数和失配仿真共同确定；</li>
 <li><strong>削波率与动态余量</strong>：把权重作用于代表性录音或按目标电平生成的测试信号，检查输出峰值和削波率。权重范数大时，通道叠加可能增加峰值；应预留数字动态余量，并在需要时收紧 WNG 约束；</li>
 <li><strong>通道失配灵敏度</strong>：按照麦克风数据手册、标定残差和装配误差给导向矢量逐通道施加增益、相位与位置扰动，统计目标响应 $|\vec{w}^H\vec{a}_{mis}-1|$、零陷位置与 WNG 的变化。算例 5-1 第 6 步提供了 1% 增益失配的手算；实际扰动范围和验收门限必须按设备确定。</li>
 </ol>
@@ -702,7 +705,7 @@ L(\vec w,\lambda)&=\vec w^H\mathbf R_{nn}\vec w\\
 <p>$$\lambda^*\,\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a} = 1。$$</p>
 <p>由于 $\vec a^H\mathbf R_{nn}^{-1}\vec a$ 是正实数，所以 $\lambda^*=\lambda$，并且</p>
 <p>$$\lambda = \frac{1}{\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a}}$$</p>
-<p>协方差矩阵一般是半正定的；这里写普通逆矩阵，额外假定 $\mathbf R_{nn}$ 正定。若快拍不足或矩阵奇异，应加正则、使用降秩方法或在明确秩条件下用伪逆。正定时分母是正实数。附录 A 的 E12-05 用一个两通道反例说明：把逆机械换成伪逆，即使得到的权重满足无失真约束，也可能没有最小化原噪声功率。</p>
+<p>协方差矩阵一般是半正定的；这里写普通逆矩阵，额外假定 $\mathbf R_{nn}$ 正定。若快拍不足或矩阵奇异，应加正则、使用降秩方法或在明确秩条件下用伪逆。正定时分母是正实数。附录 A 的 E14-05 用一个两通道反例说明：把逆机械换成伪逆，即使得到的权重满足无失真约束，也可能没有最小化原噪声功率。</p>
 <p><strong>第 4 步：把倍数代回第 2 步。</strong></p>
 <p>$$\boxed{\ \vec{w}_{MVDR} = \frac{\mathbf{R}_{nn}^{-1}\vec{a}}{\vec{a}^H\mathbf{R}_{nn}^{-1}\vec{a}}\ }\text{。}\tag{5-9}$$</p>
 <p>正定时 $\vec a^H\mathbf R_{nn}^{-1}\vec a$ 为正实数，因此上面由 $\vec w^H\vec a=1$ 求得的乘子无需再区分共轭值。</p>

@@ -34,7 +34,7 @@ class ImagingObjectiveFigureTests(unittest.TestCase):
                 patch.object(drawing, 'CODE_CHAPTERS', cls.root/'codes/chapters'), \
                 patch.object(drawing, 'save', side_effect=capture):
             drawing.fig_imaging_objectives()
-        cls.report_path = cls.root/'codes/chapters/ch14/reports/figure80_imaging_objectives.json'
+        cls.report_path = cls.root/'codes/chapters/ch12/reports/figure80_imaging_objectives.json'
         cls.report = json.loads(cls.report_path.read_text())
 
     @classmethod
@@ -67,7 +67,7 @@ class ImagingObjectiveFigureTests(unittest.TestCase):
         self.assertGreaterEqual(np.linalg.eigvalsh(r)[0], -1e-14)
 
     def test_actual_png_and_report_bind_current_sources(self):
-        expected_paths = {'scripts/make_figures.py', 'codes/chapters/ch14/core/imaging.py',
+        expected_paths = {'scripts/make_figures.py', 'codes/chapters/ch12/core/imaging.py',
                           'codes/chapters/ch02/core/conventions.py', 'codes/chapters/ch00/io_contracts.py'}
         self.assertEqual(set(self.report['source_sha256']), expected_paths)
         for name, digest in self.report['source_sha256'].items():

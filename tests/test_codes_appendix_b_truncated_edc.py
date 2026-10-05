@@ -1,4 +1,4 @@
-"""Independent finite geometric-series and scalar-fit checks for E13-15."""
+"""Independent finite geometric-series and scalar-fit checks for E15-15."""
 
 from decimal import Decimal, localcontext
 import math

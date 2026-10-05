@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 import numpy as np
 
-from codes.chapters.ch14.examples import audit_upstream_imaging_contracts as audit
+from codes.chapters.ch12.examples import audit_upstream_imaging_contracts as audit
 from codes.chapters.ch00.io_contracts import strict_json_loads, write_json_report
 from codes.chapters.ch00.upstream.fetch_upstreams import run_git
 
@@ -316,7 +316,7 @@ class ImagingOriginalMethodTests(unittest.TestCase):
         self.assertEqual(len(self.rows), 21)
         self.assertEqual(len(self.report['original_definitions']), 18)
         self.assertTrue(all(r['mathematical_body_unchanged'] for r in self.report['original_definitions']))
-        self.assertEqual(self.report['direct_sources']['codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py'],
+        self.assertEqual(self.report['direct_sources']['codes/chapters/ch12/examples/audit_upstream_imaging_contracts.py'],
                          hashlib.sha256(Path(audit.__file__).read_bytes()).hexdigest())
         strict_json_loads(json.dumps(self.report, allow_nan=False))
 
@@ -332,7 +332,7 @@ class ImagingHistoricalReportTests(unittest.TestCase):
                                        cwd=audit.ROOT, env=env)
 
     def test_original_report_and_bound_tool_are_real_preedit_git_bytes(self):
-        relative = str(audit.HISTORICAL_REPORT.relative_to(audit.ROOT))
+        relative = 'codes/chapters/ch14/reports/upstream_imaging_contracts.json'
         old = self.blob(relative)
         self.assertEqual(audit.HISTORICAL_REPORT.read_bytes(), old)
         report = strict_json_loads(old)

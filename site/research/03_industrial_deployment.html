@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工业音频实现研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -323,10 +326,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="../09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="../10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="../11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="../14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="../15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="../12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="../13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="../12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="../13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="../14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="../15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="03_industrial_deployment.html#sec-u-ffac6d1f19">1. 采集、时钟与连续流</a></li>
@@ -397,7 +400,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><span id="工业音频实现从采集状态到部署和评分" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-d1edc87d16">工业音频实现：从采集、状态到部署和评分</h1>
 <p>DeepFilterNet 宿主计数与 faster-enhancer.c 生命周期/计时静态复核日期：2026-10-05；AEC 播放音量通知和 XMOS ALT 保持计数静态复核日期：2026-10-04；原核实日期：2026-09-22；AEC 接口 I03/I05 与评分 I20 复核日期：2026-09-23；I01 时间戳、I18 输入输出绑定与 I28 源码接口核对日期：2026-09-26；第10章工业边界及 I30～I32 复核日期：2026-09-28；FastEnhancer 论文发表状态于 2026-09-29 另行复核。2026-10-01另核第10章直接接口，并执行 I32 所列五项受限原源码合同；旧报告保留原日期和环境。对应正文第 10、11 章和附录 B。这里讨论本书算法进入连续音频系统后需要补上的部分：驱动、参考路由、跨块状态、定点内核、模型运行时和评分器。每项的完整提交以 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/SOURCES.lock.json"><code>SOURCES.lock.json</code></a> 为准；网页文档版本只说明核实依据，不自动等于本机安装版本。</p>
 <p>除明确写出输入、环境和实测值的本地接口实验外，下面的试验是建议执行的设备验收步骤，不是已经测得的产品结果。源码下载、依赖安装、编译、运行、声学测量是不同状态。没有硬件、模型或数据时，可以完成源码核对，但不能把该项标成已经通过设备验收。</p>
-<p>多个设备共同做波形增强时，可从<a href="../15_distributed-enhancement.html">扩展专题Ⅱ的观测与更新模型</a>进入本篇的<a href="#distributed-network-deployment">分布式网络时间轴</a>，再按<a href="04_source_reproduction.html#distributed-reproduction">固定原源码合同</a>区分实际运行与静态核查。</p>
+<p>多个设备共同做波形增强时，可从<a href="../13_distributed-enhancement.html">扩展专题Ⅱ的观测与更新模型</a>进入本篇的<a href="#distributed-network-deployment">分布式网络时间轴</a>，再按<a href="04_source_reproduction.html#distributed-reproduction">固定原源码合同</a>区分实际运行与静态核查。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><span id="1-采集时钟与连续流" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-ffac6d1f19">1. 采集、时钟与连续流</h2>
 <span id="sec-3" class="anchor-alias" aria-hidden="true"></span><span id="i01portaudio-回调与设备时间戳" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-39d396e1a1">I01：PortAudio 回调与设备时间戳</h3>
 <p>PortAudio 为不同主机音频系统提供统一入口。本书锁定 19.7.0 对应提交。先读 <code>include/portaudio.h</code> 的回调签名，再看 <code>examples/</code> 中的采集与播放例子；库为 MIT 许可，平台后端仍有自身依赖。官方<a href="https://portaudio.com/docs/v19-doxydocs/writing_a_callback.html">回调说明</a>明确限制会阻塞或耗时不可预测的操作。</p>
@@ -1030,7 +1033,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p><strong>本机已执行。</strong> <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/stk_delay_probe.cpp">原创C++探针</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/examples/run_stk_delay_probe.py">运行入口</a>只编译锁定版<code>Stk.cpp</code>和<code>DelayL.cpp</code>，临时生成物不写回上游。输入为512点、16 kHz、500/6000 Hz双音，两个分量幅度均0.18；无淡入淡出、初始历史为零。它与2 s试听素材使用相同频率，但长度和边界不同，不能借用试听文件代替此接口测试输入。</p>
 <p>在Darwin arm64、Apple clang 21.0.0、C++17/O2、STK默认double下，半采样输出相对独立FIR的最大绝对误差为0；零延迟、一采样延迟的已知边界误差也为0。把同一标量tick调用分成37点组且保留对象状态，输出差为0；每组前清空对象，最大绝对差为0.1519102855。结果、输入条件、编译器和实际源码摘要保存于<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch10/reports/stk_delay.json">STK接口报告</a>。这里的0只表示这组输入在该编译环境下的计算结果，不是任意平台的零误差保证。</p>
 <p>复跑命令为 <code>.venv/bin/python -m codes.chapters.ch10.examples.run_stk_delay_probe --report codes/chapters/ch10/reports/stk_delay_current.json</code>，需已取得锁定源码与C++编译器，不联网、不安装依赖。该检查只覆盖标量tick及固定延迟；没有测试StkFrames多通道接口、设备时间戳、实时期限或语音质量。</p>
-<p>幅度和延迟需分别验证。一次半采样线性插值对6000 Hz的幅度比约0.382683，两次则约0.146447，即使累计相位对应一采样，仍不等同纯一采样移位。完整本书推导、PCM统计区间与图41见<a href="../13_appendix-guide.html#e13-02">附录B E13-02</a>。工业选型须另查目标频带误差、可变延迟的状态转换和存储上限；本节不把一个组件检查外推为完整重采样器验收。</p>
+<p>幅度和延迟需分别验证。一次半采样线性插值对6000 Hz的幅度比约0.382683，两次则约0.146447，即使累计相位对应一采样，仍不等同纯一采样移位。完整本书推导、PCM统计区间与图41见<a href="../15_appendix-guide.html#e15-02">附录B E15-02</a>。工业选型须另查目标频带误差、可变延迟的状态转换和存储上限；本节不把一个组件检查外推为完整重采样器验收。</p>
 <p><a id="rnnoise-stream-contract"></a></p>
 <span id="sec-50" class="anchor-alias" aria-hidden="true"></span><span id="i30rnnoise-的幅度单位帧状态与演示程序首尾" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-9dcb4f43fe">I30：RNNoise 的幅度单位、帧状态与演示程序首尾</h3>
 <p>RNNoise 将传统分析、基音相关处理与神经增益估计结合；原始依据是 Valin 的 <a href="https://arxiv.org/pdf/1709.08243"><em>A Hybrid DSP/Deep Learning Approach to Real-Time Full-Band Speech Enhancement</em></a>（MMSP 2018）。固定源码为 <code>70f1d256acd4b34a572f999a05c87bf00b67730d</code>，根 <code>COPYING</code> 为 BSD-3-Clause；文件头仍单独保留。这里核对当前锁版的接口，不能把2018论文网络规模或实验数字自动套到此后更新的网络与模型文件。</p>
@@ -1149,7 +1152,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>不传 <code>--report</code> 时仅输出JSON，所有C编译和原始PCM保留在临时目录后清理。缓存缺失时，普通测试明确跳过可选原源码实调；固定版本或工作树不符则报错，不能以跳过伪装核验通过。新报告只证明以上合同，没有声卡、Linux路由、ARM指令、神经模型、自然语音质量或出厂验收结果。</p>
 <p><a id="distributed-network-deployment"></a></p>
 <span id="sec-59" class="anchor-alias" aria-hidden="true"></span><span id="8-分布式节点的观测更新与网络时间轴" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-3caa3d03bc">8. 分布式节点的观测、更新与网络时间轴</h2>
-<p>2026-10-04核对以下原论文、固定源码和官方协议文档。本节把第10章§10.2的时钟接口、§10.7的多节点工程问题与<a href="../15_distributed-enhancement.html">扩展专题Ⅱ</a>接起来。节点特定输出沿用第5章MWF的线性估计目标；网络交换什么、滤波器何时变、样本属于哪个时刻，则是新增的条件。正文的已知统计控制、原函数小输入、原论文实验和实际网络设备分别记录。</p>
+<p>2026-10-04核对以下原论文、固定源码和官方协议文档。本节把第10章§10.2的时钟接口、§10.7的多节点工程问题与<a href="../13_distributed-enhancement.html">扩展专题Ⅱ</a>接起来。节点特定输出沿用第5章MWF的线性估计目标；网络交换什么、滤波器何时变、样本属于哪个时刻，则是新增的条件。正文的已知统计控制、原函数小输入、原论文实验和实际网络设备分别记录。</p>
 <span id="sec-60" class="anchor-alias" aria-hidden="true"></span><span id="i33原始danse的模型与收敛保证" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-091929f58a">I33：原始DANSE的模型与收敛保证</h3>
 <p>先固定符号。原始<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf" title="citation">Part I：Sequential Node Updating</a>和<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-178.pdf" title="citation">Part II：Simultaneous and Asynchronous Node Updating</a>均发表于2010年；DOI分别为10.1109/TSP.2010.2052612与10.1109/TSP.2010.2052613。原文中的$K$不是节点数：</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1179,12 +1182,12 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tbody>
 </table></div>
 <p>因此原条件$K=Q$对应本书的$Q=S$。在共同频点和样本时间轴上，节点$u$观测$\vec x_u$，各节点目标为同一潜在向量$\vec s$的节点特定变换$\vec d_u=\mathbf B_u\vec s$。$Q=S$时，$\mathbf B_u$须为满秩方阵。集中式LMMSE的权重满足$\mathbf R_{xx}\mathbf W_u^\star=\mathbf R_{xd_u}$；DANSE节点保留自己的原观测，接收其他节点的$Q$维线性组合，先在此局部空间求解，再用解的本地块更新以后广播。广播是本地观测的组合，不是把包含远端观测的完整增强输出再循环广播。模型与更新定位在Part I §II、§III-A、§IV-A；单维与多维顺序结论分别见Theorems III.1、IV.1。<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf" title="citation">Part I原文</a></p>
-<p>上述顺序结论讨论满秩的观测二阶矩矩阵 $\mathbf R_{xx}$、共同目标满秩变换、固定精确二阶统计和轮转更新。它说明合适的<strong>自适应</strong>广播可到达集中式最优输出，不能证明任意预先固定的少数混合都无损；本书§15.8给出了相关噪声改变最优远端方向的反例。有限快拍、失配VAD和非平稳输入使局部统计不再是定理中的精确矩阵。若广播维数低于共同目标维数，最优方向可能丢失；过估维数造成的秩亏和伪逆情形，也不能简单套用满秩权重收敛结论。<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf" title="citation">Part I §IV-C：DANSE Under Rank Deficiency</a></p>
+<p>上述顺序结论讨论满秩的观测二阶矩矩阵 $\mathbf R_{xx}$、共同目标满秩变换、固定精确二阶统计和轮转更新。它说明合适的<strong>自适应</strong>广播可到达集中式最优输出，不能证明任意预先固定的少数混合都无损；本书§13.8给出了相关噪声改变最优远端方向的反例。有限快拍、失配VAD和非平稳输入使局部统计不再是定理中的精确矩阵。若广播维数低于共同目标维数，最优方向可能丢失；过估维数造成的秩亏和伪逆情形，也不能简单套用满秩权重收敛结论。<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-65.pdf" title="citation">Part I §IV-C：DANSE Under Rank Deficiency</a></p>
 <p>同时更新时，各节点求解所用的其他广播随后也改变。Part II §IV-B式(22)～(28)的$rS$-DANSE$^{+}$多了在全部广播空间中优化$\mathbf G$的步骤；其Theorem IV.1要求$0\lt \alpha_i\le1$、$\alpha_i\to0$且$\sum_i\alpha_i=\infty$，并保留上述统计和共同目标条件。去掉额外$\mathbf G$优化的简化$rS$版本在§IV-C另作经验讨论。固定$0.5$或$0.7$的混合既不满足趋零条件，也不能替代额外优化，故不援用该定理。Part II §IV-D的参数异步允许节点在不同迭代事件更新，但脚注8仍要求采样同步；异步结论还要求各节点持续获得更新机会。<a href="https://homes.esat.kuleuven.be/~abertran/reports/09-178.pdf" title="citation">Part II原文，5297～5298页</a></p>
 <span id="sec-61" class="anchor-alias" aria-hidden="true"></span><span id="i34wola源码的滤波时序与论文配置" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-f1f6990f01">I34：WOLA源码的滤波时序与论文配置</h3>
 <p><a href="https://homes.esat.kuleuven.be/~abertran/reports/IWAENC10.pdf" title="citation">IWAENC 2010作者全文</a>§III将频域语音失真加权MWF接入加权重叠相加（WOLA）分析/合成，讨论平方根Hann、50%重叠和指数统计更新；其链路模型忽略传输延迟。§IV的实验使用32kHz、512点窗、$\mu=5$、$\alpha=0.5$与理想VAD。这组论文配置不能由另一版演示文件的默认值反推。</p>
 <p>本书取得的作者<a href="https://github.com/AlexanderBertrandLab/Old_Code/blob/a24b73fcd2dc028659535d07bb08068b06108616/WOLA_DANSE1.m" title="citation">固定 <code>WOLA_DANSE1.m</code> v1.4</a>必须显式传入<code>fs</code>，没有采样率默认值。其示例输入使用16kHz；默认FFT长为<code>512*fs/16000</code>，故该示例对应512点。真正的默认项包括<code>mu=1</code>、<code>alpha=0.7</code>和同时模式开启；协方差与外部平滑的半衰期分别为2s、0.2s。更新门限分别累计每个VAD类别的三秒等效帧数，不代表输入三秒后必定有可用的两类统计。</p>
-<p>静态控制流还揭示四项接入合同。其一，VAD取每帧首样本；外部<code>Wext</code>先用于广播，随后向旧目标平滑，更新事件最后才产生新目标，因而事件产生的新目标在第二个后续广播帧才开始影响消息。其二，即使选择顺序token模式，各节点的内部<code>Wint</code>仍逐帧更新，token限制的是外部目标更新。其三，原文件的对称Hann没有逐点COLA校正，循环也没有排出完整尾部。其四，直接<code>inv</code>没有加载；普通EVD先取代数最大特征值，再取其绝对值，不能当作噪声白化GEVD或正半定投影。这些是固定源的实际步骤，未执行MATLAB。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch15/reports/upstream_distributed_contracts_current.json">当前静态定位与独立控制报告</a></p>
+<p>静态控制流还揭示四项接入合同。其一，VAD取每帧首样本；外部<code>Wext</code>先用于广播，随后向旧目标平滑，更新事件最后才产生新目标，因而事件产生的新目标在第二个后续广播帧才开始影响消息。其二，即使选择顺序token模式，各节点的内部<code>Wint</code>仍逐帧更新，token限制的是外部目标更新。其三，原文件的对称Hann没有逐点COLA校正，循环也没有排出完整尾部。其四，直接<code>inv</code>没有加载；普通EVD先取代数最大特征值，再取其绝对值，不能当作噪声白化GEVD或正半定投影。这些是固定源的实际步骤，未执行MATLAB。<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch13/reports/upstream_distributed_contracts_current.json">当前静态定位与独立控制报告</a></p>
 <p>读取原源码时应分别保存内部估计权重、当前外部广播权重、外部目标权重和更新时间。把同帧谱直接拼接的演示改成网络程序，还要引入样本标签、广播版本、等待/缺口规则与队列；不能只加一个发送函数就沿用其零延迟观测模型。</p>
 <span id="sec-62" class="anchor-alias" aria-hidden="true"></span><span id="i35拓扑低秩统计与采样率补偿分别改变什么" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-dd0feef1ad">I35：拓扑、低秩统计与采样率补偿分别改变什么</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1231,15 +1234,15 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>TI-DANSE的正式卷期是TSIPN 3(1)，130～144，2017，DOI为10.1109/TSIPN.2016.2623095；不要用DOI中的年份替代卷期年份。TI-GEVD作者稿式(11)的目标特征值差写法与式(12)增益不一致；本书白化例依据2016年GEVD原文使用$\lambda-1$与$1-1/\lambda$，不照抄该处差式。<a href="https://ftp.esat.kuleuven.be/SISTA/abertran/reports/GEVD_DS_TSP2016.pdf" title="citation">2016年GEVD作者稿</a></p>
 <p>SRO估计还要区分三层输入。第10章的拟合控制使用精确合成时间戳，不能当作盲音频估计。2023年SRO-DANSE以跨节点相干性变化推测速率，再通过接收计数与整数滑移维持相位历史；丢包、启动错位和声源运动会引入其他变化。16kHz、100ppm的设备每秒多1.6个样本，约0.625s积累一个样本；若帧移为512点，积累一个<strong>整帧移</strong>约需320s。后一个尺度不能用作允许忽略采样偏差的时间。<a href="https://arxiv.org/html/2211.02489v2" title="citation">SRO-DANSE §IV-B</a></p>
 <p><a href="https://ris.uni-paderborn.de/download/33807/48990/gburrek_icassp22.pdf" title="citation">DWACD原文，ICASSP 2022 §II～III</a>允许活动说话人在不同局部片段改变位置，但依赖相关性、活动筛选和短片段内近似稳定的声学关系；其STO讨论还利用位置/传播时间信息，不能把初始错位全当作时钟偏差。其公开同步源码可作后续入口，实际仅运行三个小函数的范围见<a href="04_source_reproduction.html#distributed-reproduction">复现合同</a>。这些方法纳入学习导航，是因为分别解决广播维数、拓扑、低秩统计和采样时钟问题；不将论文中的不同任务与配置排成统一设备排名。</p>
-<p>广播系数更新还改变了接收统计的坐标。<a href="https://arxiv.org/html/2506.02797v2" title="citation">TI-DANSE+ 2026 §III-G1</a>建议在同一迭代内累计、跨迭代重置，并等待目标活动和纯噪声两类帧都有足够支持。若变化只是已知可逆坐标变换，可以同时转换旧协方差与互相关后累计，完整手算见<a href="../15_distributed-enhancement.html#e15-25">E15-25</a>。一般压缩方向改变会丢失旧未保留方向，不能假定仅凭旧压缩统计便可恢复新统计；重置本身也不保证短记录能估准。</p>
+<p>广播系数更新还改变了接收统计的坐标。<a href="https://arxiv.org/html/2506.02797v2" title="citation">TI-DANSE+ 2026 §III-G1</a>建议在同一迭代内累计、跨迭代重置，并等待目标活动和纯噪声两类帧都有足够支持。若变化只是已知可逆坐标变换，可以同时转换旧协方差与互相关后累计，完整手算见<a href="../13_distributed-enhancement.html#e13-25">E13-25</a>。一般压缩方向改变会丢失旧未保留方向，不能假定仅凭旧压缩统计便可恢复新统计；重置本身也不保证短记录能估准。</p>
 <span id="sec-63" class="anchor-alias" aria-hidden="true"></span><span id="i36rtp时间戳参考时钟与dante的适用范围" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-32e86cc0d6">I36：RTP时间戳、参考时钟与Dante的适用范围</h3>
 <p>包的到达时间、首样本采样时间与播放时间是三个测点。<a href="https://www.rfc-editor.org/rfc/rfc3550.html#section-5.1" title="citation">RFC 3550 §5.1</a>的RTP序号按包递增；时间戳标记包内首个音频采样时刻，按采样时钟推进，起始值可以随机。两个流的裸时间戳不能直接相减，RTCP发送报告中的NTP/RTP对才提供时间映射。§6.4.1的到达间隔抖动是另一统计量，不能直接作为ADC相对ppm。序号缺口也不自动给出缺失的样本数，须结合载荷、时间戳和发送协议。</p>
 <p><a href="https://www.rfc-editor.org/rfc/rfc7273.html" title="citation">RFC 7273 §4～6</a>分别声明时间戳参考时钟与媒体时钟来源；<code>ts-refclk</code>和<code>mediaclk</code>表达不同关系。操作系统墙钟由PTP校准，本身不足以证明音频ADC速率也被该时钟约束。跨节点相干增强应检查参考钟、媒体时钟、初始映射、累计采样计数和不连续事件；缺少关系声明时不能仅以两个文件头相同采样率认定同步。</p>
 <p>Audinate的<a href="https://dev.audinate.com/GA/dante-controller/userguide/webhelp/content/clock_synchronization.htm" title="citation">Dante Controller官方时钟页</a>描述Dante设备的领导/跟随时钟：默认使用PTPv1，设备启用RTP时也使用PTPv2；硬件设备可用板载或外部字时钟，Dante Virtual Soundcard使用计算机时钟。<a href="https://dev.audinate.com/GA/dante-controller/userguide/webhelp/content/latency.htm" title="citation">官方延迟页</a>中的接收延迟是从输入样本时间戳到预定播放时刻的安排，实际流使用发送与接收设置中较高的值；通用计算机端点还可能需要额外延迟。这属于相应Dante平台的系统合同，不是对普通Wi-Fi设备的硬件采样锁定或任意操作系统的实时保证。部署时仍须检查具体端点、外部字时钟和实际状态；本书没有连接Dante硬件或运行PTP验收。</p>
 <span id="sec-64" class="anchor-alias" aria-hidden="true"></span><span id="i37先算有效负载再讨论链路带宽" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-c9173010b1">I37：先算有效负载，再讨论链路带宽</h3>
 <p>沿用$U$节点、每节点$M_u$路原观测、$Q$路广播。若明确发送<strong>实数时域PCM</strong>，采样率$f_s$、每样本$b$位，则节点原观测有效负载为$f_s bM_u$ bit/s，压缩广播为$f_s bQ$ bit/s。以16kHz、PCM16、每节点三麦而广播一路为例，两者分别为768与256kbit/s。这是标量数量的换算；实际采用float32或复数谱时必须重算。</p>
-<p>四节点逐接收者单播需要$U(U-1)=12$条一路流，有效负载合计3.072Mbit/s。若网络真正支持一次发送供所有其他节点接收，四条发出流的计量为1.024Mbit/s，不能把这个数当作单播结果。树上先融合到根、再传播总和，每个同样本求和使用$2(U-1)=6$条定向边消息，按一路流计为1.536Mbit/s；这个消息数控制对应<a href="../15_distributed-enhancement.html#e15-23">E15-23</a>，还没有包含TI的坐标变换或控制更新。交换一个$Q\times Q$的complex64矩阵另需$8Q^2$字节/次，须乘实际更新率及复制次数。</p>
-<p>分帧频谱不能套时域码率。例如FFT512、帧移256、complex64单边257个频点，在16kHz下每秒62.5帧，每路有效负载为$257\times8\times62.5=128500$ B/s，即1.028Mbit/s，尚未加帧标签和控制信息。<a href="../15_distributed-enhancement.html#e15-15">E15-15</a>同时列出PCM、float32和复谱口径。</p>
+<p>四节点逐接收者单播需要$U(U-1)=12$条一路流，有效负载合计3.072Mbit/s。若网络真正支持一次发送供所有其他节点接收，四条发出流的计量为1.024Mbit/s，不能把这个数当作单播结果。树上先融合到根、再传播总和，每个同样本求和使用$2(U-1)=6$条定向边消息，按一路流计为1.536Mbit/s；这个消息数控制对应<a href="../13_distributed-enhancement.html#e13-23">E13-23</a>，还没有包含TI的坐标变换或控制更新。交换一个$Q\times Q$的complex64矩阵另需$8Q^2$字节/次，须乘实际更新率及复制次数。</p>
+<p>分帧频谱不能套时域码率。例如FFT512、帧移256、complex64单边257个频点，在16kHz下每秒62.5帧，每路有效负载为$257\times8\times62.5=128500$ B/s，即1.028Mbit/s，尚未加帧标签和控制信息。<a href="../13_distributed-enhancement.html#e13-15">E13-15</a>同时列出PCM、float32和复谱口径。</p>
 <p>另作一个显式包头算式：单路PCM16每10ms发送160点，载荷320B；若假定无扩展/CSRC的12B RTP基本头、8B UDP头和无选项的20B IPv4头，每包360B，每秒100包，即288kbit/s，比纯载荷高12.5%。这些头长分别见<a href="https://www.rfc-editor.org/rfc/rfc3550.html#section-5.1" title="citation">RFC 3550 §5.1</a>、<a href="https://www.rfc-editor.org/rfc/rfc768.html" title="citation">RFC 768格式</a>和<a href="https://www.rfc-editor.org/rfc/rfc791.html#section-3.1" title="citation">RFC 791 §3.1</a>。以太网、VLAN、无线竞争/重传、安全封装和PTP均未计入，所以这是声明条件下的数学预算，不是实测吞吐量。广播维数下降还须与目标信息损失、量化误差、等待和缺口分母一起比较，不能仅凭码率称增强质量无损。</p>
 <p><a id="industrial-current-interface-contracts"></a></p>
 <span id="sec-65" class="anchor-alias" aria-hidden="true"></span><span id="9-第10章当前原接口复验与运行边界" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-6cc2644b4f">9. 第10章当前原接口复验与运行边界</h2>

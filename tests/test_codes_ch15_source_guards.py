@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 from codes.chapters.ch00.io_contracts import write_json_report
 from codes.chapters.ch00.upstream.fetch_upstreams import run_git
-from codes.chapters.ch15.examples import audit_upstream_distributed_contracts as audit
+from codes.chapters.ch13.examples import audit_upstream_distributed_contracts as audit
 
 
 class OfflineSharedSourceGuards(unittest.TestCase):
@@ -233,7 +233,7 @@ class HistoricalAndWriteGuards(unittest.TestCase):
         bindings = evidence['direct_source_git_bindings']
         helper = 'codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py'
         self.assertEqual(bindings[helper]['commit'], 'a215b4630c0c21a8744cf27436a2c9ffa9c00053')
-        self.assertNotEqual(bindings[helper]['sha256'], audit.actual_dependencies()[helper])
+        self.assertNotEqual(bindings[helper]['sha256'], audit.actual_dependencies()['codes/chapters/ch12/examples/audit_upstream_imaging_contracts.py'])
         self.assertEqual(evidence['source_lock_binding']['report_sha256'],
                          'e3478006c7dbc6cec442bf6bccc4df9eca946d7d353b661e947596dd8b87608a')
         self.assertTrue(evidence['source_lock_binding']['historical'])
@@ -247,7 +247,7 @@ class HistoricalAndWriteGuards(unittest.TestCase):
         targets = [audit.HISTORICAL_REPORT, audit.upstream.STATUS, audit.LOCK,
                    audit.source_history.SNAPSHOT_ROOT / 'forbidden.json',
                    audit.CACHE / 'paderwasn/forbidden.json',
-                   audit.ROOT / 'codes/chapters/ch15/reports/unregistered.json']
+                   audit.ROOT / 'codes/chapters/ch13/reports/unregistered.json']
         with patch.object(audit, 'run_audit') as run:
             for target in targets:
                 with self.subTest(target=target), self.assertRaises(ValueError):

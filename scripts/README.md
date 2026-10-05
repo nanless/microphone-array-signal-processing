@@ -2,7 +2,7 @@
 
 本目录放绘图、构建和发布检查工具。算法与工程教学代码在 `codes/`；两类程序都应在**仓库根目录**执行。
 
-单章实验的真实实现按 [第 1～11 章及附录 A/B](../codes/chapters/README.md) 分目录保存，跨章练习、全书索引和主音频总清单归导读目录 `codes/chapters/ch00/`。旧 `codes.examples`、`codes.array_tutorial` 入口已移除。音频、房间生成器和部分上游探针与源路径或 SHA 绑定；修改真实源文件后，按当前清单的规则重新生成并核对对应资产或报告。
+单章实验的真实实现按 [第 1～13 章及第 14、15 章附录 A/B](../codes/chapters/README.md) 分目录保存，跨章练习、全书索引和主音频总清单归导读目录 `codes/chapters/ch00/`。旧 `codes.examples`、`codes.array_tutorial` 入口已移除。音频、房间生成器和部分上游探针与源路径或 SHA 绑定；修改真实源文件后，按当前清单的规则重新生成并核对对应资产或报告。
 
 运行时间取决于处理器、操作系统、Python 与依赖版本和当前负载。若要报告耗时，应同时记录这些条件、运行次数和统计方式。
 
@@ -36,7 +36,7 @@
 .venv/bin/python scripts/make_channel_figures.py  # 图78：已知坏麦、重建约束与实际PCM
 .venv/bin/python scripts/make_selection_figures.py  # 图79：同阵列模型的硬筛选与设备证据边界
 .venv/bin/python -m codes.chapters.ch10.examples.generate_channel_audio --check  # 六独立WAV只读核验
-.venv/bin/python scripts/build_site.py        # 16 个教程页 + 6 个研究页，共 22 页 → site/
+.venv/bin/python scripts/build_site.py        # 16 个教程页 + 4 个旧路径兼容页 + 6 个研究页，共 26 页 → site/
 .venv/bin/python scripts/build_pdf.py         # 合订 chapters/ → dist/combined.html → dist/microphone-array-tutorial.pdf（需 Chrome）
 .venv/bin/python codes/chapters/ch00/examples/generate_audio_samples.py --check  # 只核对音频、参数与摘要，不重写文件
 .venv/bin/python codes/chapters/ch02/examples/prepare_real_recordings.py --check  # 真实录音及派生文件，离线核对
@@ -59,8 +59,8 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 | `make_delay_figures.py` | 只生成图75；源时刻手算、实际PCM历史/整数误差与独立T60功率模型分开，绑定五音频源及两绘图源 | `figures/fig75_prediction_delays.png`、`ch07/reports/figure75_prediction_delays.json` |
 | `make_css_figures.py` | 只生成图76；既定槽位倍率与两窗实际PCM误差分开，绑定六音频源及两绘图源 | `figures/fig76_css_polarity_gain.png`、`ch08/reports/figure76_css_polarity_gain.json` |
 | `make_aec_figures.py` | 10 张回声消除专题图（原 7 张另加两带子带、IPNLMS/RLS/Kalman 状态图及 PBFDAF 流程图）。风格与上一个脚本统一（六色/五级字号/dpi150） | `figures/fig26`～`fig32_*`、`fig37`～`fig39_*` |
-| `build_site.py` | 生成 16 个教程页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
-| `build_pdf.py` | 合订本脚本。16 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
+| `build_site.py` | 生成 16 个当前教程页、4 个旧路径兼容页和 6 个研究页，保留旧版语义及顺序深链；编号图直接引用 `figures/`，独立音频与状态按各自清单核验并复制；站点 MathJax 在线加载 | `site/` 下的网页及独立媒体副本 |
+| `build_pdf.py` | 合订本脚本。16 篇合成带封面和三级目录的 HTML，Chrome 标签化打印 A4 PDF，再以保留结构树的方式写三级书签；第 1～13 章及附录 A/B 的源 h4 进入第三级。常用 flag：`--html-only`、`--pdf-only`、`--no-bookmarks`、`--build-date YYYY-MM-DD` | `dist/combined.html` 与 `dist/microphone-array-tutorial.pdf` |
 | `build_markdown_helpers.py` | 两构建器共享的Markdown数学与代码边界处理；保留代码、原始HTML及转义美元符的语义，数学暂存标识避开原文 | 供构建器导入，无独立产物 |
 | `code_layout.py` | 主音频组到首讲章节的唯一映射及路径查询；生成器、构建和检查共同使用这一布局 | 各章 `audio/` 路径，不单独生成文件 |
 | `heading_aliases.py`、`legacy_sequential_anchors.json` | 按主题维护已发布节号和顺序深链；构建器插入历史别名，门禁另外核对主题与唯一性 | 网页和合订HTML中的兼容锚点 |
@@ -86,11 +86,11 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 .venv/bin/python -m codes.chapters.appendix_b.examples.room_srp_exercise --check
 ```
 
-附录 B 的 E13-03～15 为只读逐步实验；最后一条 `--check` 仅核对第 16 题的固定房间几何和 Sabine 输入，**不会**重新计算房间脉冲响应或改写已发布资产。完整仿真命令见下文[附录 B 房间仿真复算](#附录-b-房间仿真复算)。改图练习须使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。
+附录 B 的 E15-03～15 为只读逐步实验；最后一条 `--check` 仅核对第 16 题的固定房间几何和 Sabine 输入，**不会**重新计算房间脉冲响应或改写已发布资产。完整仿真命令见下文[附录 B 房间仿真复算](#附录-b-房间仿真复算)。改图练习须使用脚本副本或独立输出目录，记录改变的参数，不覆盖本书的发布图。
 
 第 11 章 [`chapter11_experiments.py`](../codes/chapters/ch11/chapter11_experiments.py) 包含 E11-10～27 十八道选型计算。图 46 读取本书构造的四候选表；图 47 在四个实际导出的 FIR 音频通过摘要校验后，从 PCM 重新投影频率并核对对齐误差。图64另读两场景八个独立WAV，共同增益与完整尾部保留。图79另用已知单频统计比较四个真实计算候选，分开实际噪声、另模型DI、声学硬条件与未测设备延迟，不产生新WAV。四图的条件、数据与脚本入口见[第 11 章](../chapters/11_selection-guide.md)和[音频实验 §33与§44](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
-附录 A 的入口复算E12-06～20；E12-20用已知完整相关噪声协方差求无失真权重，并同步白化观测和设计向量。E12-08先核20个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E12-19核对`weighted_audio/`严格六成员与四个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+附录 A 的入口复算E14-06～20；E14-20用已知完整相关噪声协方差求无失真权重，并同步白化观测和设计向量。E14-08先核20个真实主生成源，再读正式三WAV的整数样本；源摘要过期、文件缺失或PCM不符时直接失败。E14-19核对`weighted_audio/`严格六成员与四个真实源，在同一28800点稳定窗比较三种固定权重。图65从实际PCM读整数分子、分母，随图生成`appendix_a/reports/figure65_weighted_noise.json`。参数与试听入口见[音频实验§45](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 固定pb_bss原求解器的本地合同可运行：
 
@@ -100,7 +100,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 工具复用已注册的来源核验，分开记录当前锁表/获取状态/完整选集和实际所用两个原文件。从已核完整源码字节编译执行原模块，不读取或删除原字节码缓存；原四例与新增四个形状/复数批次控制分栏，另两例直接调用NumPy。整数回退截断及批次回退丢虚部保留为真实结果。仅上述当前报告路径允许仓内写入，历史报告及源码目标拒绝；直接依赖前后核不代表全包或本机LAPACK依赖闭包核验，不把局部调用当成完整波束形成。
 
-附录B的 E13-11～14 分别复算共享TAC聚合、DRR/EDC安全尺度、T20时间条件化与同DRR频响对照。`appendix_b.examples.generate_response_audio --check`只读核四真实源、严格六成员及五WAV完整内存回放。图66独立读实际PCM整数，保存`appendix_b/reports/figure66_equal_drr_response.json`；解析反射能量与实际完整输出误差分别显示。参数、五个播放器和答案见[音频实验§46](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
+附录B的 E15-11～14 分别复算共享TAC聚合、DRR/EDC安全尺度、T20时间条件化与同DRR频响对照。`appendix_b.examples.generate_response_audio --check`只读核四真实源、严格六成员及五WAV完整内存回放。图66独立读实际PCM整数，保存`appendix_b/reports/figure66_equal_drr_response.json`；解析反射能量与实际完整输出误差分别显示。参数、五个播放器和答案见[音频实验§46](../codes/chapters/ch00/research/05_exercises_and_audio.md)。
 
 `appendix_b.examples.check_room_assets` 默认核21普通成员、七真实源、绑定报告及18PCM；`--replay`另需固定PRA环境并实际重跑，不把只读结构/PCM检查称为重跑房间。`appendix_b.examples.audit_tac_contracts`只读核固定作者原源的10个静态合同，显式`--report`才写报告，原神经网络调用为0。
 
@@ -120,7 +120,7 @@ Windows 上把 `.venv/bin/python` 换成 `.venv\Scripts\python`。
 
 **发布与验收说明**
 
-**书签与人工抽查**：合订本 PDF 顶层是导读、11 章正文、2 篇扩展专题和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 740 个源 h4 作为第三级书签，并保持在各自父节之下。
+**书签与人工抽查**：合订本 PDF 顶层是导读、13 章正文（含两篇扩展专题）和 2 篇附录，第二层来自各篇实际小节；第 1～11 章、两篇扩展专题与附录共有 740 个源 h4 作为第三级书签，并保持在各自父节之下。
 
 书签使用 HTML 标题 id 对应的 PDF 命名目标，保留页内定位。命名目标缺失、越界或同名却指向不同位置时构建失败；发布门禁独立比较每项书签与正文目标的页码及视图参数。目录和正文可能出现同名标题，仅检查落页文字不能识别误跳到目录的问题。
 
@@ -252,14 +252,14 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 
 ## 扩展专题Ⅰ：成像实验与稳定章节身份
 
-新增阅读顺序为第11章→扩展专题Ⅰ→扩展专题Ⅱ→附录A→附录B。源文件前缀14、公式14-x、练习E14与合订目标ch-14保持一致；附录仍使用原12/13身份。`build_pdf.chapter_number`从文件名取稳定身份，不由列表位置重新编号，旧附录书签与练习深链须同时验收。
+阅读顺序为第11章→第12章成像专题→第13章分布式专题→第14章附录A→第15章附录B。源文件、公式、练习和代码采用当前章号。PDF隐藏目标保留原主题身份：成像ch-14、分布式ch-15、附录A ch-12、附录B ch-13；这四个名字只用于兼容旧链接。`chapter_identity.py`与`chapter_numbering.json`记录实际旧标题到当前标题的主题映射，参与两种产物的源摘要。站点另生成四个旧路径兼容页面，沿用同主题正文与导航并指向当前规范页面；PDF旧标题和练习别名须核对当前标题的实际页及页内坐标。
 
 ```bash
-.venv/bin/python -m codes.chapters.ch14.chapter14_exercises
-.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio
-.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio  # 17 independent WAVs; --check只读
-.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio --check
-.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
+.venv/bin/python -m codes.chapters.ch12.chapter12_exercises
+.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio  # 17 independent WAVs; --check只读
+.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio --check
+.venv/bin/python -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts
 ```
 
 18题只读计算；五个独立24kHz数学WAV保留完整四点传播尾，不混入主109份。图67～69分别复算PSF与二维泄漏、非相干模型及full-CSM CLEAN-SC、校准与不同拟合目标。图80另比较同一合法CSM下的扫描与完整CSM目标。四报告绑定当前四个真实源；原Acoular限定调用报告保留目标差异与未执行条件。源、PCM、图和网页/PDF验收分别记，不能用其中一项代替另一项。详见[音频实验§47](../codes/chapters/ch00/research/05_exercises_and_audio.md#sec-47-1)与[原源合同](../codes/chapters/ch00/research/01_spatial_and_tracking.md#imaging-contract-audit)。
@@ -268,9 +268,9 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 ## 扩展专题Ⅱ的已知统计、音频与原源码合同
 
 ```bash
-.venv/bin/python -m codes.chapters.ch15.chapter15_exercises
-.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio --check
-.venv/bin/python -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
+.venv/bin/python -m codes.chapters.ch13.chapter13_exercises
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio --check
+.venv/bin/python -m codes.chapters.ch13.examples.audit_upstream_distributed_contracts
 ```
 
 25题覆盖任务相关压缩、真实广播更新、退化输入、时钟、缺口、树消息与GEVD。17个独立WAV用共同增益1和九个冻结真实源；图70/72先完整只读回放，再独立读整数PCM核E/D。图71记录广播改变后的当前有效权重，旧求解快照另列；预算含初始两次求解。原MATLAB仅静态合同及独立控制；paderwasn仅三个NumPy助手原函数，未执行完整网络或WOLA链。详见[实验§48](../codes/chapters/ch00/research/05_exercises_and_audio.md#distributed-exercises-audio)。
@@ -285,4 +285,6 @@ PRA_NUM_THREADS=2 /tmp/masp-room-pra/bin/python -m codes.chapters.appendix_b.exa
 
 第10章E10-34由唯一MVDR核重建剩余通道约束，[六WAV独立清单](../codes/chapters/ch10/channel_audio/MANIFEST.json)不能并入主109；图78与实际PCM表使用同一27200点窗口，不拟合增益或时延。生成后使用`generate_channel_audio --check`严格只读完整回放，再运行`make_channel_figures.py`。累计遥测RTF与可选逐帧服务RTF独立命名；校验器不证明跨记录计时或重启关系。
 
-扩展专题Ⅰ作者原模块核验需现有环境提供NumPy、SciPy和matplotlib：`python -B -m codes.chapters.ch14.examples.audit_damas_author_contracts`默认只读终端。显式 `--report codes/chapters/ch14/reports/damas_author_contracts_current.json`才保存新当前报告；原零CSM失败与未运行的数据/MATLAB/MEX分别记录。取得源码前先按[来源手册§13](../codes/chapters/ch00/research/04_source_reproduction.md#imaging-author-source)核固定版本与GPL许可。
+扩展专题Ⅰ作者原模块核验需现有环境提供NumPy、SciPy和matplotlib：`python -B -m codes.chapters.ch12.examples.audit_damas_author_contracts`默认只读终端。显式 `--report codes/chapters/ch12/reports/damas_author_contracts_current.json`才保存新当前报告；原零CSM失败与未运行的数据/MATLAB/MEX分别记录。取得源码前先按[来源手册§13](../codes/chapters/ch00/research/04_source_reproduction.md#imaging-author-source)核固定版本与GPL许可。
+
+PDF命名目标来自实际标题或练习的显式锚，不从目录同名文字猜测。透明的非流式引用条使Chrome导出这些真实目标；旧别名在打印后复制当前同主题目标的页号和完整坐标。练习锚可位于标题后或粗体题名旁，因此旧E号绑定当前真实E锚，不能一律改绑最近的h4。写入后重新打开PDF逐项核验；缺失或冲突会拒绝发布。

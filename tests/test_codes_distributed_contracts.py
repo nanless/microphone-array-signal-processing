@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 import numpy as np
 
-from codes.chapters.ch15.examples import audit_upstream_distributed_contracts as audit
+from codes.chapters.ch13.examples import audit_upstream_distributed_contracts as audit
 from codes.chapters.ch00.io_contracts import strict_json_loads, write_json_report
 from codes.chapters.ch00.upstream.fetch_upstreams import run_git
 
@@ -87,7 +87,7 @@ class DistributedBoundaryTests(unittest.TestCase):
                      audit.ROOT / 'reviews/old.json',
                      audit.HISTORICAL_REPORT, audit.upstream.STATUS,
                      audit.source_history.SNAPSHOT_ROOT / 'old.json',
-                     audit.ROOT / 'codes/chapters/ch14/reports/upstream_imaging_contracts.json'):
+                     audit.ROOT / 'codes/chapters/ch12/reports/upstream_imaging_contracts.json'):
             with self.subTest(path=path), self.assertRaises(ValueError):
                 audit.report_target(path)
         self.assertEqual(audit.report_target(audit.CURRENT_REPORT), audit.CURRENT_REPORT)

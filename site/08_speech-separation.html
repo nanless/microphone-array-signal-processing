@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 8 章 · 语音分离 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -325,10 +328,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -406,7 +409,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="08_speech-separation.html#sec-u-6695554cf2">E08-32：把极性与增益问题变成连续的两块音频</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 8 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 8 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="07_wpe-dereverberation.html">第 7 章 · 去混响（WPE）</a> ｜ 下一篇：<a href="09_source-tracking.html">第 9 章 · 声源追踪</a></p>
 </blockquote>
 <span id="sec-1" class="anchor-alias" aria-hidden="true"></span><h1 id="sec-u-7c0095c9a8">8. 语音分离</h1>
@@ -1335,7 +1338,7 @@ Y&=P_{\mathcal S}(Y).
 <p><strong>第 4 步：不要把一步迭代误认成稳定估计。</strong> 若继续固定本题的责任权重，下一轮二次型为 $2/3,2$，未归一矩阵为 $\operatorname{diag}(9/4,1/4)$，迹归一后为 $\operatorname{diag}(1.8,0.2)$。这组只有两个正交方向且权重不均衡的数据会把形状推向边界；它不是证明已收敛的训练集。若两帧都改成 $[1,0]^\top$，第一步就得到 $\operatorname{diag}(2,0)$，虽然迹为 2，矩阵却奇异，下一轮密度没有合法逆矩阵。</p>
 <p>教学整链在归一化后使用向单位阵收缩等显式正则化，并在质量不足时重置分量；例如将奇异矩阵收缩为 $(1-0.02){\mathbf B}+0.02{\mathbf I}$，其特征值为 $1.98,0.02$。这样改变了无正则化迭代，必须保留参数，不能把“迹已经归一化”当成正定保证。</p>
 <p>运行 <code>.venv/bin/python -m codes.chapters.ch00.cross_chapter.enhancement_structure_exercises</code>；<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/enhancement_structure_exercises.py">原创代码</a>和<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/tests/test_codes_enhancement_structure.py">独立测试</a>检查分数结果、正比例尺度不变、复数外积的共轭以及秩亏拒绝。这里只执行形状子步骤，没有重新运行官方 GSS、生成该题音频或测量分离质量。</p>
-<p>以下E08-12～29的确定性输入与步骤由本书推导；运行 <code>.venv/bin/python -m codes.chapters.ch08.chapter08_experiments</code>，入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/chapter08_experiments.py">chapter08_experiments.py</a>的 <code>run_experiments()</code>。其中矩阵题只验证指定数学步骤，E08-23使用人为给定的输出槽位检验连续拼接，E08-28使用真值构造掩码能力对照，均不冒充新训练的分离网络。音频检查读取已经发布的文件，失败时明确报错，不通过重生覆盖坏资产。</p>
+<p>以下E08-12～32的确定性输入与步骤由本书推导；运行 <code>.venv/bin/python -m codes.chapters.ch08.chapter08_experiments</code>，入口为<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch08/chapter08_experiments.py">chapter08_experiments.py</a>的 <code>run_experiments()</code>。其中矩阵题只验证指定数学步骤，E08-23使用人为给定的输出槽位检验连续拼接，E08-28使用真值构造掩码能力对照，均不冒充新训练的分离网络。音频检查读取已经发布的文件，失败时明确报错，不通过重生覆盖坏资产。</p>
 <p><a id="e08-12"></a></p>
 <h3 id="sec-u-b8a7fee7f2">E08-12：复数 IP 为什么要共轭写回并逐行更新？</h3>
 <p><strong>题设。</strong> 取 ${\mathbf W}_0={\mathbf I}_2$，两行暂用同一个加权矩阵</p>

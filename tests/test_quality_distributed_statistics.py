@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from scripts import quality_check as quality
-from codes.chapters.ch15.core.distributed import broadcast_statistics_control
+from codes.chapters.ch13.core.distributed import broadcast_statistics_control
 
 
 class DistributedStatisticsPublicationTests(unittest.TestCase):
@@ -36,7 +36,7 @@ class DistributedStatisticsPublicationTests(unittest.TestCase):
     def test_false_online_estimator_scope_is_a_publication_error(self):
         result = broadcast_statistics_control()
         result['scope'] = 'executed blind TI-DANSE network'
-        with patch('codes.chapters.ch15.core.distributed.broadcast_statistics_control', return_value=result):
+        with patch('codes.chapters.ch13.core.distributed.broadcast_statistics_control', return_value=result):
             errors = []
             quality.check_distributed_numerical_controls(errors)
         self.assertEqual(len(errors), 1)

@@ -10,14 +10,14 @@ from unittest.mock import patch
 
 import numpy as np
 
-from codes.chapters.ch14.examples import audit_damas_author_contracts as audit
+from codes.chapters.ch12.examples import audit_damas_author_contracts as audit
 
 
 class AuthorReportGuards(unittest.TestCase):
     def test_preflight_refuses_history_source_cache_and_lock_before_execution(self):
         targets = [audit.upstream.CACHE/'damas-author/new.json', audit.upstream.LOCK,
                    audit.upstream.STATUS, Path(audit.__file__),
-                   audit.ROOT/'codes/chapters/ch14/reports/upstream_imaging_contracts.json']
+                   audit.ROOT/'codes/chapters/ch12/reports/upstream_imaging_contracts.json']
         with patch.object(audit, 'run_audit') as run:
             for path in targets:
                 with self.subTest(path=path), self.assertRaises(ValueError):

@@ -14,7 +14,7 @@ import wave
 
 import numpy as np
 
-from codes.chapters.ch15.examples import generate_distributed_audio as generator
+from codes.chapters.ch13.examples import generate_distributed_audio as generator
 
 
 class DistributedFixturePreflightTests(unittest.TestCase):

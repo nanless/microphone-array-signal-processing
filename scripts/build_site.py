@@ -29,11 +29,13 @@ try:
         restore_code, validate_url_schemes, render_markdown, parsed_markdown_headings,
         map_table_cell_text)
     from scripts.code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+    from scripts.chapter_identity import LEGACY_HTML_ROUTES, inject_exercise_aliases
 except ModuleNotFoundError:  # direct ``python scripts/build_site.py``
     from build_markdown_helpers import (ALLOWED_LINK_SCHEMES, protect_code,
         restore_code, validate_url_schemes, render_markdown, parsed_markdown_headings,
         map_table_cell_text)
     from code_layout import MAIN_AUDIO_GROUP_CHAPTER, main_audio_manifest_path, main_audio_path
+    from chapter_identity import LEGACY_HTML_ROUTES, inject_exercise_aliases
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -82,8 +84,8 @@ CSS_AUDIO_WAVS = {"css_" + name + ".wav" for name in
 SCENARIO_AUDIO_ROOT = CODE_CHAPTERS / "ch11" / "scenario_audio"
 WEIGHTED_AUDIO_ROOT = CODE_CHAPTERS / "appendix_a" / "weighted_audio"
 RESPONSE_AUDIO_ROOT = CODE_CHAPTERS / "appendix_b" / "response_audio"
-IMAGING_AUDIO_ROOT = CODE_CHAPTERS / "ch14" / "imaging_audio"
-DISTRIBUTED_AUDIO_ROOT = CODE_CHAPTERS / "ch15" / "distributed_audio"
+IMAGING_AUDIO_ROOT = CODE_CHAPTERS / "ch12" / "imaging_audio"
+DISTRIBUTED_AUDIO_ROOT = CODE_CHAPTERS / "ch13" / "distributed_audio"
 DISTRIBUTED_AUDIO_WAVS = {
     name + ".wav" for name in (
         "reference_node1", "reference_node2", "array_white", "array_correlated",
@@ -193,10 +195,10 @@ CHAPTERS = [
     ("09_source-tracking.md", "第 9 章 · 声源追踪"),
     ("10_engineering-practice.md", "第 10 章 · 工程实现、评测与产业实践"),
     ("11_selection-guide.md", "第 11 章 · 总结与选型指南"),
-    ("14_acoustic-imaging.md", "扩展专题Ⅰ · 声学成像与噪声源诊断"),
-    ("15_distributed-enhancement.md", "扩展专题Ⅱ · 分布式麦克风协同增强"),
-    ("12_appendix-symbols-math.md", "附录 A · 符号术语数学"),
-    ("13_appendix-guide.md", "附录 B · 路径地图与练习"),
+    ("12_acoustic-imaging.md", "第 12 章 · 声学成像与噪声源诊断"),
+    ("13_distributed-enhancement.md", "第 13 章 · 分布式麦克风协同增强"),
+    ("14_appendix-symbols-math.md", "第 14 章 · 附录 A：符号术语数学"),
+    ("15_appendix-guide.md", "第 15 章 · 附录 B：路径地图与练习"),
 ]
 HOME_FNAME = "00_overview.md"
 RESEARCH = [
@@ -265,7 +267,7 @@ NARROW_TABLE_POLICIES = {
         ("追踪输出字段", "含义与单位", "消费方必须检查"): (52, {1: 14, 2: 18, 3: 20}),
         ("状态时刻（s）", "模式1概率", "模式2概率", "均值（度）", "方差（平方度）"): (53, {1: 8, 2: 11, 3: 11, 4: 11, 5: 12}),
     },
-    SRC / "15_distributed-enhancement.md": {
+    SRC / "13_distributed-enhancement.md": {
         ("音频组", "实际文件", "该组回答的问题"): (48, {1: 8, 2: 22, 3: 18}),
     },
     SRC / "11_selection-guide.md": {
@@ -280,13 +282,13 @@ NARROW_TABLE_POLICIES = {
         ("候选", "1500 Hz目标幅度保留", "3500 Hz噪声衰减（dB）", "对齐NMSE（dB）"): (44, {1: 6}),
         ("场景与候选", "目标整数能量D", "误差整数能量E", "实际PCM线性NMSE"): (50, {1: 8}),
     },
-    SRC / "12_appendix-symbols-math.md": {
+    SRC / "14_appendix-symbols-math.md": {
         ("符号", "含义"): (34, {1: 8}),
         ("术语", "解释"): (32, {1: 8}),
         ("权重", "误差均方的逐项计算", "解析 MSE", "解析 NMSE（除以 $0.02$）"): (52, {1: 6}),
         ("输出", "实际整数误差平方和 $E_I$", "实际 PCM MSE", "实际 PCM NMSE"): (50, {1: 6}),
     },
-    SRC / "13_appendix-guide.md": {
+    SRC / "15_appendix-guide.md": {
         ("声源位置", "距离 (m)", "真方位 (°)", "$T_{20}$ 外推 $T_{60}$ (s)", "DRR (dB)", "SRP 方位 (°)", "绝对误差 (°)"): (64, {1: 8}),
         ("声源位置", "完整 WAV 帧数", "前 1 秒 SRP 方位", "整段 SRP 方位", "后者减前者"): (60, {1: 8}),
         ("完整输出", "整数误差平方和 $E$", "实际PCM MSE", "实际PCM NMSE"): (48, {1: 6}),
@@ -324,8 +326,11 @@ CSS = """
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -1015,7 +1020,7 @@ def stage_imaging_audio(source, destination):
     """Publish the five complete, replayed imaging snapshot fixtures."""
     expected = IMAGING_AUDIO_WAVS | {"MANIFEST.json"}
     _preflight_asset_stage(source, destination, expected)
-    from codes.chapters.ch14.examples.generate_imaging_audio import check_assets
+    from codes.chapters.ch12.examples.generate_imaging_audio import check_assets
     check_assets(source)
     from codes.chapters.ch00.io_contracts import validate_asset_directory as validate_imaging
     validate_imaging(destination, expected, check=False)
@@ -1029,7 +1034,7 @@ def stage_distributed_audio(source, destination):
     """Publish seventeen fully replayed covariance/transport teaching WAVs."""
     expected = DISTRIBUTED_AUDIO_WAVS | {"MANIFEST.json"}
     _preflight_asset_stage(source, destination, expected)
-    from codes.chapters.ch15.examples.generate_distributed_audio import check_assets
+    from codes.chapters.ch13.examples.generate_distributed_audio import check_assets
     check_assets(source)
     validate_asset_directory(destination, expected, check=False)
     destination.mkdir()
@@ -1176,6 +1181,8 @@ def source_digest():
     paths += [Path(__file__), ROOT / "scripts" / "build_markdown_helpers.py",
               INLINE_LAYOUT_PATH,
               ROOT / "scripts" / "heading_aliases.py",
+              ROOT / "scripts" / "chapter_identity.py",
+              ROOT / "scripts" / "chapter_numbering.json",
               ROOT / "scripts" / "legacy_sequential_anchors.json",
               ROOT / "scripts" / "code_layout.py",
               ROOT / "scripts" / "make_figures.py",
@@ -1232,6 +1239,8 @@ def source_outputs():
         **{(SRC / name).resolve(): name.replace(".md", ".html")
            for name, _ in CHAPTERS},
         (SRC / HOME_FNAME).resolve(): "index.html",
+        **{(SRC / old.replace(".html", ".md")).resolve(): old
+           for old in LEGACY_HTML_ROUTES},
         **{(RESEARCH_ROOT / name).resolve():
            "research/" + ("index.html" if name == "README.md" else name.replace(".md", ".html"))
            for name, _ in RESEARCH},
@@ -1440,6 +1449,7 @@ def render(md_text, source_path=None):
         return f'{alias}<{tag} id="{primary}">{inner}</{tag}>'
 
     html = re.sub(r"<(h[1-4])>(.*?)</\1>", repl, html, flags=re.S)
+    html = inject_exercise_aliases(html, source_path.name)
     html = re.sub(r'<th(?=[\s>])(?![^>]*\bscope=)([^>]*)>',
                   r'<th scope="col"\1>', html, flags=re.S)
     # These engineering tables need phrases rather than single-character
@@ -1541,7 +1551,7 @@ def render(md_text, source_path=None):
                       r'<a id="\1" class="source-reproduction-anchor"></a>', html)
     policies = NARROW_TABLE_POLICIES.get(source_path.resolve(), {})
     imaging_audio_page = source_path.resolve() in {
-        (SRC / "14_acoustic-imaging.md").resolve(),
+        (SRC / "12_acoustic-imaging.md").resolve(),
         (RESEARCH_ROOT / "05_exercises_and_audio.md").resolve(),
     }
     if policies or imaging_audio_page:
@@ -1819,6 +1829,13 @@ def main():
                 inline_layout_script=inline_layout_script,
                 sidebar=sidebar_with_anchors(fname, heads), toc=toc,
                 body=body, pn=pn), encoding="utf-8")
+        # Old routes render the current topic with its current navigation. The
+        # complete page and topic-local aliases work without JavaScript.
+        for old, current in LEGACY_HTML_ROUTES.items():
+            legacy = (temp_out / current).read_text(encoding="utf-8")
+            legacy = legacy.replace("<head>",
+                '<head>\n<link rel="canonical" href="'+current+'">', 1)
+            (temp_out / old).write_text(legacy, encoding="utf-8")
         (temp_out / "research").mkdir()
         for fname, label in RESEARCH:
             source = RESEARCH_ROOT / fname

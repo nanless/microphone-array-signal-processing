@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>第 4 章 · 声源定位（DOA 估计） · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -313,10 +316,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="13_appendix-guide.html">附录 B · 路径地图与练习</a></div>
+<div class="chap"><a href="12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div>
 <div class="chap"><a href="research/index.html">源码研究</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
@@ -382,7 +385,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <li>&nbsp;&nbsp;<a href="04_doa-estimation.html#sec-u-581e3d1df1">E04-25：首CTF系数比怎样从交叉关系中求出？</a></li>
 </ul></nav></details>
 <blockquote>
-<p>⚠️ 本篇是教程正文第 4 章（正文共 11 章，另有两篇扩展专题和附录 A/B），可独立阅读，前后篇见下方导航。</p>
+<p>⚠️ 本篇是教程正文第 4 章（正文共 13 章（其中第 12、13 章为扩展专题），另有附录 A/B），可独立阅读，前后篇见下方导航。</p>
 <p>🏠 首页导读：<a href="index.html">🏠 导读与导航</a> ｜ 上一篇：<a href="03_array-geometry.html">第 3 章 · 阵列几何形态</a> ｜ 下一篇：<a href="05_beamforming.html">第 5 章 · 波束形成</a></p>
 </blockquote>
 <hr />
@@ -444,7 +447,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </tr>
 </tbody>
 </table></div>
-<p>矩阵的共轭转置记为 $^H$，普通转置记为 $^\top$；$\mathbf I$ 是单位矩阵。$M$ 为麦数、$K$ 为候选源数。涉及快拍、特征向量和矩阵分解时，可对照<a href="12_appendix-symbols-math.html">附录 A 的数学工具</a>。</p>
+<p>矩阵的共轭转置记为 $^H$，普通转置记为 $^\top$；$\mathbf I$ 是单位矩阵。$M$ 为麦数、$K$ 为候选源数。涉及快拍、特征向量和矩阵分解时，可对照<a href="14_appendix-symbols-math.html">附录 A 的数学工具</a>。</p>
 <span id="sec-2" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-4-1">4.1 总览：四大类思路</h2>
 <pre><code>声源定位算法
 ├── 两阶段法：先从一对或多对麦克风估计到达时差，再按几何关系解位置（§4.2、§4.4）
@@ -1213,14 +1216,13 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 </blockquote>
 <p><strong>逐源声图的一个研究入口。</strong> SAID（Semantic Acoustic Imaging Detector，语义声学成像检测器）的<a href="https://arxiv.org/html/2609.31492v1" title="citation">2026年9月25日作者预印本v1，§2.1～2.2、§3～4</a>直接用四通道谱幅度和相位的正弦、余弦形成按方向排列的特征，再用候选源槽解码逐源能量图、活动与类别。相对“先生成声图，再做图像检测”的路线，它改变了音频到方向特征和逐源掩码的连接方式。</p>
 <p>该模型的16个候选槽不是16个同时活动声源的保证；训练通道、房间、类别和设备域仍限制使用范围。最小研究可先核对官方张量形状、候选槽输出及声图压缩，再取得获准使用的权重和数据检验新阵列；本书没有运行完整模型或建立工业实时性结论。固定源码、独立权重许可与最小调用见<a href="research/01_spatial_and_tracking.html#said-semantic-imaging">空间研究手册的 SAID 专题</a>。</p>
-<p>SAID 的逐源图同时关联类别与活动；扩展专题Ⅰ按传播和二阶统计模型估计空间源量。两类图的输出与验证条件见<a href="14_acoustic-imaging.html#sec-u-88a0040394">扩展专题Ⅰ：与定位、增强和语义成像的区别</a>。能量图或功率图本身不能直接当作增强音频。</p>
+<p>SAID 的逐源图同时关联类别与活动；扩展专题Ⅰ按传播和二阶统计模型估计空间源量。两类图的输出与验证条件见<a href="12_acoustic-imaging.html#sec-u-88a0040394">扩展专题Ⅰ：与定位、增强和语义成像的区别</a>。能量图或功率图本身不能直接当作增强音频。</p>
 <p><strong>距离估计：从方向扩展到三维位置</strong>：远场平面波的相对时延模型只给方向；近场球面波的通道间时延还随距离变化（见 §2.7）。网络也可能利用波前曲率、直达混响比（DRR）和绝对声级。</p>
 <p>绝对声级对应的距离线索依赖未知声源级别；在 §2.4.3 所用的同一声源功率同时缩放直达声与混响声的理想模型下，DRR 是两者之比，声源功率会约去。实际 DRR 仍受房间、源与麦克风指向性、距离及录音噪声影响，不能当作单独可靠的距离刻度。距离结果必须在明确的数据集、误差定义和范围内报告，不能与只估方向的结果直接比较。</p>
 <span id="sec-4-7-1" class="anchor-alias" aria-hidden="true"></span><span id="sec-13" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-00305faff5">近场模型失配：角度相同，距离仍会改变导向矢量</h3>
 <p>取 3 麦 ULA，阵元横坐标为 $[-5,0,5]$ cm；声源距阵列中心 $r=20$ cm，方位 $\theta=30°$（从正横起算）。声源坐标为 $(r\sin\theta,r\cos\theta)=(0.10,0.1732)$ m。三个传播距离约为 $[0.22913,0.20000,0.18028]$ m，因此相对中心麦的路程差为</p>
 <p>$$\boldsymbol\delta_{\rm sph}=[+29.13,\ 0,\ -19.72]\ \text{mm}。$$</p>
-<p>若误用远场平面波，预测值是 $-x_m\sin\theta$，即 $[+25,0,-25]$ mm。两者的路程差均方根误差为</p>
-<p>三个路程误差依次为 $29.13-25=4.13$ mm、0、$-19.72+25=5.28$ mm，因此</p>
+<p>若误用远场平面波，预测值是 $-x_m\sin\theta$，即 $[+25,0,-25]$ mm。三个路程误差依次为 $29.13-25=4.13$ mm、0、$-19.72+25=5.28$ mm，因此</p>
 <p>$$\sqrt{\frac{4.13^2+0^2+5.28^2}{3}}\approx3.87\ \text{mm}\text{，}$$</p>
 <p>相当于约 $11.3\ \mu$s；在 4 kHz（$\lambda\approx85.8$ mm）处对应约 $16.2°$ 的均方根相位误差。</p>
 <p><strong>锚点算法：角度 × 距离球面扫描。</strong> 为把“加入距离维度”变成可复算步骤，仍取上面的 3 麦阵列，并假定单个点声源、自由场、已知声速 $c=343$ m/s、通道同步且已校准；这个最小例只用 TDOA，不使用 $1/d_m$ 幅度线索。对候选 $(r,\theta)$：</p>
@@ -1388,7 +1390,7 @@ u_y&=-\frac{0.0282975}{0.04}=-0.7074375\text{。}
 </ol>
 <p>这些量是诊断特征，不自动成为正确方向的概率。平坦响应、空间混叠或镜像歧义须另行判断，不能用高峰背比消除。丢轨阈值必须用本系统验证集标定。满足丢轨条件后，追踪器应转入重捕获状态，而不是继续输出抖动角度。这三类量是第 9 章追踪状态机的输入。</p>
 <h3 id="sec-4-8-1">4.8.1 双源分辨率：先规定成功，再重复抽样</h3>
-<p>图 11 的一次谱形不能给出“能分开多近的两个声源”的成功概率。这里把 §13.6.2 第 6 题变成 E04-08 的重复试验：固定算法、阵列和选峰规则，只改变两源间隔，逐次记录两个方向是否都被正确找到。MUSIC 的信号与噪声子空间定义见 <a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 1986 原论文</a>；下面的计数和区间是本书仿真，不是该论文的性能数字。</p>
+<p>图 11 的一次谱形不能给出“能分开多近的两个声源”的成功概率。这里把 §15.6.2 第 6 题变成 E04-08 的重复试验：固定算法、阵列和选峰规则，只改变两源间隔，逐次记录两个方向是否都被正确找到。MUSIC 的信号与噪声子空间定义见 <a href="https://doi.org/10.1109/TAP.1986.1143830" title="citation">Schmidt 1986 原论文</a>；下面的计数和区间是本书仿真，不是该论文的性能数字。</p>
 <p><strong>输入与比较口径。</strong> 8 元半波长均匀线阵，单个窄带频点，正横为 $0°$。两个互不相关的圆对称复高斯源各有单位功率，角度关于 $0°$ 对称，间隔分别为 $50°$、$15°$ 和 $8°$。</p>
 <p>“基线”配置中，每只麦的独立复高斯噪声功率为 $0.02$，故两源总体功率之和相对单麦噪声功率为 $2/0.02=100$，即阵列输入 SNR 为 $20$ dB；每次用 400 个独立快拍构造未中心化样本协方差。第二组“有限样本低 SNR”配置取 64 快拍、单麦噪声功率 2，即阵列输入 SNR 为 $0$ dB。两组均无混响、通道失配和源间相干。</p>
 <p>每组配置各重复 200 次，随机数生成器为 PCG64，基础种子为 <code>20260924</code>，第 $t$ 次使用 <code>SeedSequence([20260924,t])</code>。同一次抽样的两条源序列和八路噪声同时供三个算法与三个角度间隔使用；改变间隔时只改变导向矩阵。</p>
@@ -1703,7 +1705,7 @@ g_k&=\left(\prod_{i=k+1}^{M}\hat\lambda_i\right)^{1/(M-k)}。
 <p>运行 <a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch00/cross_chapter/spatial_precision_exercises.py"><code>spatial_precision_exercises.py</code></a> 的 <code>E04-10</code> 可得到原始观测、闭合残差、未舍入投影、共享参考协方差和网格反例。均为确定性代数，不是实际录音的定位精度统计。</p>
 <p><a id="e04-11"></a></p>
 <h3 id="sec-u-b0738d4f79">E04-11：已知有色噪声时，只把协方差白化够不够？</h3>
-<p>附录 A 的 E12-04 已说明白化后必须同步修改导向。本题把这条规则放进完整 MUSIC 搜索，观察漏改一步会把方向推到哪里。</p>
+<p>附录 A 的 E14-04 已说明白化后必须同步修改导向。本题把这条规则放进完整 MUSIC 搜索，观察漏改一步会把方向推到哪里。</p>
 <p>取三元半波长间距 ULA，在一个固定频点使用 $a_m(\theta)=e^{j\pi m\sin\theta}$，$m=0,1,2$，角度从正横方向起算。目标在 0°，导向为 $\vec a=[1,1,1]^\top$，功率为 1。干扰在 30°，导向为 $\vec b=[1,j,-1]^\top$，功率为 9，另有每通道功率为 1 的独立白噪声。</p>
 <p>本题把干扰计入<strong>已知噪声协方差</strong>，只求一个目标，因此 MUSIC 的目标数固定为 $K=1$。目标、干扰与白噪声互不相关，直接使用精确总体协方差，不含有限快拍误差：</p>
 <p>$$\begin{aligned}

@@ -1,13 +1,16 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间处理与追踪源码研究 · 麦克风阵列信号处理教程</title>
-<meta name="source-digest" content="701e27a4a25e"><style>
+<meta name="source-digest" content="dcd9ccd183cc"><style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.75;color:#1a1a2e;background:#fafbfc}
 .topbar{position:sticky;top:0;z-index:10;background:#1a1a2e;color:#fff;padding:10px 20px;font-size:15px}
 .topbar a{color:#9ec5f0;text-decoration:none}.topbar a:hover{text-decoration:underline}
 h1,h2,h3,h4{scroll-margin-top:60px}
+@media screen{.main a[id^="e"],.main .exercise-alias{scroll-margin-top:80px}}
+@media screen{.main .exercise-alias{top:0}}
 @media screen{.main a[id="e05-20"]{scroll-margin-top:60px}}
-@media screen{.main a[id="e13-11"],.main a[id="e13-12"],.main a[id="e13-13"],.main a[id="e13-14"],.main a[id="e13-15"]{scroll-margin-top:140px}}
+@media screen{.main a[id="e15-11"],.main a[id="e15-12"],.main a[id="e15-13"],.main a[id="e15-14"],.main a[id="e15-15"]{scroll-margin-top:140px}}
+@media screen{.main .exercise-alias[id="e13-11"],.main .exercise-alias[id="e13-12"],.main .exercise-alias[id="e13-13"],.main .exercise-alias[id="e13-14"],.main .exercise-alias[id="e13-15"]{scroll-margin-top:140px}}
 @media screen{.main a[id^="e06-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e07-"],.main a[id^="e08-"]{scroll-margin-top:60px}}
 @media screen{.main a[id^="e11-"]{scroll-margin-top:60px}}
@@ -395,10 +398,10 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <div class="chap"><a href="../09_source-tracking.html">第 9 章 · 声源追踪</a></div>
 <div class="chap"><a href="../10_engineering-practice.html">第 10 章 · 工程实现、评测与产业实践</a></div>
 <div class="chap"><a href="../11_selection-guide.html">第 11 章 · 总结与选型指南</a></div>
-<div class="chap"><a href="../14_acoustic-imaging.html">扩展专题Ⅰ · 声学成像与噪声源诊断</a></div>
-<div class="chap"><a href="../15_distributed-enhancement.html">扩展专题Ⅱ · 分布式麦克风协同增强</a></div>
-<div class="chap"><a href="../12_appendix-symbols-math.html">附录 A · 符号术语数学</a></div>
-<div class="chap"><a href="../13_appendix-guide.html">附录 B · 路径地图与练习</a></div></nav>
+<div class="chap"><a href="../12_acoustic-imaging.html">第 12 章 · 声学成像与噪声源诊断</a></div>
+<div class="chap"><a href="../13_distributed-enhancement.html">第 13 章 · 分布式麦克风协同增强</a></div>
+<div class="chap"><a href="../14_appendix-symbols-math.html">第 14 章 · 附录 A：符号术语数学</a></div>
+<div class="chap"><a href="../15_appendix-guide.html">第 15 章 · 附录 B：路径地图与练习</a></div></nav>
 <main class="main" id="main-content" tabindex="-1"><div class="offline-note" id="offnote">当前离线：公式显示为源码，正文讲解不受影响。</div>
 <details class="toc-mobile"><summary>本页目录</summary><nav aria-label="本页目录"><ul>
 <li><a href="01_spatial_and_tracking.html#sec-u-37b31460d5">阅读与复现方式</a></li>
@@ -923,7 +926,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <span id="22-用生成的-rir-检查结果" class="anchor-alias" aria-hidden="true"></span><h4 id="sec-2-2">2.2 用生成的 RIR 检查结果</h4>
 <p>建议按由简单到复杂的顺序检查：无反射时核对首达时刻和距离衰减；单面反射时核对镜像路径的几何长度；加入多次反射后，才检查衰减曲线、直达混响比和阶数增加后的变化。每一步先确认时间原点、库引入的分数延迟滤波器延迟、高通和截断处理。</p>
 <p>附录 B 第 16 题已经用锁定 pyroomacoustics 0.10.0 在隔离环境中实际运行<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/appendix_b/examples/room_srp_exercise.py">六位置房间脚本</a>，保存<a href="../room_audio/MANIFEST.json">18 个合成白噪声 WAV 与参数清单</a>。该版本逐条 RIR 默认使用 10 Hz 零相位高通；若用较短的零阶直达 RIR 补零后去减高阶完整 RIR，高通边界差会混入“反射能量”。脚本以相同镜像阶数和长度，令直达对照房间墙面完全吸收，并用原始单直达镜像源及同长度滤波独立核对。</p>
-<p>六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测混响时间或跨房间定位准确率。图、逐麦 DRR 和阶数收敛检查见<a href="../13_appendix-guide.html">附录题目</a>。</p>
+<p>六位置 $T_{20}$ 外推 $T_{60}$ 为约 0.546～0.563 s，低于反推设计值 0.6 s；定位误差为约 0.604～2°。这些数是一个房间、一次固定输入的仿真，不是实测混响时间或跨房间定位准确率。图、逐麦 DRR 和阶数收敛检查见<a href="../15_appendix-guide.html">附录题目</a>。</p>
 <p><code>experimental/rt60.py::measure_rt60</code> 对实 RIR 平方后反向累加，得到 Schroeder 剩余能量曲线，再拟合衰减斜率并外推 60 dB。<code>decay_db</code> 控制拟合跨度，默认值是 60；要使用 20 dB 跨度需显式设定。它还接受 <code>energy_thres</code> 和线性域拟合选项，改变这些参数会改变评分口径。<a href="https://github.com/LCAV/pyroomacoustics/blob/0dd39f2614b7fc44b2cc63dbe7d60f4641068890/pyroomacoustics/experimental/rt60.py">固定版测量代码</a>。</p>
 <p>原方法提取调用现已运行三个确定输入，全部显式使用 <code>fs=16000</code>、<code>decay_db=20</code>、<code>energy_thres=1</code>、<code>linear_domain_fit=False</code>、<code>plot=False</code>。有效样本为 32000 点的 $h[n]=\exp[-3\ln(10)n/(f_s\,0.6)]$；平方后的能量按每秒 100 dB 衰减，反向几何级数积分在远离截断处保持相同斜率，因此独立期望的外推 $T_{60}$ 是 0.6 s。</p>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
@@ -1981,7 +1984,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <td>记录加载参数的单位和尺度；用未加载协方差评分，分别报告干扰残留与白噪声增益</td>
 </tr>
 <tr>
-<td><a href="../12_appendix-symbols-math.html">E12-05：奇异协方差反例</a></td>
+<td><a href="../14_appendix-symbols-math.html">E14-05：奇异协方差反例</a></td>
 <td>明确的 $\mathbf R=\operatorname{diag}(0,1)$、$\vec a=[1,1]^\top$</td>
 <td>机械伪逆替换给出可行但非最优的 $[0,1]^\top$；直接约束解及加载极限为 $[1,0]^\top$</td>
 <td>不能从“可计算且满足响应”推出最优；须检查零空间与目标导向的关系，不泛化成“伪逆均失效”</td>
@@ -1994,7 +1997,7 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 <p>除 §19 已逐项列出的 SBL 与 RobustSBL 外，其他稀疏贝叶斯变体、原子范数、完整最坏情形稳健波束以及本文未逐项收录的神经定位方法，仍需要逐论文确认代码与模型；不能用同名 GitHub 搜索结果替代作者来源。本文已分别记录实际取得的外部实现、官方实现存在但再分发许可未建立的索引、只核实到原理的算法和版本疑点。深度波束与 WPD 的完整增强链、分离及神经噪声抑制见本目录其他研究文档；同一函数在多个算法条目中被调用，不等于取得了多套独立工程系统。本次没有声称穷尽定位算法领域。</p>
 <p><a id="imaging-contract-audit"></a></p>
 <span id="声学成像原始方法固定源码与实际执行边界" class="anchor-alias" aria-hidden="true"></span><h2 id="sec-u-4dccdaa37d">声学成像：原始方法、固定源码与实际执行边界</h2>
-<p>对应<a href="../14_acoustic-imaging.html">扩展专题Ⅰ</a>，完整输入、推导和18道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。</p>
+<p>对应<a href="../12_acoustic-imaging.html">扩展专题Ⅰ</a>，完整输入、推导和18道分步题在那里展开。本节用于选择原始资料、定位源码接口和区分实际执行范围。声学成像输出频率与空间网格上的源量估计；它与输出目标语音波形的增强链具有不同的输出合同。</p>
 <span id="原始资料怎样连接到实现" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-dc39369d16">原始资料怎样连接到实现</h3>
 <div class="table-scroll" tabindex="0" role="region" aria-label="数据表，可横向滚动"><table>
 <thead>
@@ -2039,11 +2042,11 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <span id="固定-acoular-2608-的源码身份" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-8345cc172a">固定 Acoular 26.08 的源码身份</h3>
 <p>原项目为<a href="https://github.com/acoular/acoular/tree/13d3d7df74ac1a8135c7ec71da098cbbc03d8652">Acoular</a>，固定提交 <code>13d3d7df74ac1a8135c7ec71da098cbbc03d8652</code>，BSD-3-Clause。已有下载缓存位于 <code>codes/chapters/ch00/upstream/_downloads/acoular/</code>，由来源锁表管理，不把忽略缓存重复提交到本书树。许可文件SHA-256为 <code>b5bc3bfa7c76d388170a8f29f8dc3047bc3ca0abcd3160781f4ec54d3e95f69f</code>。</p>
-<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/audit_upstream_imaging_contracts.py">本轮合同工具</a>在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。<code>fbeamform.py</code>、<code>fastFuncs.py</code>、<code>spectra.py</code>、<code>version.py</code>和LICENSE逐项身份随<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/upstream_imaging_contracts_current.json">当前实际报告</a>保存。完整来源选集仍为 <code>source_selection_mismatch</code>，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。</p>
-<p>历史<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/upstream_imaging_contracts.json">2026-10-03原报告</a>保留当时执行字节；该历史报告对应的旧工具来自提交<code>ba622a6a2999cc30e15efe3e77a15c30d99cb51d</code>，不能用现在的工具摘要替换。当前工具另核锁表和当前获取状态的真实字节、执行前后的本地依赖与原源码、ignored成员边界；完整选集仍不匹配，有限原方法执行与获取状态分栏。报告路径拒绝覆盖旧历史报告，默认终端输出。</p>
+<p><a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch12/examples/audit_upstream_imaging_contracts.py">本轮合同工具</a>在执行前后分别核官方origin、固定HEAD、所用文件的原Git blob和SHA、普通文件身份与工作区洁净。<code>fbeamform.py</code>、<code>fastFuncs.py</code>、<code>spectra.py</code>、<code>version.py</code>和LICENSE逐项身份随<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch12/reports/upstream_imaging_contracts_current.json">当前实际报告</a>保存。完整来源选集仍为 <code>source_selection_mismatch</code>，这是获取范围状态；所用原文件身份通过不把完整选集改成成功。</p>
+<p>历史<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch12/reports/upstream_imaging_contracts.json">2026-10-03原报告</a>保留当时执行字节；该历史报告对应的旧工具来自提交<code>ba622a6a2999cc30e15efe3e77a15c30d99cb51d</code>，不能用现在的工具摘要替换。当前工具另核锁表和当前获取状态的真实字节、执行前后的本地依赖与原源码、ignored成员边界；完整选集仍不匹配，有限原方法执行与获取状态分栏。报告路径拒绝覆盖旧历史报告，默认终端输出。</p>
 <p>本轮有限调用采用原AST方法体，移除JIT装饰器，以协议对象代替Traits构造，自定义网格驱动代替原JIT分派，NumPy FFT代替SciPy FFT。原数学方法体没有修补；这些调用没有覆盖完整包、Numba并行、HDF5缓存、完整风洞数据链或CMF估计器。工具默认只读stdout，显式 <code>--report</code> 才写当前报告。</p>
-<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts
-.venv/bin/python -m codes.chapters.ch14.examples.audit_upstream_imaging_contracts --report codes/chapters/ch14/reports/upstream_imaging_contracts_current.json
+<pre><code class="language-bash">.venv/bin/python -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts
+.venv/bin/python -m codes.chapters.ch12.examples.audit_upstream_imaging_contracts --report codes/chapters/ch12/reports/upstream_imaging_contracts_current.json
 .venv/bin/python -m unittest tests.test_codes_imaging_contracts -v
 </code></pre>
 <span id="二十一项限定控制的实际结果" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-b810f46726">二十一项限定控制的实际结果</h3>
@@ -2101,8 +2104,8 @@ window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [
 </table></div>
 <p>独立合同测试还覆盖错误origin、HEAD、文件摘要、脏工作区、路径与报告写入边界。测试使用本地Git夹具；原实际数值结果由工具调用取得，不用夹具成功替代外部运行。</p>
 <span id="同一合法csm的目标对照与作者原模块" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-de374c4bcb">同一合法CSM的目标对照与作者原模块</h3>
-<p>新Acoular报告的<code>additional_valid_csm_controls</code>另记录一份合法秩一CSM，经原Base与PSF方法形成扫描输入，再调用原DAMAS类；它不是把旧<code>b=(1,0)</code>与任意矩阵拼成一条运行。原结果<code>(1,0)</code>的完整CSM平方残差为<code>28/9</code>，扫描NNLS点<code>(16/17,0)</code>的完整CSM残差为<code>8128/2601</code>；原21项控制的次序与13/8计数保持不变。详细手算、归一化与成立条件见<a href="../14_acoustic-imaging.html#e14-17">E14-17</a>。</p>
-<p><a href="https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py" title="citation">固定作者DAMAS/CMF原模块</a>已有独立<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/examples/audit_damas_author_contracts.py">限定工具</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch14/reports/damas_author_contracts_current.json">真实当前报告</a>。完整原模块字节及原imports在隔离进程执行，9个控制中8项数值吻合独立期望，1项零CSM保留原<code>NameError</code>。四原求解入口分别针对完整CSM、完整扫描残差、去对角CSM、去对角扫描残差；相同输入下得到<code>(1,0)</code>、<code>(16/17,0)</code>、<code>(2/3,0)</code>、<code>(16/15,0)</code>。不能将它们排成声学性能榜。</p>
+<p>新Acoular报告的<code>additional_valid_csm_controls</code>另记录一份合法秩一CSM，经原Base与PSF方法形成扫描输入，再调用原DAMAS类；它不是把旧<code>b=(1,0)</code>与任意矩阵拼成一条运行。原结果<code>(1,0)</code>的完整CSM平方残差为<code>28/9</code>，扫描NNLS点<code>(16/17,0)</code>的完整CSM残差为<code>8128/2601</code>；原21项控制的次序与13/8计数保持不变。详细手算、归一化与成立条件见<a href="../12_acoustic-imaging.html#e12-17">E12-17</a>。</p>
+<p><a href="https://github.com/gilleschardon/DAMAS/blob/61987952e2237e6b088a169ee891dd96576f2565/damas.py" title="citation">固定作者DAMAS/CMF原模块</a>已有独立<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch12/examples/audit_damas_author_contracts.py">限定工具</a>与<a href="https://github.com/nanless/microphone-array-signal-processing/blob/main/codes/chapters/ch12/reports/damas_author_contracts_current.json">真实当前报告</a>。完整原模块字节及原imports在隔离进程执行，9个控制中8项数值吻合独立期望，1项零CSM保留原<code>NameError</code>。四原求解入口分别针对完整CSM、完整扫描残差、去对角CSM、去对角扫描残差；相同输入下得到<code>(1,0)</code>、<code>(16/17,0)</code>、<code>(2/3,0)</code>、<code>(16/15,0)</code>。不能将它们排成声学性能榜。</p>
 <p>重复列控制中原<code>unique=True</code>只来自已激活支持的正定Gram；另一个非负解<code>(0,1)</code>仍产生相同观测。作者单源full CLEAN-SC两步得到<code>1.68</code>，与其显式原公式一致；该限定点不覆盖任意双源或DR支路。取得的21个GPL文本与实际使用的LICENSE及一个Python文件分开，三份数据、MATLAB、MEX和论文大规模实验未执行。原NumPy、SciPy与matplotlib三个直接模块入口的前后SHA和版本已记录，未宣称核验这些库全部转依赖或二进制闭包。</p>
 <span id="工业入口与先进方法怎样继续研究" class="anchor-alias" aria-hidden="true"></span><h3 id="sec-u-fe0d164adb">工业入口与先进方法怎样继续研究</h3>
 <p>固定源码中的风洞入口为 <code>examples/wind_tunnel_examples/example_airfoil_in_open_jet_freq_domain_methods.py</code>，另有CMF、导向与区域选择示例。工业复现应保存测量通道次序、校准文件、CSM窗与完整帧计数、网格/声源参考、剪切层或流动模型、对角处理、正则与区域积分。源码的下载入口使用浮动分支，配套数据许可须独立核实；本轮未取得风洞数据或运行该整链，不记录设备性能排名。</p>

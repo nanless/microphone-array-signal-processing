@@ -79,10 +79,10 @@ E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其�
 | 第 10 章 E10-18～27 | 重叠帧 RTF、谱减均值与地板、Q15、关键路径、时钟相位、内存寿命、流式插值、混叠、遥测与整块 AGC 音频 | [工程逐步实验](../../ch10/chapter10_experiments.py) |
 | 第 11 章 E11-01～07 | 资源约束、失败率统计、WER 聚合、延迟分位数和三个场景选型决策 | [工程练习](../cross_chapter/exercises_engineering.py) |
 | 第 11 章 E11-10～27 | 非支配候选、场景权重、评分缺失、同时风险、硬界三态、模块交互、CSS槽位、唤醒阈值、精确SRO、FIR取舍、非支持加权、区间支配、零FA暴露、话段/时间及跨场景选型 | [选型逐步实验](../../ch11/chapter11_experiments.py)；音频见§33与§44 |
-| 附录 A E12-01～04 | 卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别 | [工程练习](../cross_chapter/exercises_engineering.py) |
-| 附录 A E12-06～20 | 有符号 FFT 频点、复内积、分块卷积、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、加载尺度、复LS残差、已知噪声WLS、数值秩、共轭反序、`eigh` 前提及完整相关噪声GLS | [附录 A 逐步实验](../../appendix_a/appendix_a_experiments.py)；音频见§34与§45 |
-| 附录 B E13-01 | 同组共同增益与独立归一化 | [工程练习](../cross_chapter/exercises_engineering.py) |
-| 附录 B E13-03～15 | 六位置配对、DRR与频响、T20、SRP相位和评分窗口、房间PCM、证据层级、TAC结构、幅度与时间尺度、同DRR输出及有限尾部EDC | [附录 B 逐步实验](../../appendix_b/appendix_b_experiments.py)；房间资产见§17，五题逐步答案与独立五WAV见§46 |
+| 附录 A E14-01～04 | 卷积、复二阶矩、秩亏最小二乘、空间白化与 PHAT 的区别 | [工程练习](../cross_chapter/exercises_engineering.py) |
+| 附录 A E14-06～20 | 有符号 FFT 频点、复内积、分块卷积、相关符号、有限快拍秩、正规方程条件数、SDW 噪声零空间极限、加载尺度、复LS残差、已知噪声WLS、数值秩、共轭反序、`eigh` 前提及完整相关噪声GLS | [附录 A 逐步实验](../../appendix_a/appendix_a_experiments.py)；音频见§34与§45 |
+| 附录 B E15-01 | 同组共同增益与独立归一化 | [工程练习](../cross_chapter/exercises_engineering.py) |
+| 附录 B E15-03～15 | 六位置配对、DRR与频响、T20、SRP相位和评分窗口、房间PCM、证据层级、TAC结构、幅度与时间尺度、同DRR输出及有限尾部EDC | [附录 B 逐步实验](../../appendix_b/appendix_b_experiments.py)；房间资产见§17，五题逐步答案与独立五WAV见§46 |
 
 另有12道逐步练习，均保留原题编号并追加：
 
@@ -96,11 +96,11 @@ E06-07～E06-20 使用无量纲回声模型检查 AEC 的计算与边界，其�
 
 | 题号 | 学习问题 | 运行入口 |
 |---|---|---|
-| E02-08、E04-11、E05-07、E12-05 | 单边频谱功率；有色噪声白化MUSIC；WNG反求加载；奇异协方差伪逆反例 | [空间模型](../cross_chapter/spatial_model_exercises.py) |
+| E02-08、E04-11、E05-07、E14-05 | 单边频谱功率；有色噪声白化MUSIC；WNG反求加载；奇异协方差伪逆反例 | [空间模型](../cross_chapter/spatial_model_exercises.py) |
 | E07-07、E08-11、E09-09 | WPD分解；cACG形状更新；IMM交互混合与模型间散布 | [增强结构](../cross_chapter/enhancement_structure_exercises.py) |
 | E10-16～17、E11-09 | 同刻完成/到达的边界；ADC至DAC样本时间；配对符号检验 | [工程边界](../cross_chapter/engineering_boundary_exercises.py) |
-| E13-02 | 线性分数延迟的逐频幅度误差与PCM验证 | [插值练习](../../appendix_b/interpolation_exercise.py) |
-| E13-03～15 | 六位置合成房间、短向量解析边界、PCM分窗、假设证据卡、共享聚合、尺度保护、源谱加权与有限尾部EDC | [附录 B 逐步实验](../../appendix_b/appendix_b_experiments.py) |
+| E15-02 | 线性分数延迟的逐频幅度误差与PCM验证 | [插值练习](../../appendix_b/interpolation_exercise.py) |
+| E15-03～15 | 六位置合成房间、短向量解析边界、PCM分窗、假设证据卡、共享聚合、尺度保护、源谱加权与有限尾部EDC | [附录 B 逐步实验](../../appendix_b/appendix_b_experiments.py) |
 
 各题的题干、代入、中间量、答案与解释边界写在对应章节。它们不增加算法种类统计，也不把确定性数值实验当作语音质量评测。
 
@@ -110,7 +110,7 @@ E03-07 从三只物理麦的位置 $\{0,1,3\}$ 和给定协方差出发，按有
 
 E04-09 在[第 4 章 §4.6](../../../../chapters/04_doa-estimation.md#sec-4-6)先从两行子阵写出单源最小二乘正规方程，再用扰动后的第三个子空间分量核对旋转因子、残差和角度。理想向量给出 $30^\circ$、零残差；扰动向量给出约 $28.90^\circ$、残差范数 $0.1$。两个数字由明确给定的复向量计算，不是快拍数、SNR 或算法方差的实测结果。E04-08 已用 200 次独立双源复谱抽样比较 Bartlett、Capon 和 MUSIC；每种条件保留成功/失败计数与 Wilson 区间，见[第 4 章](../../../../chapters/04_doa-estimation.md#e04-08)与[脚本](../../ch04/doa_resolution_trials.py)。该结果只适用于固定的八麦窄带阵列、网格和源数条件。
 
-E12-04 在[附录 A](../../../../chapters/12_appendix-symbols-math.md#sec-12-4)比较空间矩阵白化和 GCC-PHAT 的频谱相位加权：$R_{nn}=\operatorname{diag}(4,1)$ 时可取 $W=\operatorname{diag}(0.5,1)$，得到 $WR_{nn}W^H=I$，而导向矢量 $[1,1]^\top$ 要同步变为 $[0.5,1]^\top$。对一个复数互谱除以其模只得到标量相位，不能完成这项跨通道协方差变换。运行[工程练习](../cross_chapter/exercises_engineering.py)查看矩阵乘法输出。
+E14-04 在[附录 A](../../../../chapters/14_appendix-symbols-math.md#sec-14-4)比较空间矩阵白化和 GCC-PHAT 的频谱相位加权：$R_{nn}=\operatorname{diag}(4,1)$ 时可取 $W=\operatorname{diag}(0.5,1)$，得到 $WR_{nn}W^H=I$，而导向矢量 $[1,1]^\top$ 要同步变为 $[0.5,1]^\top$。对一个复数互谱除以其模只得到标量相位，不能完成这项跨通道协方差变换。运行[工程练习](../cross_chapter/exercises_engineering.py)查看矩阵乘法输出。
 
 E09-06 使用确定性角度观测：交叉帧两轨均预测 $40^\circ$，B 的 $39^\circ$ 先于 A 的 $41^\circ$ 输入。两种一对一配对的平方残差和均为 $2\ \mathrm{deg}^2$；指定并列规则产生两次身份错配，但未滤波观测集合的 OSPA 为 0。另从 $P_0=I$、$Q=\operatorname{diag}(0.1,0.01)$ 出发连续预测两次，角度方差为 $2.10$、$5.21\ \mathrm{deg}^2$；每秒最多转 $5^\circ$ 的控制角为 $25^\circ$、$30^\circ$。这些答案可由[独立测试](../../../../tests/test_codes_tracking_crossing_dropout.py)逐项复核，适用边界见[第 9 章练习](../../../../chapters/09_source-tracking.md#sec-9-6)；它没有语音或设备 WAV，不应借用追踪试听样本作身份真值。
 
@@ -204,7 +204,7 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 
 [100 ms 丢帧](../../ch10/audio/engineering_dropout.wav)
 
-对应 E10-05、E13-01，也是 E10-06 增益控制题的失真反例材料，但不是该题 AGC 的输出。先用同一个播放音量比较；若为了检查量化误差而另行放大，必须注明新增增益，不再把该播放对照称为共同增益比较。
+对应 E10-05、E15-01，也是 E10-06 增益控制题的失真反例材料，但不是该题 AGC 的输出。先用同一个播放音量比较；若为了检查量化误差而另行放大，必须注明新增增益，不再把该播放对照称为共同增益比较。
 
 ## 8. 双声道声像与真实方向
 
@@ -258,7 +258,7 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 
 [条件数 199 的已知矩阵恢复](../../appendix_a/audio/conditioning_ill_output.wav)
 
-对应 E08-03、E12-03。参考、两种混合和两种恢复共用同一增益；强噪声恢复结果可能决定全组衰减量，实际值见清单。两路参考是源信号，两路输入是麦克风信号，不能因为都是双通道就直接逐路比较输入与参考。这个实验不是 AuxIVA、ILRMA 或神经分离的效果评测，也不能说明正则化一定无损。
+对应 E08-03、E14-03。参考、两种混合和两种恢复共用同一增益；强噪声恢复结果可能决定全组衰减量，实际值见清单。两路参考是源信号，两路输入是麦克风信号，不能因为都是双通道就直接逐路比较输入与参考。这个实验不是 AuxIVA、ILRMA 或神经分离的效果评测，也不能说明正则化一定无损。
 
 ## 12. R01：真实河流录音中的通道相关项
 
@@ -392,7 +392,7 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 
 ## 17. 六位置房间响应与定位
 
-这组样本对应[附录 B 第 16 题](../../../../chapters/13_appendix-guide.md)，与主清单的 109 个合成 WAV 分开保存。[参数和逐文件摘要](../../appendix_b/room_audio/MANIFEST.json)记录固定的 12 m × 10 m × 6 m 房间、4 麦方阵、16 kHz、pyroomacoustics 0.10.0、镜像阶数 40、每位置独立的 1 s 白高斯噪声和全部 18 个 PCM16 文件。
+这组样本对应[附录 B 第 16 题](../../../../chapters/15_appendix-guide.md)，与主清单的 109 个合成 WAV 分开保存。[参数和逐文件摘要](../../appendix_b/room_audio/MANIFEST.json)记录固定的 12 m × 10 m × 6 m 房间、4 麦方阵、16 kHz、pyroomacoustics 0.10.0、镜像阶数 40、每位置独立的 1 s 白高斯噪声和全部 18 个 PCM16 文件。
 
 [六位置独立数值报告](../../appendix_b/room_audio/RESULTS.json)保留逐麦 T20 外推混响时间、DRR、SRP 估计、32/40 阶检查，以及运行源、结果图和音频清单的 SHA-256；报告剔除了耗时和临时输出路径。六个位置中四个用于近/远、左/右成对观察，另两个由种子 20260924 固定。定位时只取完整卷积波形起始半开区间 $[0,16000)$，即第一秒，再用 512 点 Hann 窗、128 点帧移和中心补零的 STFT 打分；四通道完整试听 WAV 保留更长的卷积尾，整份输入重新定位不能直接与报告方位比较。
 
@@ -413,17 +413,17 @@ STFT 窗长 512、帧移 128，居中补边；离线 WPE 使用 4 个抽头、3 
 
 这 18 个文件是**合成白噪声**，不是实测房间或真人录音。结果图和音频由[同一脚本](../../appendix_b/examples/room_srp_exercise.py)生成；在已安装锁定 pyroomacoustics 的隔离环境中可用 `--run --plot 新图路径 --audio-dir 新目录 --results 新结果路径` 重新导出，三个路径都必须尚不存在，再根据两个清单和结果报告核对摘要。站点副本由构建脚本按清单验证后发布，不修改主清单的 109 个 WAV。
 
-E13-03 只比较同一房间内固定左右角度的近/远配对：按正文三位小数表相减，远位置的 DRR 各低 7.868 dB，绝对 DOA 误差各多 1°；按结果报告未舍入值相减，左右约为 7.868634271、7.868634299 dB，不能把两种精度混写。两个种子位置的距离增加而误差下降，故不能由六点推出单调关系或距离的独立因果效应。
+E15-03 只比较同一房间内固定左右角度的近/远配对：按正文三位小数表相减，远位置的 DRR 各低 7.868 dB，绝对 DOA 误差各多 1°；按结果报告未舍入值相减，左右约为 7.868634271、7.868634299 dB，不能把两种精度混写。两个种子位置的距离增加而误差下降，故不能由六点推出单调关系或距离的独立因果效应。
 
-E13-04 的四麦短例分别计算逐麦 DRR 的中位数和先合并能量的 DRR，并用两抽头 RIR 卷积展示直达/反射波形重叠时的交叉项。
+E15-04 的四麦短例分别计算逐麦 DRR 的中位数和先合并能量的 DRR，并用两抽头 RIR 卷积展示直达/反射波形重叠时的交叉项。
 
-E13-05 用三个已知 EDC 点复算 -100 dB/s 斜率与 0.6 s 的 T20 外推混响时间；这不是本房间 RIR 的测值。
+E15-05 用三个已知 EDC 点复算 -100 dB/s 斜率与 0.6 s 的 T20 外推混响时间；这不是本房间 RIR 的测值。
 
-E13-06 从双麦互谱正负相位与三个候选 SRP 分数检验符号；E13-07 只重读已发布的近左三路 PCM16，不重新仿真。源为 16000 点、单声道；直达和完整输出为 38497 帧、四通道。源与直达第 1 麦的相关峰在 87 样本，几何传播约 47.2 样本，差值包含 pyroomacoustics 固定长度 81 的分数时延滤波器约 40 样本偏置；不能把 87 点全当成空气传播。PCM 峰值和清单共同增益仍是不同层级的证据，只有清单与已运行的生成过程能解释后者。
+E15-06 从双麦互谱正负相位与三个候选 SRP 分数检验符号；E15-07 只重读已发布的近左三路 PCM16，不重新仿真。源为 16000 点、单声道；直达和完整输出为 38497 帧、四通道。源与直达第 1 麦的相关峰在 87 样本，几何传播约 47.2 样本，差值包含 pyroomacoustics 固定长度 81 的分数时延滤波器约 40 样本偏置；不能把 87 点全当成空气传播。PCM 峰值和清单共同增益仍是不同层级的证据，只有清单与已运行的生成过程能解释后者。
 
-E13-08 的 A/B/C 三条**假设**证据卡分别到已核来源、固定输入执行、同协议评分，不能当作本书新增三次上游实跑。E13-09 对六份已发布完整房间 PCM 逐一比较前 1 s 与整份输入的 SRP 方位，定位差异是评分窗口变化，不能归因于算法准确率变化。E13-10 用同能量但不同符号的两条短反射 RIR 说明 DRR 相同并不保证频率响应相同。[代码入口](../../appendix_b/appendix_b_experiments.py)与[独立测试](../../../../tests/test_codes_appendix_b_experiments.py)逐项列出这些边界。
+E15-08 的 A/B/C 三条**假设**证据卡分别到已核来源、固定输入执行、同协议评分，不能当作本书新增三次上游实跑。E15-09 对六份已发布完整房间 PCM 逐一比较前 1 s 与整份输入的 SRP 方位，定位差异是评分窗口变化，不能归因于算法准确率变化。E15-10 用同能量但不同符号的两条短反射 RIR 说明 DRR 相同并不保证频率响应相同。[代码入口](../../appendix_b/appendix_b_experiments.py)与[独立测试](../../../../tests/test_codes_appendix_b_experiments.py)逐项列出这些边界。
 
-E13-11～15进一步核对共享通道聚合、DRR数值尺度、T20时间条件化、同DRR源谱加权与有限尾部；五题完整答案及五个独立短FIR输出见[§46](#sec-u-a6996550c6)。
+E15-11～15进一步核对共享通道聚合、DRR数值尺度、T20时间条件化、同DRR源谱加权与有限尾部；五题完整答案及五个独立短FIR输出见[§46](#sec-u-a6996550c6)。
 
 ## 18. 功率谱减、谱地板与残留
 
@@ -501,7 +501,7 @@ $$
 
 [两次线性半采样插值](../../ch02/audio/interpolation_linear_twice.wav)
 
-先分别比较前两项、后两项，保持设备音量相同。不要把半采样与一采样输出直接逐点相减后把全部误差解释为幅度损伤；它们的目标时延不同。6000 Hz经一次/两次插值的理论幅度比分别为0.382683、0.146447，500 Hz则为0.995185、0.990393。推导、脉冲反例和图41见[附录B E13-02](../../../../chapters/13_appendix-guide.md#e13-02)。
+先分别比较前两项、后两项，保持设备音量相同。不要把半采样与一采样输出直接逐点相减后把全部误差解释为幅度损伤；它们的目标时延不同。6000 Hz经一次/两次插值的理论幅度比分别为0.382683、0.146447，500 Hz则为0.995185、0.990393。推导、脉冲反例和图41见[附录B E15-02](../../../../chapters/15_appendix-guide.md#e15-02)。
 
 [运行入口](../../appendix_b/interpolation_exercise.py)在[1600,30400)采样区间逐频投影，输出解析幅度和PCM读回值；[独立测试](../../../../tests/test_codes_interpolation.py)用卷积、三角恒等式和量化界核对。没有时钟估计或真实录音，理想目标也不计作已运行补偿器；源文件说明和每个WAV摘要见[主清单](../audio/MANIFEST.json)。
 
@@ -1006,7 +1006,7 @@ E09-10～18分别检验 EKF、UT、圆周均值、关联后验混合、人数分
 
 ## 34. 附录 A：分块 FFT 的尾部为什么不能消失
 
-本节对应 [E12-08](../../../../chapters/12_appendix-symbols-math.md#sec-u-af429c1fb4)。第 6 章 E06-07 从分区回声消除结构研究循环卷积的有效半块；这里固定最小滤波器和稀疏脉冲，直接检查**分块之间的尾部去向**。只做时域数学合成与 FFT 卷积，不模拟房间、语音、回声消除或设备。先用附录 A 的四点手算确认卷积结构，再查看这一组 2 s、16 kHz、单声道 PCM16 音频。
+本节对应 [E14-08](../../../../chapters/14_appendix-symbols-math.md#sec-u-af429c1fb4)。第 6 章 E06-07 从分区回声消除结构研究循环卷积的有效半块；这里固定最小滤波器和稀疏脉冲，直接检查**分块之间的尾部去向**。只做时域数学合成与 FFT 卷积，不模拟房间、语音、回声消除或设备。先用附录 A 的四点手算确认卷积结构，再查看这一组 2 s、16 kHz、单声道 PCM16 音频。
 
 **试听前请调低播放设备音量，并保持同一音量比较。** 三个文件的编码增益都是 1，没有逐文件归一化。本节没有人工听测结果，脉冲之间的听感差别不能替代样本索引验证。
 
@@ -1032,7 +1032,7 @@ E09-10～18分别检验 EKF、UT、圆周均值、关联后验混合、人数分
 
 ### 34.2 复算与代码边界
 
-运行 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments` 可查看 E12-06～20 的 JSON 输出。其中 E12-08先由[只读检查器](../../appendix_a/examples/check_main_math_audio.py)核20个真实生成源、清单与完整组三文件重放，再以 `wave/struct` 读取正式PCM的指定位置和整数误差，缺失或过期直接失败，不自动修复。E12-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。[音频生成源](../core/audio_samples.py)的 `math_block_case` 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见[主音频清单](../audio/MANIFEST.json)的 `groups.math_block` 和三条 `files` 记录。
+运行 `.venv/bin/python -m codes.chapters.appendix_a.appendix_a_experiments` 可查看 E14-06～20 的 JSON 输出。其中 E14-08先由[只读检查器](../../appendix_a/examples/check_main_math_audio.py)核20个真实生成源、清单与完整组三文件重放，再以 `wave/struct` 读取正式PCM的指定位置和整数误差，缺失或过期直接失败，不自动修复。E14-13 列出同一正对角协方差在原尺度与十倍尺度下，绝对及迹相对加载的实际加性项、MVDR 权重、条件数和目标响应。[音频生成源](../core/audio_samples.py)的 `math_block_case` 明确保存脉冲位置、滤波器、块长、两种计算路径、共同增益和最后一枚非零响应。完整文件参数与 SHA-256 见[主音频清单](../audio/MANIFEST.json)的 `groups.math_block` 和三条 `files` 记录。
 
 FFT教学核只接受有限实一维数值输入。两输入均有非零项时，每条输入的非零二进制指数跨度不超过40，非零项乘积满足保守的规格化范围检查；还核对FFT和谱乘法中间值有限。这是明确的支持政策，不是逐点相对误差保证。跨度极大、非规格化乘积或中间溢出会被拒绝，即使最终数学结果可以表示；调用者不能把拒绝改写成数学卷积不存在。[边界测试](../../../../tests/test_codes_appendix_a_boundaries.py)以直接有理数和极端输入检查这些情况。此次重生109份正式主WAV后，全部文件字节保持原样，只有真实源摘要随修改更新。
 
@@ -1629,19 +1629,19 @@ E11-19另核主清单的20个真实源与四条主音频，PCM成绩来自正式
 
 ## 45. 附录 A：已知噪声权重与求解器前提
 
-本节对应[E12-14～20](../../../../chapters/12_appendix-symbols-math.md#e12-14)。复最小二乘的正交条件使用共轭转置；已知噪声协方差改变残差的度量；截断小奇异值与ridge改变求解目标的方式不同。三件事先分开复算，再用同一双通道输入检查权重的代价。E12-20另用已知完整相关协方差计算带负分量的无失真权重，并检查白化需要同时改变观测与设计向量；它不使用本节五个互正交纯音WAV作为相关随机噪声真值。
+本节对应[E14-14～20](../../../../chapters/14_appendix-symbols-math.md#e14-14)。复最小二乘的正交条件使用共轭转置；已知噪声协方差改变残差的度量；截断小奇异值与ridge改变求解目标的方式不同。三件事先分开复算，再用同一双通道输入检查权重的代价。E14-20另用已知完整相关协方差计算带负分量的无失真权重，并检查白化需要同时改变观测与设计向量；它不使用本节五个互正交纯音WAV作为相关随机噪声真值。
 
 ### 45.1 计算步骤与适用边界
 
 | 题号 | 输入和计算 | 能支持的结论 |
 |---|---|---|
-| E12-14 | $A=[1,j]^{\mathsf T}$、$b=[1,1]^{\mathsf T}$；解为$(1-j)/2$，残差平方和1 | $A^Hr=0$；误用$A^{\mathsf T}A=0$会破坏正规方程 |
-| E12-15 | 相同目标的两观测，噪声方差比1:4；已知协方差下权重4/5、1/5 | OLS随机误差方差5/4，GLS为4/5；不是每次噪声样本都更好 |
-| E12-16 | $A=\operatorname{diag}(1,10^{-8})$；显式`rcond`为$10^{-10}$和$10^{-6}$ | 数值秩分别2、1；方阵返回空`residuals`仍可能有非零实际残差 |
-| E12-17 | 三点复序列逐滞后乘加，再交换序列 | $R_{21}[q]=R_{12}^*[-q]$，没有共轭会丢掉正确峰 |
-| E12-18 | 非Hermitian两三角与含虚对角输入，记录`eigh`实际有效矩阵 | API按指定三角和实对角处理；返回特征值不证明原矩阵满足前提 |
-| E12-19 | 同一合成输入的三种固定权重，读回五WAV与整数分母 | 已知正确权重改善本模型的总误差；没有估计协方差或进行语音质量评测 |
-| E12-20 | 已知协方差 $C=[[1,3/2],[3/2,4]]$，同一标量目标；完整GLS权重5/4、−1/4，方差7/8；同步白化观测与设计向量 | 相关噪声下无失真最优权重可为负；只白化观测会改变目标响应，不是协方差估计或已测语音质量 |
+| E14-14 | $A=[1,j]^{\mathsf T}$、$b=[1,1]^{\mathsf T}$；解为$(1-j)/2$，残差平方和1 | $A^Hr=0$；误用$A^{\mathsf T}A=0$会破坏正规方程 |
+| E14-15 | 相同目标的两观测，噪声方差比1:4；已知协方差下权重4/5、1/5 | OLS随机误差方差5/4，GLS为4/5；不是每次噪声样本都更好 |
+| E14-16 | $A=\operatorname{diag}(1,10^{-8})$；显式`rcond`为$10^{-10}$和$10^{-6}$ | 数值秩分别2、1；方阵返回空`residuals`仍可能有非零实际残差 |
+| E14-17 | 三点复序列逐滞后乘加，再交换序列 | $R_{21}[q]=R_{12}^*[-q]$，没有共轭会丢掉正确峰 |
+| E14-18 | 非Hermitian两三角与含虚对角输入，记录`eigh`实际有效矩阵 | API按指定三角和实对角处理；返回特征值不证明原矩阵满足前提 |
+| E14-19 | 同一合成输入的三种固定权重，读回五WAV与整数分母 | 已知正确权重改善本模型的总误差；没有估计协方差或进行语音质量评测 |
+| E14-20 | 已知协方差 $C=[[1,3/2],[3/2,4]]$，同一标量目标；完整GLS权重5/4、−1/4，方差7/8；同步白化观测与设计向量 | 相关噪声下无失真最优权重可为负；只白化观测会改变目标响应，不是协方差估计或已测语音质量 |
 
 [Netlib LAPACK Users' Guide 的 Linear Least Squares、式(2.1)与表2.3](https://www.netlib.org/lapack/lug/node27.html)区分满秩、秩亏与最小范数；[Generalized Linear Least Squares、式(2.3)后的可逆噪声因子说明](https://www.netlib.org/lapack/lug/node28.html)给出加权最小二乘等价关系。[NumPy `lstsq`](https://numpy.org/doc/2.5/reference/generated/numpy.linalg.lstsq.html)和[`eigh`](https://numpy.org/doc/2.5/reference/generated/numpy.linalg.eigh.html)分别说明阈值、残差返回条件及输入三角约定。接口资料核实于2026-10-02；本书实际运行NumPy2.5.3，不推断宿主链接的LAPACK版本。
 
@@ -1687,9 +1687,9 @@ PSD例进一步用独立约束推导说明：方程最小二乘返回值经归�
 
 ## 46. 附录 B：通道聚合、数值尺度与同DRR输出
 
-本节补齐[E13-11～15](../../../../chapters/13_appendix-guide.md#e13-11)的输入、中间量、答案与独立音频。五题分别处理结构性质、幅度尺度、时间尺度、源谱加权和有限尾部；这些练习不增加分离算法种类，也不把静态源码检查或数学合成WAV当作原神经网络、真实房间或听测成绩。
+本节补齐[E15-11～15](../../../../chapters/15_appendix-guide.md#e15-11)的输入、中间量、答案与独立音频。五题分别处理结构性质、幅度尺度、时间尺度、源谱加权和有限尾部；这些练习不增加分离算法种类，也不把静态源码检查或数学合成WAV当作原神经网络、真实房间或听测成绩。
 
-### 46.1 E13-11：平均不变与逐通道等变
+### 46.1 E15-11：平均不变与逐通道等变
 
 **输入和目标。** 只处理一帧通道特征。所有通道使用相同的映射，先令 $u_m=P(x_m)$，再求 $\bar u=M^{-1}\sum_m u_m$；各路输出为 $o_m=x_m+S([u_m,R(\bar u)])$。拼接发生在特征轴，残差相加的两项必须同维。该结构来自[TAC作者论文v3 §2.1式(1)～(4)](https://arxiv.org/html/1910.14104v3 "citation")；以下改用本书固定标量映射，避免把训练参数与结构性质混在一起。
 
@@ -1708,7 +1708,7 @@ PSD例进一步用独立约束推导说明：方程最小二乘返回值经归�
 
 [逐步入口](../../appendix_b/appendix_b_experiments.py)返回每组的输入、变换、平均、平均变换与输出。作者固定源码的[合同报告](../../appendix_b/reports/tac_contracts_current.json)状态为 `passed_static_contracts`，仅验证提交、许可、文件摘要与十项AST结构；原模块导入和原函数调用均为空，没有执行Torch、训练权重或原 `forward`。固定提交、通道前缀约定和FaSNet参考通道边界见[来源手册](04_source_reproduction.md#tac-contracts)。
 
-### 46.2 E13-12：共同幅度尺度与安全能量对数
+### 46.2 E15-12：共同幅度尺度与安全能量对数
 
 **固定模型。** 取 $h_{\mathrm d}=[1,0]$、$h_{\mathrm r}=[0,1/2]$，完整RIR为 $[1,1/2]$。直达能量1，反射能量1/4，DRR为 $10\log_{10}4\approx6.0205999133\ \mathrm{dB}$。共同乘一个非零幅度 $c$，两项能量都乘 $c^2$，这个比例不变。
 
@@ -1727,7 +1727,7 @@ $$
 
 数学上，直达非零而反射零对应正无穷DRR，反之为负无穷，两项皆零无定义；本书有限指标接口对这些情况明确拒绝。它还拒绝反射差分溢出、归一化时非零幅度分量或非零平方支持丢失。该核只覆盖声明的float64范围，不能承诺任意有限输入都可计算。EDC控制使用无噪声指数夹具；归一化不能补回缺失尾部、噪声底或缺少拟合区间，更不能从已经量化成全零的PCM恢复弱信号。
 
-### 46.3 E13-13：先移时间原点，再恢复斜率单位
+### 46.3 E15-13：先移时间原点，再恢复斜率单位
 
 **数据与计算。** 输入dB为 $[-5,-15,-25]$，秒单位时刻为 $[10^{16},10^{16}+2,10^{16}+4]$。直接把极大时刻与常数列送入最小二乘会恶化数值条件。令 $t_0=t_{\min}$、$\Delta t=t_{\max}-t_{\min}$，先用无量纲坐标 $z_i=(t_i-t_0)/\Delta t$ 拟合 $d_i=\alpha+\beta_z z_i$。
 
@@ -1743,7 +1743,7 @@ $$
 
 若 $10^{20}+1$ 已经舍入成 $10^{20}$，减起点不能恢复丢失的时间差。接口检查有限、严格递增的时刻、规定下降区间、负斜率以及可表示的正 $T_{20}/T_{60}$；不把缩短拟合区间当作成功。这只是对指定点拟合，不证明真实房间的EDC线性，也不能将T20外推值当作未经条件限定的直接测量T60。[房间指标核](../../appendix_b/core/room_metrics.py)和[边界测试](../../../../tests/test_codes_appendix_b_boundaries.py)分别保留实现及独立数值控制。
 
-### 46.4 E13-14：相同RIR能量比为何产生不同输出
+### 46.4 E15-14：相同RIR能量比为何产生不同输出
 
 **源、路径和参考。** 两条已知短FIR的直达部分均为 $[1,0,0]$，反射分别为 $[0,1/2,1/2]$ 和 $[0,1/2,-1/2]$。直达能量1、反射能量1/2，故两条RIR的DRR均为 $10\log_{10}2\approx3.0103\ \mathrm{dB}$。源为2000 Hz与4000 Hz各幅度0.1的余弦，16 kHz、32000点，乘共同包络 `min(1,n/320,(31999-n)/320)`，端点为零。完整线性卷积保留两点尾，源参考补两点零；五文件均为PCM16单声道、32002点、共同导出增益1。
 
@@ -1794,7 +1794,7 @@ $$
 [独立响应测试](../../../../tests/test_codes_response_audio.py)核对解析频响、尾部、评分窗、整数分母与资产拒绝边界；[附录逐步测试](../../../../tests/test_codes_appendix_b_experiments.py)另核对五题中间量。[TAC来源合同](04_source_reproduction.md#tac-contracts)与[来源报告](../../appendix_b/reports/tac_contracts_current.json)是静态证据，不能用本书标量夹具或这五WAV补写成原神经模型成功执行。
 
 
-### 46.6 E13-15：跨过拟合阈值仍可能缺少衰减尾部
+### 46.6 E15-15：跨过拟合阈值仍可能缺少衰减尾部
 
 取无噪声、无直达峰的数学衰减模型 $h[n]=\exp[-3\ln(10)n/(0.6f_s)]$，采样率 $f_s=16000\ \mathrm{Hz}$。无限长模型的幅度平方每经过0.6 s下降60 dB。这里仅改变保留点数 $N$，不改变前面样点，也不生成新的WAV或用这个模型替代六位置房间。
 
@@ -1817,40 +1817,40 @@ $$
 
 ## 47. 扩展专题Ⅰ：声学成像的源量、模型与快拍音频
 
-对应[声学成像正文](../../../../chapters/14_acoustic-imaging.md)。这里把代码入口、输入和复算目标集中起来；完整概念与分步答案放在正文。18题采用E14稳定身份，阅读顺序在第11章后、附录前，原E12/E13不改号。
+对应[声学成像正文](../../../../chapters/12_acoustic-imaging.md)。这里把代码入口、输入和复算目标集中起来；完整概念与分步答案放在正文。18题采用当前第12章的E12-01～18题号；第13章为分布式专题，附录A/B分别为第14、15章。旧网页路径和片段由构建器保留同主题兼容目标，当前代码入口与正文使用新章号。
 
 ### 47.1 十八题分别核对什么
 
 在仓库根目录运行：
 
 ```bash
-.venv/bin/python -m codes.chapters.ch14.chapter14_exercises
+.venv/bin/python -m codes.chapters.ch12.chapter12_exercises
 ```
 
 入口只读计算，输出严格JSON中的`exercises`，不因缺失音频就自动重生。先看题设，再核对量的单位和参考位置；满足一个代数约束不代表源模型正确。
 
 | 稳定题号 | 独立学习难点 | 应复核的量或失败例 |
 |---|---|---|
-| E14-01 | 正频率复幅度、峰幅、RMS与均方 | `.2 cos`的复幅度`.2`与均方`.02`不同；幅度翻倍使CSM四倍 |
-| E14-02 | 从复幅度响应到PSF与扫描值 | 行为扫描格、列为源格；复响应先取模平方，两个不同矩阵不能混用 |
-| E14-03 | 顺序迭代与停止 | 前两次手算、一般对角除法、原双向与教学前向的工作量、近重复列慢收敛 |
-| E14-04 | 跨快拍交叉项与时间正交 | 平衡相位码交叉项抵消；同频cos/sin仍完全谱相干；过渡评分窗污染 |
-| E14-05 | 相干源的假成功 | 源真值`(1,.25)`，错误非相干逆解`(1.2,.45)`，扫描零残差但完整CSM残差非零 |
-| E14-06 | 重复列、离网格与二维泄漏 | 非负多解；一个中间源被解成`.6,.6`；球面441格弱源局部峰偏30mm |
-| E14-07 | 对角删除修改了观测 | 目标自谱也被删除；不定矩阵和负扫描值；裁零不是物理证明 |
-| E14-08 | DAMAS截断更新与扫描NNLS | 固定点`(1,0)`与NNLS`(16/17,0)`；平方残差分别`1/16`与`1/17` |
-| E14-09 | 已知增益与数据校准 | 同一观测的未修正/矩阵K数据校准，不按每图峰值归一化 |
-| E14-10 | 单频区域量与正式PCM | 源总量`1.25`、扫描量总和`1.5625`；先线性求和再dB；题入口独立合成PCM并内存解码，正式五WAV由--check读回 |
-| E14-11 | 完整CSM CLEAN-SC分量 | `B,h,G,D`逐项计算；扣除比例与累计分配量；相干成分不自动等于真源 |
-| E14-12 | 完整Frobenius与半三角目标 | 非对角实/虚部分乘√2；最优`41/25`与`41/21`；含截距数学预期另列 |
-| E14-13 | 窗能量与单边谱端点 | FFT外积→每Hz密度→每频点均方；DC/Nyquist不翻倍，实际完整帧数计数 |
-| E14-14 | 改变源参考位置 | 传播列与每源量同时变换，传感器CSM不变；不同参考量不能直接比较 |
-| E14-15 | 频带积分及点量/密度 | bin线性相加，PSD乘频宽；点量不再乘面积，面密度才乘格面积 |
-| E14-16 | 白噪声与源量的可辨识性 | 两麦已知字典联合估计`q=2,σ²=.5`；一麦只有总量，不能人为拆分 |
-| E14-17 | 同一合法CSM的Gram目标 | `G=DP,h=Db`；GS/完整CSM点`(1,0)`与扫描LS点`(16/17,0)`；不等列幅逐行归一化，DR须重建两个投影模板 |
-| E14-18 | 列不同仍可能不可辨识 | 四传播列各异，但完整CSM字典与PSF秩均3；三个不同非负分配给出同一`2I`观测 |
+| E12-01 | 正频率复幅度、峰幅、RMS与均方 | `.2 cos`的复幅度`.2`与均方`.02`不同；幅度翻倍使CSM四倍 |
+| E12-02 | 从复幅度响应到PSF与扫描值 | 行为扫描格、列为源格；复响应先取模平方，两个不同矩阵不能混用 |
+| E12-03 | 顺序迭代与停止 | 前两次手算、一般对角除法、原双向与教学前向的工作量、近重复列慢收敛 |
+| E12-04 | 跨快拍交叉项与时间正交 | 平衡相位码交叉项抵消；同频cos/sin仍完全谱相干；过渡评分窗污染 |
+| E12-05 | 相干源的假成功 | 源真值`(1,.25)`，错误非相干逆解`(1.2,.45)`，扫描零残差但完整CSM残差非零 |
+| E12-06 | 重复列、离网格与二维泄漏 | 非负多解；一个中间源被解成`.6,.6`；球面441格弱源局部峰偏30mm |
+| E12-07 | 对角删除修改了观测 | 目标自谱也被删除；不定矩阵和负扫描值；裁零不是物理证明 |
+| E12-08 | DAMAS截断更新与扫描NNLS | 固定点`(1,0)`与NNLS`(16/17,0)`；平方残差分别`1/16`与`1/17` |
+| E12-09 | 已知增益与数据校准 | 同一观测的未修正/矩阵K数据校准，不按每图峰值归一化 |
+| E12-10 | 单频区域量与正式PCM | 源总量`1.25`、扫描量总和`1.5625`；先线性求和再dB；题入口独立合成PCM并内存解码，正式五WAV由--check读回 |
+| E12-11 | 完整CSM CLEAN-SC分量 | `B,h,G,D`逐项计算；扣除比例与累计分配量；相干成分不自动等于真源 |
+| E12-12 | 完整Frobenius与半三角目标 | 非对角实/虚部分乘√2；最优`41/25`与`41/21`；含截距数学预期另列 |
+| E12-13 | 窗能量与单边谱端点 | FFT外积→每Hz密度→每频点均方；DC/Nyquist不翻倍，实际完整帧数计数 |
+| E12-14 | 改变源参考位置 | 传播列与每源量同时变换，传感器CSM不变；不同参考量不能直接比较 |
+| E12-15 | 频带积分及点量/密度 | bin线性相加，PSD乘频宽；点量不再乘面积，面密度才乘格面积 |
+| E12-16 | 白噪声与源量的可辨识性 | 两麦已知字典联合估计`q=2,σ²=.5`；一麦只有总量，不能人为拆分 |
+| E12-17 | 同一合法CSM的Gram目标 | `G=DP,h=Db`；GS/完整CSM点`(1,0)`与扫描LS点`(16/17,0)`；不等列幅逐行归一化，DR须重建两个投影模板 |
+| E12-18 | 列不同仍可能不可辨识 | 四传播列各异，但完整CSM字典与PSF秩均3；三个不同非负分配给出同一`2I`观测 |
 
-所有核心方法的唯一实现见[imaging.py](../../ch14/core/imaging.py)，主程序见[chapter14_exercises.py](../../ch14/chapter14_exercises.py)，独立手算、边界及音频测试见[test_codes_imaging.py](../../../../tests/test_codes_imaging.py)。有限活动集NNLS只支持至多8列的教学小系统，441格实验只扫描和计算已知两源PSF，没有对441未知量枚举反演。单源噪声拟合是明确的小型已知统计控制，未加入原CMF的全部稀疏约束。
+所有核心方法的唯一实现见[imaging.py](../../ch12/core/imaging.py)，主程序见[chapter12_exercises.py](../../ch12/chapter12_exercises.py)，独立手算、边界及音频测试见[test_codes_imaging.py](../../../../tests/test_codes_imaging.py)。有限活动集NNLS只支持至多8列的教学小系统，441格实验只扫描和计算已知两源PSF，没有对441未知量枚举反演。单源噪声拟合是明确的小型已知统计控制，未加入原CMF的全部稀疏约束。
 
 ### 47.2 五份已知传播快拍WAV
 
@@ -1858,11 +1858,11 @@ $$
 
 | 文件 | 通道 | 内容 |
 |---|---:|---|
-| [source_1.wav](../../ch14/imaging_audio/source_1.wav) | 1 | 共同第一源，2kHz，块间相位不变 |
-| [source_2_phase_code.wav](../../ch14/imaging_audio/source_2_phase_code.wav) | 1 | 第二源在20快拍取平衡正负相位码 |
-| [source_2_coherent.wav](../../ch14/imaging_audio/source_2_coherent.wav) | 1 | 第二源始终与第一源同相 |
-| [array_phase_code.wav](../../ch14/imaging_audio/array_phase_code.wav) | 2 | 相位码条件的真实两路PCM混合，麦1在前 |
-| [array_coherent.wav](../../ch14/imaging_audio/array_coherent.wav) | 2 | 同相条件的真实两路PCM混合，麦1在前 |
+| [source_1.wav](../../ch12/imaging_audio/source_1.wav) | 1 | 共同第一源，2kHz，块间相位不变 |
+| [source_2_phase_code.wav](../../ch12/imaging_audio/source_2_phase_code.wav) | 1 | 第二源在20快拍取平衡正负相位码 |
+| [source_2_coherent.wav](../../ch12/imaging_audio/source_2_coherent.wav) | 1 | 第二源始终与第一源同相 |
+| [array_phase_code.wav](../../ch12/imaging_audio/array_phase_code.wav) | 2 | 相位码条件的真实两路PCM混合，麦1在前 |
+| [array_coherent.wav](../../ch12/imaging_audio/array_coherent.wav) | 2 | 同相条件的真实两路PCM混合，麦1在前 |
 
 听源2编码与同相两段，能观察块间相位切换。再听两路混合，块间混合幅度会随编码变化。声像或响度不能验证源位置、源功率反演或工业成像分辨率；五文件未作响度匹配或正式主观测试。
 
@@ -1885,28 +1885,28 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 
 负空间相位来自因果延迟：2kHz在24kHz下延迟4点为`exp(−j2π/3)`。非相干的归一化CSM上三角虚部为正，下三角为负。通道互换、正频率核或外积共轭错误会改变这个方向。
 
-清单分别保存解析、浮点和实际PCM结果。编码条件的PCM扫描约`(1.0624789445,.4999786056)`，同相条件约`(1.3124436678,.7499583719)`；非相干模型对同相PCM的逆解约`(1.1999510131,.4499706186)`，仍然错误。正式数字以[完整清单](../../ch14/imaging_audio/MANIFEST.json)为准，不能把浮点直接当作量化文件得分。分别量化的两源相加也不必等于先混合再量化的阵列文件。
+清单分别保存解析、浮点和实际PCM结果。编码条件的PCM扫描约`(1.0624789445,.4999786056)`，同相条件约`(1.3124436678,.7499583719)`；非相干模型对同相PCM的逆解约`(1.1999510131,.4499706186)`，仍然错误。正式数字以[完整清单](../../ch12/imaging_audio/MANIFEST.json)为准，不能把浮点直接当作量化文件得分。分别量化的两源相加也不必等于先混合再量化的阵列文件。
 
 ### 47.4 重建与严格只读核验
 
 ```bash
-.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio
-.venv/bin/python -m codes.chapters.ch14.examples.generate_imaging_audio --check
+.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio
+.venv/bin/python -m codes.chapters.ch12.examples.generate_imaging_audio --check
 ```
 
-唯一[生成器](../../ch14/examples/generate_imaging_audio.py)与[快拍数值核](../../ch14/core/imaging_audio.py)复用主PCM编解码和公共IO。目录严格接受五WAV及一个清单，检查普通父链、成员类型、完整实际源摘要、PCM字节与评分；`--check`只读内存重放，不能修复或覆盖资产。五样本不并入主109份清单。写入前另以固定参数、逐样本公式、直接DFT/外积及PCM整数编码独立核内部输出；布尔增益、变更频率、虚假范围或失配浮点结果均在创建目录之前拒绝。
+唯一[生成器](../../ch12/examples/generate_imaging_audio.py)与[快拍数值核](../../ch12/core/imaging_audio.py)复用主PCM编解码和公共IO。目录严格接受五WAV及一个清单，检查普通父链、成员类型、完整实际源摘要、PCM字节与评分；`--check`只读内存重放，不能修复或覆盖资产。五样本不并入主109份清单。写入前另以固定参数、逐样本公式、直接DFT/外积及PCM整数编码独立核内部输出；布尔增益、变更频率、虚假范围或失配浮点结果均在创建目录之前拒绝。
 
-图67～69由[绘图源](../../../../scripts/make_figures.py)生成，报告分别在[ch14/reports/](../../ch14/reports/)。图67的二维控制用8麦半径`.2m`环阵、`z=.6m`源面、4kHz球面传播和441格；弱源局部扫描峰偏到`.18m`。每格扫描值会重复计入响应，直接相加72.17394不是两源参考总量1.25。
+图67～69由[绘图源](../../../../scripts/make_figures.py)生成，报告分别在[ch12/reports/](../../ch12/reports/)。图67的二维控制用8麦半径`.2m`环阵、`z=.6m`源面、4kHz球面传播和441格；弱源局部扫描峰偏到`.18m`。每格扫描值会重复计入响应，直接相加72.17394不是两源参考总量1.25。
 
-图80的[数值报告](../../ch14/reports/figure80_imaging_objectives.json)同时保存151×101全部局部系数网格、两种目标及不等列幅控制，PNG绑定报告真实字节。独立发布门禁逐点按标量公式复算，不调用教学或绘图实现。
+图80的[数值报告](../../ch12/reports/figure80_imaging_objectives.json)同时保存151×101全部局部系数网格、两种目标及不等列幅控制，PNG绑定报告真实字节。独立发布门禁逐点按标量公式复算，不调用教学或绘图实现。
 
 ### 47.5 固定上游的方法合同
 
-[原Acoular限定工具](../../ch14/examples/audit_upstream_imaging_contracts.py)默认只输出终端，只有显式`--report`写当前[合同报告](../../ch14/reports/upstream_imaging_contracts_current.json)。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见[空间源码研究](01_spatial_and_tracking.md#imaging-contract-audit)。
+[原Acoular限定工具](../../ch12/examples/audit_upstream_imaging_contracts.py)默认只输出终端，只有显式`--report`写当前[合同报告](../../ch12/reports/upstream_imaging_contracts_current.json)。原源码身份、完整选集不匹配、限定方法相符、已确认差异和依赖缺失分别保存；详细条件见[空间源码研究](01_spatial_and_tracking.md#imaging-contract-audit)。
 
 本书CLEAN-SC教学核采用作者完整CSM公式；固定Acoular的full支路在独立单源控制中会过量分配，不能作为正确答案。CMF半三角权重及默认截距也分别改变目标。原类方法的提取调用不等于Traits对象图、Numba JIT、HDF5、sklearn估计器或真实风洞整链运行。当前Acoular报告另在合法CSM上形成扫描与PSF，再执行原DAMAS；旧21项次序及13吻合/8差异/1未执行保持。
 
-[作者完整Python原模块](../../ch14/examples/audit_damas_author_contracts.py)的[当前报告](../../ch14/reports/damas_author_contracts_current.json)独立记录9个控制：8个数值吻合、1个零CSM原NameError。原`unique=True`只检查活跃支持，重复列存在另一个同观测非负解；不能称全局唯一。作者full CLEAN-SC单源两步为1.68，与显式公式一致。两个工具默认终端输出，历史报告拒绝覆盖；源码获取、限定执行与完整论文实验分别记。
+[作者完整Python原模块](../../ch12/examples/audit_damas_author_contracts.py)的[当前报告](../../ch12/reports/damas_author_contracts_current.json)独立记录9个控制：8个数值吻合、1个零CSM原NameError。原`unique=True`只检查活跃支持，重复列存在另一个同观测非负解；不能称全局唯一。作者full CLEAN-SC单源两步为1.68，与显式公式一致。两个工具默认终端输出，历史报告拒绝覆盖；源码获取、限定执行与完整论文实验分别记。
 
 <a id="distributed-exercises-audio"></a>
 
@@ -1914,51 +1914,51 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 
 ### 48.1 先确定要估计什么
 
-[扩展专题Ⅱ](../../../../chapters/15_distributed-enhancement.md)在第5章MWF基础上增加节点间的任务相关压缩。四个观测的已知目标响应为$[1,1/2,2,-1/2]^\top$；节点1估计$s$，节点2估计$2s$。不是从少量广播恢复每个原通道，而是检查最优权重是否属于所保留的观测空间。传播方向、协方差和目标均已知，不能称为盲网络增强。
+[扩展专题Ⅱ](../../../../chapters/13_distributed-enhancement.md)在第5章MWF基础上增加节点间的任务相关压缩。四个观测的已知目标响应为$[1,1/2,2,-1/2]^\top$；节点1估计$s$，节点2估计$2s$。不是从少量广播恢复每个原通道，而是检查最优权重是否属于所保留的观测空间。传播方向、协方差和目标均已知，不能称为盲网络增强。
 
 白噪声控制中，节点1集中式权重为$[2,1,4,-1]^\top/13$，NMSE为$2/13$；仅本地为$4/9$。相关噪声控制的最优权重为$[25,4,11,-24]^\top/69$，NMSE为$8/69$；沿用白噪声的远端方向仍是$2/13$。同一种压缩维数不保证同一种信息损失，必须同时核目标、噪声统计和广播方向。
 
 ### 48.2 25题的输入、答案与代码控制
 
-唯一[题目入口](../../ch15/chapter15_exercises.py)调用[数值核](../../ch15/core/distributed.py)，不打印一份硬编码答案替代计算。正文逐题给出计算过程；下表用于找到真正需要复算的量。
+唯一[题目入口](../../ch13/chapter13_exercises.py)调用[数值核](../../ch13/core/distributed.py)，不打印一份硬编码答案替代计算。正文逐题给出计算过程；下表用于找到真正需要复算的量。
 
 | 题号 | 输入与核心检查 | 手算或实际控制结果 |
 |---|---|---|
-| E15-01 | 四麦分两节点，选择本地参考与块协方差 | 共轭外积、参考提取与各节点目标分别定义 |
-| E15-02 | 空间不相关单位噪声 | $q=11/2$；权重$[2,1,4,-1]^\top/13$；失真$4/169$、噪声$22/169$ |
-| E15-03 | 仅保留节点1两麦 | 权重$[4,2]^\top/9$；MSE$4/9$ |
-| E15-04 | 广播$2x_3-x_4/2$ | 原坐标接收权重$[2,1,2]^\top/13$，有效权重恢复集中式 |
-| E15-05 | 噪声交叉项$R_{13}=1/5,R_{14}=4/5$ | 最小特征值$1-\sqrt{17}/5>0$；旧方向损失$34/897$ |
-| E15-06 | 适配广播$11x_3-24x_4$ | 手算局部权重$[25,4,1]^\top/69$；代码广播方向另除69、接收系数相应变换，有效权重相同，MSE$8/69$ |
-| E15-07 | 正文目标$(1+\mathrm j)s$；代码另用复传播向量的第二麦参考 | 正文MSE$4/13$；代码MSE$1/26$，各自目标功率不同，NMSE均$2/13$ |
-| E15-08 | 正文复尺度$2\mathrm j$；代码另检极大/极小实尺度 | 广播与接收系数/统计一起变换，有效全局权重不变；零向量另处理 |
-| E15-09 | 正文白噪声、初值$[1,0]^\top$三步；代码另留相关噪声六步 | 第二次广播后节点1实际MSE$23108/105625$；旧求解快照不能替代实际输出 |
-| E15-10 | 相关噪声、目标响应分块初值 | 当前全局残差低于$10^{-8}$需要14次更新，加2次初始化共16次 |
-| E15-11 | 同一相关噪声与初值，同时及半步混合 | 26/28与76/78次更新/总求解；不是$rS$-DANSE$^+$原定理算法 |
-| E15-12 | 两独立潜在目标，远端只发$x_3+x_4$ | 完整观测两目标MSE均$1/4$；压缩后第二目标为$1/2$ |
-| E15-13 | 零广播 | 普通正定求解拒绝；显式删除无信息列后回退本地$4/9$ |
-| E15-14 | 非PSD、病态与加载 | 非对角2/对角1的矩阵特征值3/−1；加载改变目标，原目标另评分 |
-| E15-15 | PCM16、float32、复谱与发送份数 | 16kHz每路PCM256kbit/s；FFT512/H256复谱1.028Mbit/s；代码H128需加倍 |
-| E15-16 | 四节点各两麦、每节点一路广播，complex128 | 局部维数5；单矩阵400B/节点、1600B/全网，集中式1024B |
-| E15-17 | 已知100ppm、连续状态SRC | 32004设备点支持32000参考点；257点分块与整段逐点相同 |
-| E15-18 | 连续5个160点包缺失 | 缺口内补零$461/676$、本地回退$4/9$；稳窗与缺口窗分别评分 |
-| E15-19 | 实际远端标量先量化再读回 | 接收增量上界$(2/13)/(2\cdot32768)$，约$2.347506\times10^{-6}$ |
-| E15-20 | 解析、浮点分量与整数PCM | 实际整数E/D独立重读；不拟合增益/时延，分母随参考量化 |
-| E15-21 | 三变量Jacobi控制，非DANSE | 同时迭代特征值−1.8导致发散；半步控制可收敛，不能当DANSE反例 |
-| E15-22 | 三项步长条件 | $1/(i+1)$满足趋零且总和发散；固定/几何步长不满足全部条件 |
-| E15-23 | 三节点链、指定根1、标量1/2/3 | 四条定向消息；总和6，减自身后5/4/3；不包含TI滤波变换 |
-| E15-24 | 已知二麦正定噪声的rank-1 GEVD | 广义特征值5/1，权重$[0,0.4]^\top$、MSE0.2；非完整网络GEVD |
-| E15-25 | 同物理二观测，第二压缩坐标乘2后累计统计 | 正确同坐标累计MSE$1/3$；直接混合旧/新坐标的当前MSE$329/961$，损失$26/2883$；混合矩阵仍正定 |
+| E13-01 | 四麦分两节点，选择本地参考与块协方差 | 共轭外积、参考提取与各节点目标分别定义 |
+| E13-02 | 空间不相关单位噪声 | $q=11/2$；权重$[2,1,4,-1]^\top/13$；失真$4/169$、噪声$22/169$ |
+| E13-03 | 仅保留节点1两麦 | 权重$[4,2]^\top/9$；MSE$4/9$ |
+| E13-04 | 广播$2x_3-x_4/2$ | 原坐标接收权重$[2,1,2]^\top/13$，有效权重恢复集中式 |
+| E13-05 | 噪声交叉项$R_{13}=1/5,R_{14}=4/5$ | 最小特征值$1-\sqrt{17}/5>0$；旧方向损失$34/897$ |
+| E13-06 | 适配广播$11x_3-24x_4$ | 手算局部权重$[25,4,1]^\top/69$；代码广播方向另除69、接收系数相应变换，有效权重相同，MSE$8/69$ |
+| E13-07 | 正文目标$(1+\mathrm j)s$；代码另用复传播向量的第二麦参考 | 正文MSE$4/13$；代码MSE$1/26$，各自目标功率不同，NMSE均$2/13$ |
+| E13-08 | 正文复尺度$2\mathrm j$；代码另检极大/极小实尺度 | 广播与接收系数/统计一起变换，有效全局权重不变；零向量另处理 |
+| E13-09 | 正文白噪声、初值$[1,0]^\top$三步；代码另留相关噪声六步 | 第二次广播后节点1实际MSE$23108/105625$；旧求解快照不能替代实际输出 |
+| E13-10 | 相关噪声、目标响应分块初值 | 当前全局残差低于$10^{-8}$需要14次更新，加2次初始化共16次 |
+| E13-11 | 同一相关噪声与初值，同时及半步混合 | 26/28与76/78次更新/总求解；不是$rS$-DANSE$^+$原定理算法 |
+| E13-12 | 两独立潜在目标，远端只发$x_3+x_4$ | 完整观测两目标MSE均$1/4$；压缩后第二目标为$1/2$ |
+| E13-13 | 零广播 | 普通正定求解拒绝；显式删除无信息列后回退本地$4/9$ |
+| E13-14 | 非PSD、病态与加载 | 非对角2/对角1的矩阵特征值3/−1；加载改变目标，原目标另评分 |
+| E13-15 | PCM16、float32、复谱与发送份数 | 16kHz每路PCM256kbit/s；FFT512/H256复谱1.028Mbit/s；代码H128需加倍 |
+| E13-16 | 四节点各两麦、每节点一路广播，complex128 | 局部维数5；单矩阵400B/节点、1600B/全网，集中式1024B |
+| E13-17 | 已知100ppm、连续状态SRC | 32004设备点支持32000参考点；257点分块与整段逐点相同 |
+| E13-18 | 连续5个160点包缺失 | 缺口内补零$461/676$、本地回退$4/9$；稳窗与缺口窗分别评分 |
+| E13-19 | 实际远端标量先量化再读回 | 接收增量上界$(2/13)/(2\cdot32768)$，约$2.347506\times10^{-6}$ |
+| E13-20 | 解析、浮点分量与整数PCM | 实际整数E/D独立重读；不拟合增益/时延，分母随参考量化 |
+| E13-21 | 三变量Jacobi控制，非DANSE | 同时迭代特征值−1.8导致发散；半步控制可收敛，不能当DANSE反例 |
+| E13-22 | 三项步长条件 | $1/(i+1)$满足趋零且总和发散；固定/几何步长不满足全部条件 |
+| E13-23 | 三节点链、指定根1、标量1/2/3 | 四条定向消息；总和6，减自身后5/4/3；不包含TI滤波变换 |
+| E13-24 | 已知二麦正定噪声的rank-1 GEVD | 广义特征值5/1，权重$[0,0.4]^\top$、MSE0.2；非完整网络GEVD |
+| E13-25 | 同物理二观测，第二压缩坐标乘2后累计统计 | 正确同坐标累计MSE$1/3$；直接混合旧/新坐标的当前MSE$329/961$，损失$26/2883$；混合矩阵仍正定 |
 
 ```bash
-.venv/bin/python -m codes.chapters.ch15.chapter15_exercises
-.venv/bin/python -m codes.chapters.ch15.chapter15_exercises --exercise E15-09
-.venv/bin/python -m codes.chapters.ch15.chapter15_exercises --exercise E15-24
+.venv/bin/python -m codes.chapters.ch13.chapter13_exercises
+.venv/bin/python -m codes.chapters.ch13.chapter13_exercises --exercise E13-09
+.venv/bin/python -m codes.chapters.ch13.chapter13_exercises --exercise E13-24
 ```
 
 广播状态变化时，接收系数可以暂时不更新，但接收到的信号已经改变。`outputs_at_last_solve`是过去求解时的提案；`cached_outputs`由当前广播和缓存接收系数组合。图71用后者评分，预算按真实矩阵求解计数，含两次初始本地求解。上述停止器使用已知全局统计，不伪装成现实节点可直接得到的在线残差。
 
-[E15-25](../../../../chapters/15_distributed-enhancement.md#e15-25)固定同一物理观测，仅把第二广播坐标乘2。累计统计之前，旧总协方差要左右乘坐标变换及其共轭转置，旧互相关也要左乘同一变换；接收权重随后在当前坐标求解。错误混合矩阵仍正定，但不代表当前输入，不能以“求解成功”代替坐标正确。该例不估计未知协方差，也没有另一组音频。
+[E13-25](../../../../chapters/13_distributed-enhancement.md#e13-25)固定同一物理观测，仅把第二广播坐标乘2。累计统计之前，旧总协方差要左右乘坐标变换及其共轭转置，旧互相关也要左乘同一变换；接收权重随后在当前坐标求解。错误混合矩阵仍正定，但不代表当前输入，不能以“求解成功”代替坐标正确。该例不估计未知协方差，也没有另一组音频。
 
 ### 48.3 17份音频分别改变了什么
 
@@ -1966,27 +1966,27 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 
 | 文件 | 通道及比较对象 |
 |---|---|
-| [reference_node1.wav](../../ch15/distributed_audio/reference_node1.wav) | 一路干目标$s$；节点1共同参考 |
-| [reference_node2.wav](../../ch15/distributed_audio/reference_node2.wav) | 一路干目标$2s$；独立量化的节点2参考 |
-| [array_white.wav](../../ch15/distributed_audio/array_white.wav) | 四路观测$x_1,x_2,x_3,x_4$，空间不相关干扰 |
-| [array_correlated.wav](../../ch15/distributed_audio/array_correlated.wav) | 同源四路观测，已知相关干扰 |
-| [local_node1.wav](../../ch15/distributed_audio/local_node1.wav) | 仅节点1两路观测的MWF |
-| [central_white.wav](../../ch15/distributed_audio/central_white.wav) | 空间不相关模型的集中式参考 |
-| [compressed_white.wav](../../ch15/distributed_audio/compressed_white.wav) | 相同输入的正确固定压缩，与上一份字节相同是设计控制 |
-| [central_correlated.wav](../../ch15/distributed_audio/central_correlated.wav) | 相关模型的集中式参考 |
-| [compressed_correlated.wav](../../ch15/distributed_audio/compressed_correlated.wav) | 相同输入的已知适配方向，与上一份字节相同 |
-| [stale_correlated.wav](../../ch15/distributed_audio/stale_correlated.wav) | 相关模型沿用旧白噪声方向，信息损失 |
-| [central_node2_correlated.wav](../../ch15/distributed_audio/central_node2_correlated.wav) | 节点2集中式输出，参考是$2s$ |
-| [remote_scalar_white.wav](../../ch15/distributed_audio/remote_scalar_white.wav) | 远端广播$2x_3-x_4/2$，不是增强输出 |
-| [transport_pcm16_white.wav](../../ch15/distributed_audio/transport_pcm16_white.wav) | 远端广播先真实PCM16量化/重读再融合 |
-| [clock_misaligned_white.wav](../../ch15/distributed_audio/clock_misaligned_white.wav) | 远端快100ppm、按相同索引直接融合 |
-| [clock_linear_corrected_white.wav](../../ch15/distributed_audio/clock_linear_corrected_white.wav) | 已知真实速率、连续状态线性SRC后融合 |
-| [packet_zerofill_white.wav](../../ch15/distributed_audio/packet_zerofill_white.wav) | 指定800点缺口远端补零，冻结接收系数 |
-| [packet_local_fallback_white.wav](../../ch15/distributed_audio/packet_local_fallback_white.wav) | 相同缺口显式切换到本地MWF |
+| [reference_node1.wav](../../ch13/distributed_audio/reference_node1.wav) | 一路干目标$s$；节点1共同参考 |
+| [reference_node2.wav](../../ch13/distributed_audio/reference_node2.wav) | 一路干目标$2s$；独立量化的节点2参考 |
+| [array_white.wav](../../ch13/distributed_audio/array_white.wav) | 四路观测$x_1,x_2,x_3,x_4$，空间不相关干扰 |
+| [array_correlated.wav](../../ch13/distributed_audio/array_correlated.wav) | 同源四路观测，已知相关干扰 |
+| [local_node1.wav](../../ch13/distributed_audio/local_node1.wav) | 仅节点1两路观测的MWF |
+| [central_white.wav](../../ch13/distributed_audio/central_white.wav) | 空间不相关模型的集中式参考 |
+| [compressed_white.wav](../../ch13/distributed_audio/compressed_white.wav) | 相同输入的正确固定压缩，与上一份字节相同是设计控制 |
+| [central_correlated.wav](../../ch13/distributed_audio/central_correlated.wav) | 相关模型的集中式参考 |
+| [compressed_correlated.wav](../../ch13/distributed_audio/compressed_correlated.wav) | 相同输入的已知适配方向，与上一份字节相同 |
+| [stale_correlated.wav](../../ch13/distributed_audio/stale_correlated.wav) | 相关模型沿用旧白噪声方向，信息损失 |
+| [central_node2_correlated.wav](../../ch13/distributed_audio/central_node2_correlated.wav) | 节点2集中式输出，参考是$2s$ |
+| [remote_scalar_white.wav](../../ch13/distributed_audio/remote_scalar_white.wav) | 远端广播$2x_3-x_4/2$，不是增强输出 |
+| [transport_pcm16_white.wav](../../ch13/distributed_audio/transport_pcm16_white.wav) | 远端广播先真实PCM16量化/重读再融合 |
+| [clock_misaligned_white.wav](../../ch13/distributed_audio/clock_misaligned_white.wav) | 远端快100ppm、按相同索引直接融合 |
+| [clock_linear_corrected_white.wav](../../ch13/distributed_audio/clock_linear_corrected_white.wav) | 已知真实速率、连续状态线性SRC后融合 |
+| [packet_zerofill_white.wav](../../ch13/distributed_audio/packet_zerofill_white.wav) | 指定800点缺口远端补零，冻结接收系数 |
+| [packet_local_fallback_white.wav](../../ch13/distributed_audio/packet_local_fallback_white.wav) | 相同缺口显式切换到本地MWF |
 
 ### 48.4 用真实整数评分，保留不同分母
 
-评分稳窗为1600:30400，共28800点；缺口窗16000:16800，共800点。解析协方差、导出前浮点分量与实际PCM总误差各自存入[清单](../../ch15/distributed_audio/MANIFEST.json)。整数参考$D[n]$和输出$Y[n]$分别计算$E=\sum(Y-D)^2$、$D_{\rm energy}=\sum D[n]^2$；NMSE为两者之比，不平均dB。下面每行来自实际WAV整数，不由理论倍数构造。
+评分稳窗为1600:30400，共28800点；缺口窗16000:16800，共800点。解析协方差、导出前浮点分量与实际PCM总误差各自存入[清单](../../ch13/distributed_audio/MANIFEST.json)。整数参考$D[n]$和输出$Y[n]$分别计算$E=\sum(Y-D)^2$、$D_{\rm energy}=\sum D[n]^2$；NMSE为两者之比，不平均dB。下面每行来自实际WAV整数，不由理论倍数构造。
 
 | 输出 | 稳窗整数E | 稳窗整数参考能量 | PCM NMSE |
 |---|---:|---:|---:|
@@ -2014,14 +2014,14 @@ e^{-\mathrm j2\pi 2000n/24000},\\
 ### 48.6 重建、只读回放与原源码范围
 
 ```bash
-.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio
-.venv/bin/python -m codes.chapters.ch15.examples.generate_distributed_audio --check
-.venv/bin/python -m codes.chapters.ch15.examples.audit_upstream_distributed_contracts
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio
+.venv/bin/python -m codes.chapters.ch13.examples.generate_distributed_audio --check
+.venv/bin/python -m codes.chapters.ch13.examples.audit_upstream_distributed_contracts
 ```
 
-唯一[生成器](../../ch15/examples/generate_distributed_audio.py)绑定九个真实源摘要，严格接受17个WAV和清单共18个普通成员。首次写入前另按固定类型、参数、范围与独立波形核验，拒绝可信内部模型漂移；源摘要与完整回放负责来源一致性，不能单独替代固定模型核验。`--check`只读重放完整PCM字节、浮点分量、真实整数指标与来源，不改资产。硬链接、符号链接、额外成员、重复JSON键、非有限数字与来源失配均不能被记为通过。
+唯一[生成器](../../ch13/examples/generate_distributed_audio.py)绑定九个真实源摘要，严格接受17个WAV和清单共18个普通成员。首次写入前另按固定类型、参数、范围与独立波形核验，拒绝可信内部模型漂移；源摘要与完整回放负责来源一致性，不能单独替代固定模型核验。`--check`只读重放完整PCM字节、浮点分量、真实整数指标与来源，不改资产。硬链接、符号链接、额外成员、重复JSON键、非有限数字与来源失配均不能被记为通过。
 
-图70～72由[绘图源](../../../../scripts/make_figures.py)生成，相关[报告目录](../../ch15/reports/)保留全部计算状态。固定MATLAB代码仅静态合同与独立数字控制，未运行WOLA；固定paderwasn只提取三个原NumPy助手受限调用，16组中13组匹配、1组短输入差异及2组无观测都原样保留。详见[来源与许可](04_source_reproduction.md#distributed-reproduction)及[工业时间轴与载荷](03_industrial_deployment.md#distributed-network-deployment)。本书没有真实网络、原完整DANSE/TI整链、自然语音或正式主观听测结果。
+图70～72由[绘图源](../../../../scripts/make_figures.py)生成，相关[报告目录](../../ch13/reports/)保留全部计算状态。固定MATLAB代码仅静态合同与独立数字控制，未运行WOLA；固定paderwasn只提取三个原NumPy助手受限调用，16组中13组匹配、1组短输入差异及2组无观测都原样保留。详见[来源与许可](04_source_reproduction.md#distributed-reproduction)及[工业时间轴与载荷](03_industrial_deployment.md#distributed-network-deployment)。本书没有真实网络、原完整DANSE/TI整链、自然语音或正式主观听测结果。
 
 ## 49. 方向相关频谱：同一响应怎样产生不同的全带声级差
 

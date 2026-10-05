@@ -1,4 +1,4 @@
-"""Independent arithmetic and real temporary PCM oracles for E12-06..20."""
+"""Independent arithmetic and real temporary PCM oracles for E14-06..20."""
 
 import json
 import tempfile
@@ -27,11 +27,11 @@ class AppendixAMathTests(unittest.TestCase):
         cls.rows = run_experiments(repo_root=root, weighted_directory=directory)
 
     def test_exact_ids_and_json(self):
-        self.assertEqual(set(self.rows), {f'E12-{number:02d}' for number in range(6, 21)})
+        self.assertEqual(set(self.rows), {f'E14-{number:02d}' for number in range(6, 21)})
         json.dumps(self.rows, allow_nan=False)
 
     def test_signed_bins_and_complex_norm(self):
-        row = self.rows['E12-06']
+        row = self.rows['E14-06']
         self.assertEqual(row['signed_frequency_hz_by_bin'],
                          [0, 1000, 2000, 3000, -4000, -3000, -2000, -1000])
         # Analytically, f_k = k f_s/N for the five retained real-FFT bins.
@@ -43,12 +43,12 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertEqual(row['alternating_signal_nonzero_bins'], [4])
         self.assertEqual(row['alternating_signal_nonzero_coefficients'], [8])
         self.assertEqual(row['nyquist_bin']['frequency_magnitude_hz'], 4000)
-        row = self.rows['E12-07']
+        row = self.rows['E14-07']
         self.assertEqual(row['hermitian_norm_squared'], 2)
         self.assertEqual(row['transpose_square'], 0)
 
     def test_overlap_add_and_wrong_circular_outputs(self):
-        row = self.rows['E12-08']
+        row = self.rows['E14-08']
         self.assertEqual(row['linear_output'], [1, 2.5, 4, 5.5, 2])
         self.assertEqual(row['block_circular_output'], [2, 2.5, 5, 5.5])
         # Independent direct causal convolution, including the final tail.
@@ -77,21 +77,21 @@ class AppendixAMathTests(unittest.TestCase):
             blockwise_circular_convolution([1, 2], [1, 0, 1], 2)
 
     def test_correlation_covariance_conditioning_and_sdw(self):
-        row = self.rows['E12-09']
+        row = self.rows['E14-09']
         self.assertEqual(row['r12'], [0, 0, 0, 1, 0])
         self.assertEqual(row['r21'], [0, 1, 0, 0, 0])
         self.assertEqual((row['r12_peak_lag_samples'], row['r21_peak_lag_samples']), (1, -1))
-        row = self.rows['E12-10']
+        row = self.rows['E14-10']
         np.testing.assert_array_equal(row['uncentered_second_moment'],
                                       np.diag([.5, .5, 0]))
         np.testing.assert_array_equal(row['centered_covariance'],
                                       [[.25, -.25, 0], [-.25, .25, 0], [0, 0, 0]])
         self.assertEqual((row['uncentered_rank'], row['centered_rank']), (2, 1))
         self.assertEqual(row['centered_eigenvalues'], [0, 0, .5])
-        row = self.rows['E12-11']
+        row = self.rows['E14-11']
         self.assertEqual((row['condition_A'], row['condition_normal']), (1e4, 1e8))
         self.assertEqual(row['recovered_x'], [1, 1])
-        row = self.rows['E12-12']
+        row = self.rows['E14-12']
         self.assertEqual(row['singular_noise_weights'], [[1, 0]] * 3)
         for mu, weights in zip(row['mus'], row['identity_noise_weights']):
             self.assertAlmostEqual(weights[0], 1/(1+mu), places=14)
@@ -126,7 +126,7 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertEqual(pcm['wrong_minus_linear_nonzero_count'], 20)
 
     def test_absolute_and_trace_relative_loading_scales(self):
-        row = self.rows['E12-13']
+        row = self.rows['E14-13']
         self.assertEqual(row['covariance'], [[4, 0], [0, 1]])
         self.assertEqual(row['steering'], [1, 1])
         self.assertEqual((row['microphones'], row['absolute_loading'],
@@ -152,7 +152,7 @@ class AppendixAMathTests(unittest.TestCase):
                 self.assertAlmostEqual(case['target_response'], 1, places=12)
 
     def test_complex_ls_residual_and_conjugate(self):
-        row=self.rows['E12-14']
+        row=self.rows['E14-14']
         np.testing.assert_allclose(row['solution']['real'],[.5],atol=2e-16)
         np.testing.assert_allclose(row['solution']['imag'],[-.5],atol=2e-16)
         np.testing.assert_allclose(row['residual']['real'],[-.5,-.5],atol=2e-16)
@@ -162,7 +162,7 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertAlmostEqual(row['residual_squared_sum'],1)
 
     def test_weighted_ls_is_orthogonal_in_its_actual_metric(self):
-        row=self.rows['E12-15']['cases']
+        row=self.rows['E14-15']['cases']
         self.assertEqual(row['ols']['solution'],[1])
         self.assertAlmostEqual(row['gls']['solution'][0],2/5)
         np.testing.assert_allclose(row['gls']['residual'],[2/5,-8/5],atol=1e-16)
@@ -178,7 +178,7 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertAlmostEqual(row['gls']['common_noise_precision_cost'],4/5)
 
     def test_rcond_rank_and_ridge_are_different_rules(self):
-        row=self.rows['E12-16'];first,second=row['cases']
+        row=self.rows['E14-16'];first,second=row['cases']
         self.assertEqual(row['numpy_version'],np.__version__)
         self.assertEqual(first['effective_singular_value_threshold'],1e-10)
         self.assertEqual(second['effective_singular_value_threshold'],1e-6)
@@ -194,7 +194,7 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertAlmostEqual(row['ridge_penalty']/1e-16,1.25)
 
     def test_complex_correlation_phase_and_conjugate(self):
-        row=self.rows['E12-17']
+        row=self.rows['E14-17']
         self.assertEqual(row['r12'],{'real':[0,0,0,2,0],'imag':[0,0,-1,0,1]})
         self.assertEqual(row['without_conjugate'],{'real':[0]*5,'imag':[0,0,1,0,1]})
         self.assertEqual(row['magnitude_peak_lag_samples'],1)
@@ -202,7 +202,7 @@ class AppendixAMathTests(unittest.TestCase):
         self.assertEqual(row['r21_magnitude_peak_lag_samples'],-1)
 
     def test_eigh_uses_triangle_not_original_asymmetric_input(self):
-        lower,upper,diagonal=self.rows['E12-18']['cases']
+        lower,upper,diagonal=self.rows['E14-18']['cases']
         self.assertEqual(lower['eigenvalues'],[1,2])
         # Upper Hermitian reconstruction [[1,100],[100,2]] has trace3
         # and gap sqrt(1+4*100^2), independently from the called solver.
@@ -227,7 +227,7 @@ class AppendixAMathTests(unittest.TestCase):
             self.assertAlmostEqual(float(actual@actual),1,places=14)
 
     def test_weighted_audio_anchor_reads_integer_report(self):
-        row=self.rows['E12-19']
+        row=self.rows['E14-19']
         self.assertEqual(row['parameters']['source_score'],[1600,30400])
         pcm=row['pcm_analysis']
         self.assertEqual(pcm['integer_reference_squared_sum'],618489148320)

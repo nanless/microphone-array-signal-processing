@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "script_sha256": "c7544e82e936ad283b33d7e01b6a51e41caaf047b8ced0a6d47013020b58d83f",
-  "audio_manifest_sha256": "1ec6b8ab088ccc7fae752d656e40f880a50303156f669a5724a21f80fd35974c",
+  "script_sha256": "4eb6e4fcf9e7f26c29d61552046e1528bcfe5634758577f94798adba9e1333a4",
+  "audio_manifest_sha256": "b63b716fd7d74390b48024658dab2878177e6d2a47a5122f9a0346b2a83a1bb3",
   "scope": "known deterministic orthogonal tones; no covariance estimation or listening test",
   "score_window": [
     1600,
